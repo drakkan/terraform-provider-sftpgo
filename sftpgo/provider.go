@@ -26,7 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"github.com/sftpgo/terraform-provider-sftpgo/sftpgo/client"
+	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces
@@ -78,6 +78,7 @@ func (p *sftpgoProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 
 // Configure prepares a SFTPGo API client for data sources and resources.
 func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	ctx = tflog.SetField(ctx, "Version", getVersion())
 	tflog.Info(ctx, "Configuring SFTPGo client")
 
 	// Retrieve provider data from configuration

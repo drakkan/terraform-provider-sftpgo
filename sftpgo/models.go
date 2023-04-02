@@ -25,7 +25,7 @@ import (
 	"github.com/sftpgo/sdk"
 	"github.com/sftpgo/sdk/kms"
 
-	"github.com/sftpgo/terraform-provider-sftpgo/sftpgo/client"
+	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 )
 
 // userResourceModel maps users schema data.

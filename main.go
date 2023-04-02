@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 
-	"github.com/sftpgo/terraform-provider-sftpgo/sftpgo"
+	"github.com/drakkan/terraform-provider-sftpgo/sftpgo"
 )
 
 // Provider documentation generation.

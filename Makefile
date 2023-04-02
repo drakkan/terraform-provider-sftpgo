@@ -4,10 +4,10 @@ generate:
 	go generate ./...
 
 build:
-	go build -trimpath -ldflags "-s -w" -o terraform-provider-sftpgo
+	go build -trimpath -ldflags "-s -w -X github.com/drakkan/terraform-provider-sftpgo/sftpgo.version=dev -X github.com/drakkan/terraform-provider-sftpgo/sftpgo.commit=`git describe --always --abbrev=8 --dirty`" -o terraform-provider-sftpgo
 
 install:
-	go install .
+	go install -trimpath -ldflags "-s -w -X github.com/drakkan/terraform-provider-sftpgo/sftpgo.version=dev -X github.com/drakkan/terraform-provider-sftpgo/sftpgo.commit=`git describe --always --abbrev=8 --dirty`" .
 
 test:
 	go test -count=1 -parallel=4 ./...

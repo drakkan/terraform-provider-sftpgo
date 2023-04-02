@@ -1,4 +1,4 @@
-module github.com/sftpgo/terraform-provider-sftpgo
+module github.com/drakkan/terraform-provider-sftpgo
 
 go 1.20
 
