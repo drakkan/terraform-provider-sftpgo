@@ -50,11 +50,18 @@ func (d *adminsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 	resp.Schema = schema.Schema{
 		Description: "Fetches the list of admins.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "Required to use the test framework. Just a placeholder.",
+			},
 			"admins": schema.ListNestedAttribute{
 				Computed:    true,
 				Description: "List of admins.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed: true,
+						},
 						"username": schema.StringAttribute{
 							Computed:    true,
 							Description: "Unique username.",
@@ -190,6 +197,8 @@ func (d *adminsDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		state.Admins = append(state.Admins, adminState)
 	}
 
+	state.ID = types.StringValue(placeholderID)
+
 	// Set state
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -201,4 +210,5 @@ func (d *adminsDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 // adminsDataSourceModel maps the data source schema data.
 type adminsDataSourceModel struct {
 	Admins []adminResourceModel `tfsdk:"admins"`
+	ID     types.String         `tfsdk:"id"`
 }

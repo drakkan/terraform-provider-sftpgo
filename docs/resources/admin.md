@@ -34,6 +34,7 @@ Admin
 ### Read-Only
 
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
+- `id` (String) Required to use the test framework. Matches the username.
 - `last_login` (Number) Last login as unix timestamp in milliseconds.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
 

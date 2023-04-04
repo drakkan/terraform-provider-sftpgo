@@ -20,9 +20,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -31,9 +33,8 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &adminResource{}
-	_ resource.ResourceWithConfigure   = &adminResource{}
-	_ resource.ResourceWithImportState = &adminResource{}
+	_ resource.Resource              = &adminResource{}
+	_ resource.ResourceWithConfigure = &adminResource{}
 )
 
 // NewAdminResource is a helper function to simplify the provider implementation.
@@ -65,6 +66,13 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 	resp.Schema = schema.Schema{
 		Description: "Admin",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "Required to use the test framework. Matches the username.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"username": schema.StringAttribute{
 				Required:    true,
 				Description: "Unique username.",
@@ -107,6 +115,9 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"created_at": schema.Int64Attribute{
 				Computed:    true,
 				Description: "Creation time as unix timestamp in milliseconds.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"updated_at": schema.Int64Attribute{
 				Computed:    true,
@@ -236,14 +247,17 @@ func (r *adminResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	diags = state.fromSFTPGo(ctx, admin)
+	var newState adminResourceModel
+	diags = newState.fromSFTPGo(ctx, admin)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	newState.Password = state.Password
+
 	// Set refreshed state
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -317,10 +331,4 @@ func (r *adminResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		)
 		return
 	}
-}
-
-// ImportState imports an existing the resource and save the Terraform state
-func (r *adminResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import name and save to name attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("username"), req, resp)
 }

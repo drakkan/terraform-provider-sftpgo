@@ -80,7 +80,7 @@ type Admin struct {
 	AdditionalInfo string       `json:"additional_info,omitempty"`
 	// Groups membership
 	Groups []AdminGroupMapping `json:"groups,omitempty"`
-	// Creation time as unix timestamp in milliseconds. It will be 0 for admins created before v2.2.0
+	// Creation time as unix timestamp in milliseconds
 	CreatedAt int64 `json:"created_at"`
 	// last update time as unix timestamp in milliseconds
 	UpdatedAt int64 `json:"updated_at"`

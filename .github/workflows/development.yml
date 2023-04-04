@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    services:
+      sftpgo:
+        image: drakkan/sftpgo:edge-alpine-slim
+        env:
+          SFTPGO_DATA_PROVIDER__CREATE_DEFAULT_ADMIN: 1
+          SFTPGO_DEFAULT_ADMIN_USERNAME: admin
+          SFTPGO_DEFAULT_ADMIN_PASSWORD: password
+        options: >-
+          --health-cmd "/usr/local/bin/sftpgo ping -c /etc/sftpgo"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 8080:8080
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: Run tests
+        run: |
+          make test
+          make testacc
+        env:
+          SFTPGO_HOST: http://127.0.0.1:8080
+          SFTPGO_USERNAME: admin
+          SFTPGO_PASSWORD: password

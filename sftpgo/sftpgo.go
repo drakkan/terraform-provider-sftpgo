@@ -15,6 +15,7 @@
 package sftpgo
 
 var (
+	// version and commit are set during the release process to the release version of the binary
 	version = "dev"
 	commit  = ""
 )

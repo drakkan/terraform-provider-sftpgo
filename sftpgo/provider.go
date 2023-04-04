@@ -29,6 +29,10 @@ import (
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 )
 
+const (
+	placeholderID = "placeholder"
+)
+
 // Ensure the implementation satisfies the expected interfaces
 var (
 	_ provider.Provider = &sftpgoProvider{}

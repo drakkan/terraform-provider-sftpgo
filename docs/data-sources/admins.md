@@ -18,6 +18,7 @@ Fetches the list of admins.
 ### Read-Only
 
 - `admins` (Attributes List) List of admins. (see [below for nested schema](#nestedatt--admins))
+- `id` (String) Required to use the test framework. Just a placeholder.
 
 <a id="nestedatt--admins"></a>
 ### Nested Schema for `admins`
@@ -30,6 +31,7 @@ Read-Only:
 - `email` (String)
 - `filters` (Attributes) Additional restrictions. (see [below for nested schema](#nestedatt--admins--filters))
 - `groups` (Attributes List) Groups automatically selected for new users created by this admin. (see [below for nested schema](#nestedatt--admins--groups))
+- `id` (String)
 - `last_login` (Number) Last login as unix timestamp in milliseconds.
 - `password` (String)
 - `permissions` (List of String) Granted permissions.

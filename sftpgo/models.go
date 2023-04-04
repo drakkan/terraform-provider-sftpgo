@@ -1534,6 +1534,7 @@ func (m *adminGroupMapping) fromSFTPGo(ctx context.Context, mapping *client.Admi
 }
 
 type adminResourceModel struct {
+	ID             types.String        `tfsdk:"id"`
 	Username       types.String        `tfsdk:"username"`
 	Status         types.Int64         `tfsdk:"status"`
 	Email          types.String        `tfsdk:"email"`
@@ -1597,6 +1598,7 @@ func (a *adminResourceModel) toSFTPGo(ctx context.Context) (*client.Admin, diag.
 
 func (a *adminResourceModel) fromSFTPGo(ctx context.Context, admin *client.Admin) diag.Diagnostics {
 	a.Username = types.StringValue(admin.Username)
+	a.ID = a.Username
 	a.Status = types.Int64Value(int64(admin.Status))
 	a.Email = getOptionalString(admin.Email)
 	a.Password = getOptionalString(admin.Password)
