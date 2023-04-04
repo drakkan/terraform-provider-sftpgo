@@ -18,7 +18,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -29,9 +28,8 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &groupResource{}
-	_ resource.ResourceWithConfigure   = &groupResource{}
-	_ resource.ResourceWithImportState = &groupResource{}
+	_ resource.Resource              = &groupResource{}
+	_ resource.ResourceWithConfigure = &groupResource{}
 )
 
 // NewGroupResource is a helper function to simplify the provider implementation.
@@ -201,14 +199,20 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	diags = state.fromSFTPGo(ctx, group)
+	var newState groupResourceModel
+	diags = newState.fromSFTPGo(ctx, group)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = r.preservePlanFields(ctx, &state, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Set refreshed state
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -286,12 +290,6 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		)
 		return
 	}
-}
-
-// ImportState imports an existing the resource and save the Terraform state
-func (r *groupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import name and save to name attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }
 
 func (*groupResource) preservePlanFields(ctx context.Context, plan, state *groupResourceModel) diag.Diagnostics {

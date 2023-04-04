@@ -18,7 +18,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -28,9 +27,8 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &folderResource{}
-	_ resource.ResourceWithConfigure   = &folderResource{}
-	_ resource.ResourceWithImportState = &folderResource{}
+	_ resource.Resource              = &folderResource{}
+	_ resource.ResourceWithConfigure = &folderResource{}
 )
 
 // NewFolderResource is a helper function to simplify the provider implementation.
@@ -154,14 +152,20 @@ func (r *folderResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	diags = state.fromSFTPGo(ctx, folder)
+	var newState virtualFolderResourceModel
+	diags = newState.fromSFTPGo(ctx, folder)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = r.preservePlanFields(ctx, &state, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Set refreshed state
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -239,12 +243,6 @@ func (r *folderResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		)
 		return
 	}
-}
-
-// ImportState imports an existing the resource and save the Terraform state
-func (r *folderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import name and save to name attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }
 
 func (*folderResource) preservePlanFields(ctx context.Context, plan, state *virtualFolderResourceModel) diag.Diagnostics {
