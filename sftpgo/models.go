@@ -1437,10 +1437,29 @@ type adminPreferences struct {
 	DefaultUsersExpiration types.Int64 `tfsdk:"default_users_expiration"`
 }
 
+func (*adminPreferences) getTFAttributes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"hide_user_page_sections":  types.Int64Type,
+		"default_users_expiration": types.Int64Type,
+	}
+}
+
+func (p *adminPreferences) toSFTPGo(ctx context.Context) (client.AdminPreferences, diag.Diagnostics) {
+	return client.AdminPreferences{
+		HideUserPageSections:   int(p.HideUserPageSections.ValueInt64()),
+		DefaultUsersExpiration: int(p.DefaultUsersExpiration.ValueInt64()),
+	}, nil
+}
+
+func (p *adminPreferences) fromSFTPGo(ctx context.Context, preferences *client.AdminPreferences) diag.Diagnostics {
+	p.HideUserPageSections = getOptionalInt64(int64(preferences.HideUserPageSections))
+	p.DefaultUsersExpiration = getOptionalInt64(int64(preferences.DefaultUsersExpiration))
+	return nil
+}
+
 type adminFilters struct {
-	AllowList       types.List       `tfsdk:"allow_list"`
-	AllowAPIKeyAuth types.Bool       `tfsdk:"allow_api_key_auth"`
-	Preferences     adminPreferences `tfsdk:"preferences"`
+	AllowList       types.List `tfsdk:"allow_list"`
+	AllowAPIKeyAuth types.Bool `tfsdk:"allow_api_key_auth"`
 }
 
 func (f *adminFilters) getTFAttributes() map[string]attr.Type {
@@ -1449,22 +1468,12 @@ func (f *adminFilters) getTFAttributes() map[string]attr.Type {
 			ElemType: types.StringType,
 		},
 		"allow_api_key_auth": types.BoolType,
-		"preferences": types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"hide_user_page_sections":  types.Int64Type,
-				"default_users_expiration": types.Int64Type,
-			},
-		},
 	}
 }
 
 func (f *adminFilters) toSFTPGo(ctx context.Context) (client.AdminFilters, diag.Diagnostics) {
 	filters := client.AdminFilters{
 		AllowAPIKeyAuth: f.AllowAPIKeyAuth.ValueBool(),
-		Preferences: client.AdminPreferences{
-			HideUserPageSections:   int(f.Preferences.HideUserPageSections.ValueInt64()),
-			DefaultUsersExpiration: int(f.Preferences.DefaultUsersExpiration.ValueInt64()),
-		},
 	}
 	if !f.AllowList.IsNull() {
 		diags := f.AllowList.ElementsAs(ctx, &filters.AllowList, false)
@@ -1482,10 +1491,6 @@ func (f *adminFilters) fromSFTPGo(ctx context.Context, filters *client.AdminFilt
 	}
 	f.AllowList = allowList
 	f.AllowAPIKeyAuth = getOptionalBool(filters.AllowAPIKeyAuth)
-	f.Preferences = adminPreferences{
-		HideUserPageSections:   getOptionalInt64(int64(filters.Preferences.HideUserPageSections)),
-		DefaultUsersExpiration: getOptionalInt64(int64(filters.Preferences.DefaultUsersExpiration)),
-	}
 	return nil
 }
 
@@ -1562,6 +1567,7 @@ type adminResourceModel struct {
 	Password       types.String        `tfsdk:"password"`
 	Permissions    types.List          `tfsdk:"permissions"`
 	Filters        types.Object        `tfsdk:"filters"`
+	Preferences    types.Object        `tfsdk:"preferences"`
 	Description    types.String        `tfsdk:"description"`
 	AdditionalInfo types.String        `tfsdk:"additional_info"`
 	Groups         []adminGroupMapping `tfsdk:"groups"`
@@ -1606,6 +1612,20 @@ func (a *adminResourceModel) toSFTPGo(ctx context.Context) (*client.Admin, diag.
 	}
 	admin.Filters = sftpgoFilters
 
+	var preferences adminPreferences
+	diags = a.Preferences.As(ctx, &preferences, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return admin, diags
+	}
+	sftpgoPreferences, diags := preferences.toSFTPGo(ctx)
+	if diags.HasError() {
+		return admin, diags
+	}
+	admin.Filters.Preferences = sftpgoPreferences
+
 	for _, g := range a.Groups {
 		group, diags := g.toSFTPGo(ctx)
 		if diags.HasError() {
@@ -1640,6 +1660,18 @@ func (a *adminResourceModel) fromSFTPGo(ctx context.Context, admin *client.Admin
 		return diags
 	}
 	a.Filters = f
+
+	var preferences adminPreferences
+	diags = preferences.fromSFTPGo(ctx, &admin.Filters.Preferences)
+	if diags.HasError() {
+		return diags
+	}
+	p, diags := types.ObjectValueFrom(ctx, preferences.getTFAttributes(), preferences)
+	if diags.HasError() {
+		return diags
+	}
+	a.Preferences = p
+
 	a.Description = getOptionalString(admin.Description)
 	a.AdditionalInfo = getOptionalString(admin.AdditionalInfo)
 

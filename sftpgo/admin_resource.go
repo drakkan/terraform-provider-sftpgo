@@ -145,20 +145,20 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 						Optional:    true,
 						Description: "If set, API Key authentication is allowed.",
 					},
-					"preferences": schema.SingleNestedAttribute{
+				},
+			},
+			"preferences": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Admin preferences.",
+				Attributes: map[string]schema.Attribute{
+					"hide_user_page_sections": schema.Int64Attribute{
 						Optional:    true,
-						Computed:    true,
-						Description: "Admin preferences.",
-						Attributes: map[string]schema.Attribute{
-							"hide_user_page_sections": schema.Int64Attribute{
-								Optional:    true,
-								Description: "If set allow to hide some sections from the user page in the WebAdmin. 1 = groups, 2 = filesystem, 4 = virtual folders, 8 = profile, 16 = ACL, 32 = Disk and bandwidth quota limits, 64 = Advanced. Settings can be combined.",
-							},
-							"default_users_expiration": schema.Int64Attribute{
-								Optional:    true,
-								Description: "If set defines the default expiration for newly created users as number of days.",
-							},
-						},
+						Description: "If set allow to hide some sections from the user page in the WebAdmin. 1 = groups, 2 = filesystem, 4 = virtual folders, 8 = profile, 16 = ACL, 32 = Disk and bandwidth quota limits, 64 = Advanced. Settings can be combined.",
+					},
+					"default_users_expiration": schema.Int64Attribute{
+						Optional:    true,
+						Description: "If set defines the default expiration for newly created users as number of days.",
 					},
 				},
 			},
@@ -176,7 +176,7 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 							Description: "Options for admin/group mapping",
 							Attributes: map[string]schema.Attribute{
 								"add_to_users_as": schema.Int64Attribute{
-									Computed:    true,
+									Required:    true,
 									Description: "Add to users as the specified group type. 1 = Primary, 2 = Secondary, 3 = Membership only.",
 								},
 							},

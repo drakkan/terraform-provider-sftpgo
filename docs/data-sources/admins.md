@@ -35,6 +35,7 @@ Read-Only:
 - `last_login` (Number) Last login as unix timestamp in milliseconds.
 - `password` (String)
 - `permissions` (List of String) Granted permissions.
+- `preferences` (Attributes) Admin preferences. (see [below for nested schema](#nestedatt--admins--preferences))
 - `role` (String) Role name. If set the admin can only administer users with the same role.
 - `status` (Number) 1 enabled, 0 disabled (login is not allowed).
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
@@ -47,16 +48,6 @@ Read-Only:
 
 - `allow_api_key_auth` (Boolean) If set, API Key authentication is allowed.
 - `allow_list` (List of String) Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"
-- `preferences` (Attributes) Admin preferences. (see [below for nested schema](#nestedatt--admins--filters--preferences))
-
-<a id="nestedatt--admins--filters--preferences"></a>
-### Nested Schema for `admins.filters.preferences`
-
-Read-Only:
-
-- `default_users_expiration` (Number) If set defines the default expiration for newly created users as number of days.
-- `hide_user_page_sections` (Number) If set allow to hide some sections from the user page in the WebAdmin. 1 = groups, 2 = filesystem, 4 = virtual folders, 8 = profile, 16 = ACL, 32 = Disk and bandwidth quota limits, 64 = Advanced. Settings can be combined.
-
 
 
 <a id="nestedatt--admins--groups"></a>
@@ -73,5 +64,15 @@ Read-Only:
 Read-Only:
 
 - `add_to_users_as` (Number) Add to users as the specified group type. 1 = Primary, 2 = Secondary, 3 = Membership only.
+
+
+
+<a id="nestedatt--admins--preferences"></a>
+### Nested Schema for `admins.preferences`
+
+Read-Only:
+
+- `default_users_expiration` (Number) If set defines the default expiration for newly created users as number of days.
+- `hide_user_page_sections` (Number) If set allow to hide some sections from the user page in the WebAdmin. 1 = groups, 2 = filesystem, 4 = virtual folders, 8 = profile, 16 = ACL, 32 = Disk and bandwidth quota limits, 64 = Advanced. Settings can be combined.
 
 

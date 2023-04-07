@@ -118,19 +118,19 @@ func (d *adminsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 									Computed:    true,
 									Description: "If set, API Key authentication is allowed.",
 								},
-								"preferences": schema.SingleNestedAttribute{
+							},
+						},
+						"preferences": schema.SingleNestedAttribute{
+							Computed:    true,
+							Description: "Admin preferences.",
+							Attributes: map[string]schema.Attribute{
+								"hide_user_page_sections": schema.Int64Attribute{
 									Computed:    true,
-									Description: "Admin preferences.",
-									Attributes: map[string]schema.Attribute{
-										"hide_user_page_sections": schema.Int64Attribute{
-											Computed:    true,
-											Description: "If set allow to hide some sections from the user page in the WebAdmin. 1 = groups, 2 = filesystem, 4 = virtual folders, 8 = profile, 16 = ACL, 32 = Disk and bandwidth quota limits, 64 = Advanced. Settings can be combined.",
-										},
-										"default_users_expiration": schema.Int64Attribute{
-											Computed:    true,
-											Description: "If set defines the default expiration for newly created users as number of days.",
-										},
-									},
+									Description: "If set allow to hide some sections from the user page in the WebAdmin. 1 = groups, 2 = filesystem, 4 = virtual folders, 8 = profile, 16 = ACL, 32 = Disk and bandwidth quota limits, 64 = Advanced. Settings can be combined.",
+								},
+								"default_users_expiration": schema.Int64Attribute{
+									Computed:    true,
+									Description: "If set defines the default expiration for newly created users as number of days.",
 								},
 							},
 						},

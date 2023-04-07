@@ -46,12 +46,33 @@ func TestAccAdminsDataSource(t *testing.T) {
 				DefaultUsersExpiration: 15,
 			},
 		},
+		Groups: []client.AdminGroupMapping{
+			{
+				Name: testGroup.Name,
+				Options: client.AdminGroupMappingOptions{
+					AddToUsersAs: 2,
+				},
+			},
+		},
+		Role: testRole.Name,
 	}
+	_, err = c.CreateRole(testRole)
+	require.NoError(t, err)
+	_, err = c.CreateFolder(testFolder)
+	require.NoError(t, err)
+	_, err = c.CreateGroup(testGroup)
+	require.NoError(t, err)
 	_, err = c.CreateAdmin(admin)
 	require.NoError(t, err)
 
 	defer func() {
 		err = c.DeleteAdmin(admin.Username)
+		require.NoError(t, err)
+		err = c.DeleteGroup(testGroup.Name)
+		require.NoError(t, err)
+		err = c.DeleteFolder(testFolder.Name)
+		require.NoError(t, err)
+		err = c.DeleteRole(testRole.Name)
 		require.NoError(t, err)
 	}()
 
@@ -75,12 +96,12 @@ func TestAccAdminsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.0.created_at"),
 					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.0.updated_at"),
 					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.0.last_login"),
-					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.filters.%", "3"),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.filters.%", "2"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.filters.allow_api_key_auth"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.filters.allow_list"),
-					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.filters.preferences.%", "2"),
-					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.filters.preferences.default_users_expiration"),
-					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.filters.preferences.hide_user_page_sections"),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.preferences.%", "2"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.preferences.default_users_expiration"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.preferences.hide_user_page_sections"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.role"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.groups"),
 					// Check the admin created in the test case
@@ -98,16 +119,20 @@ func TestAccAdminsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.1.created_at"),
 					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.1.updated_at"),
 					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.1.last_login"),
-					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.filters.%", "3"),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.filters.%", "2"),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.filters.allow_list.#", "2"),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.filters.allow_list.0", admin.Filters.AllowList[0]),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.filters.allow_list.1", admin.Filters.AllowList[1]),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.filters.allow_api_key_auth", "true"),
-					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.filters.preferences.%", "2"),
-					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.filters.preferences.default_users_expiration",
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.preferences.%", "2"),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.preferences.default_users_expiration",
 						fmt.Sprintf("%d", admin.Filters.Preferences.DefaultUsersExpiration)),
-					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.filters.preferences.hide_user_page_sections",
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.preferences.hide_user_page_sections",
 						fmt.Sprintf("%d", admin.Filters.Preferences.HideUserPageSections)),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.role", testRole.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.groups.#", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.groups.0.name", testGroup.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.groups.0.options.add_to_users_as", "2"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "id", placeholderID),
 				),

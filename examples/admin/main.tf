@@ -20,9 +20,9 @@ resource "sftpgo_admin" "test" {
     permissions = ["add_users", "edit_users","del_users"]
     filters = {
         allow_list = ["192.168.1.0/24"]
-        preferences = {
-            hide_user_page_sections = 5
-        }
+    }
+    preferences = {
+      hide_user_page_sections = 5
     }
 }
 
