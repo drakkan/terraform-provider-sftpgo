@@ -24,9 +24,18 @@ import (
 	"github.com/sftpgo/sdk"
 )
 
+// User defines a SFTPGo user
+type User struct {
+	sdk.User
+	// we remote the omitempty attribute from the password
+	// otherwise setting an empty password will preserve the current one
+	// on updated
+	Password string `json:"password"`
+}
+
 // GetUsers - Returns list of users
-func (c *Client) GetUsers() ([]sdk.User, error) {
-	var result []sdk.User
+func (c *Client) GetUsers() ([]User, error) {
+	var result []User
 	limit := 100
 
 	for {
@@ -40,7 +49,7 @@ func (c *Client) GetUsers() ([]sdk.User, error) {
 			return nil, err
 		}
 
-		var users []sdk.User
+		var users []User
 		err = json.Unmarshal(body, &users)
 		if err != nil {
 			return nil, err
@@ -55,7 +64,7 @@ func (c *Client) GetUsers() ([]sdk.User, error) {
 }
 
 // CreateUser - creates a new user
-func (c *Client) CreateUser(user sdk.User) (*sdk.User, error) {
+func (c *Client) CreateUser(user User) (*User, error) {
 	rb, err := json.Marshal(user)
 	if err != nil {
 		return nil, err
@@ -70,13 +79,13 @@ func (c *Client) CreateUser(user sdk.User) (*sdk.User, error) {
 		return nil, err
 	}
 
-	var newUser sdk.User
+	var newUser User
 	err = json.Unmarshal(body, &newUser)
 	return &newUser, err
 }
 
 // GetUser - Returns a specifc user
-func (c *Client) GetUser(username string) (*sdk.User, error) {
+func (c *Client) GetUser(username string) (*User, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/users/%s", c.HostURL, url.PathEscape(username)), nil)
 	if err != nil {
 		return nil, err
@@ -86,13 +95,13 @@ func (c *Client) GetUser(username string) (*sdk.User, error) {
 		return nil, err
 	}
 
-	var user sdk.User
+	var user User
 	err = json.Unmarshal(body, &user)
 	return &user, err
 }
 
 // UpdateUser - Updates an existing user
-func (c *Client) UpdateUser(user sdk.User) error {
+func (c *Client) UpdateUser(user User) error {
 	rb, err := json.Marshal(user)
 	if err != nil {
 		return err

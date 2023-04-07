@@ -19,6 +19,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 )
@@ -49,11 +50,18 @@ func (d *foldersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 	resp.Schema = schema.Schema{
 		Description: "Fetches the list of virtual folders.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "Required to use the test framework. Just a placeholder.",
+			},
 			"folders": schema.ListNestedAttribute{
 				Computed:    true,
 				Description: "List of virtual folders.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed: true,
+						},
 						"name": schema.StringAttribute{
 							Computed:    true,
 							Description: "Unique name",
@@ -120,6 +128,8 @@ func (d *foldersDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		state.Folders = append(state.Folders, folderState)
 	}
 
+	state.ID = types.StringValue(placeholderID)
+
 	// Set state
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -130,5 +140,6 @@ func (d *foldersDataSource) Read(ctx context.Context, req datasource.ReadRequest
 
 // foldersDataSourceModel maps the data source schema data.
 type foldersDataSourceModel struct {
+	ID      types.String                 `tfsdk:"id"`
 	Folders []virtualFolderResourceModel `tfsdk:"folders"`
 }

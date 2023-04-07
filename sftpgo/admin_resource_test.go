@@ -27,22 +27,22 @@ func TestAccAdminResource(t *testing.T) {
 			// Create and Read testing
 			{
 				Config: `
-resource "sftpgo_admin" "test" {
-  username = "test"
-  status = 1
-  password = "pwd"
-  email = "admin@sftpgo.com"
-  permissions = ["add_users", "edit_users","del_users"]
-  filters = {
-    allow_list = ["192.168.1.0/24"]
-    preferences = {
-      hide_user_page_sections = 5
-    }
-  }
-}
-`,
+					resource "sftpgo_admin" "test" {
+					  username = "test"
+					  status = 1
+					  password = "pwd"
+					  email = "admin@sftpgo.com"
+					  permissions = ["add_users", "edit_users","del_users"]
+ 					  filters = {
+    					allow_list = ["192.168.1.0/24"]
+    					preferences = {
+    					  hide_user_page_sections = 5
+    					}
+  					  }
+					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "username", "test"),
+					resource.TestCheckResourceAttr("sftpgo_admin.test", "id", "test"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "password", "pwd"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "status", "1"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "email", "admin@sftpgo.com"),

@@ -18,6 +18,7 @@ Fetches the list of virtual folders.
 ### Read-Only
 
 - `folders` (Attributes List) List of virtual folders. (see [below for nested schema](#nestedatt--folders))
+- `id` (String) Required to use the test framework. Just a placeholder.
 
 <a id="nestedatt--folders"></a>
 ### Nested Schema for `folders`
@@ -26,6 +27,7 @@ Read-Only:
 
 - `description` (String) Optional description.
 - `filesystem` (Attributes) Filesystem configuration. (see [below for nested schema](#nestedatt--folders--filesystem))
+- `id` (String)
 - `last_quota_update` (Number) Last quota update as unix timestamp in milliseconds
 - `mapped_path` (String) Absolute path to a local directory. This is the folder root path for local storage provider. For non-local filesystems it will store temporary files.
 - `name` (String) Unique name
@@ -35,15 +37,18 @@ Read-Only:
 <a id="nestedatt--folders--filesystem"></a>
 ### Nested Schema for `folders.filesystem`
 
-Read-Only:
+Optional:
 
 - `azblobconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--azblobconfig))
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--cryptconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--httpconfig))
-- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 - `s3config` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--s3config))
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--sftpconfig))
+
+Read-Only:
+
+- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 
 <a id="nestedatt--folders--filesystem--azblobconfig"></a>
 ### Nested Schema for `folders.filesystem.azblobconfig`
@@ -51,35 +56,17 @@ Read-Only:
 Read-Only:
 
 - `access_tier` (String)
-- `account_key` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--azblobconfig--account_key))
+- `account_key` (String)
 - `account_name` (String)
 - `container` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads.
 - `endpoint` (String) Optional endpoint
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
-- `sas_url` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--azblobconfig--sas_url))
+- `sas_url` (String)
 - `upload_concurrency` (Number) How many parts are uploaded in parallel.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 - `use_emulator` (Boolean)
-
-<a id="nestedatt--folders--filesystem--azblobconfig--account_key"></a>
-### Nested Schema for `folders.filesystem.azblobconfig.use_emulator`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
-<a id="nestedatt--folders--filesystem--azblobconfig--sas_url"></a>
-### Nested Schema for `folders.filesystem.azblobconfig.use_emulator`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
 
 
 <a id="nestedatt--folders--filesystem--cryptconfig"></a>
@@ -87,16 +74,7 @@ Read-Only:
 
 Read-Only:
 
-- `passphrase` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--cryptconfig--passphrase))
-
-<a id="nestedatt--folders--filesystem--cryptconfig--passphrase"></a>
-### Nested Schema for `folders.filesystem.cryptconfig.passphrase`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
+- `passphrase` (String)
 
 
 <a id="nestedatt--folders--filesystem--gcsconfig"></a>
@@ -107,20 +85,11 @@ Read-Only:
 - `acl` (String) The ACL to apply to uploaded objects. Empty means the bucket default.
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String)
-- `credentials` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--gcsconfig--credentials))
+- `credentials` (String)
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads. The default value is 16MB. Not set means use the default.
-
-<a id="nestedatt--folders--filesystem--gcsconfig--credentials"></a>
-### Nested Schema for `folders.filesystem.gcsconfig.upload_part_size`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
 
 
 <a id="nestedatt--folders--filesystem--httpconfig"></a>
@@ -128,30 +97,12 @@ Read-Only:
 
 Read-Only:
 
-- `api_key` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--httpconfig--api_key))
+- `api_key` (String)
 - `endpoint` (String)
 - `equality_check_mode` (Number)
-- `password` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--httpconfig--password))
+- `password` (String)
 - `skip_tls_verify` (Boolean)
 - `username` (String)
-
-<a id="nestedatt--folders--filesystem--httpconfig--api_key"></a>
-### Nested Schema for `folders.filesystem.httpconfig.username`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
-<a id="nestedatt--folders--filesystem--httpconfig--password"></a>
-### Nested Schema for `folders.filesystem.httpconfig.username`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
 
 
 <a id="nestedatt--folders--filesystem--s3config"></a>
@@ -160,7 +111,7 @@ Read-Only:
 Read-Only:
 
 - `access_key` (String)
-- `access_secret` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--s3config--access_secret))
+- `access_secret` (String)
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
@@ -176,15 +127,6 @@ Read-Only:
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 
-<a id="nestedatt--folders--filesystem--s3config--access_secret"></a>
-### Nested Schema for `folders.filesystem.s3config.upload_part_size`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
 
 <a id="nestedatt--folders--filesystem--sftpconfig"></a>
 ### Nested Schema for `folders.filesystem.sftpconfig`
@@ -196,26 +138,9 @@ Read-Only:
 - `endpoint` (String) SFTP endpoint as host:port.
 - `equality_check_mode` (Number)
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
-- `password` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--sftpconfig--password))
+- `password` (String)
 - `prefix` (String) Restrict access to this path.
-- `private_key` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--sftpconfig--private_key))
+- `private_key` (String)
 - `username` (String)
-
-<a id="nestedatt--folders--filesystem--sftpconfig--password"></a>
-### Nested Schema for `folders.filesystem.sftpconfig.username`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
-<a id="nestedatt--folders--filesystem--sftpconfig--private_key"></a>
-### Nested Schema for `folders.filesystem.sftpconfig.username`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
 
 

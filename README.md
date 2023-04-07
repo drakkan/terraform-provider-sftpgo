@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 This provider is a bridge between Terraform and the [SFTPGo](https://github.com/drakkan/sftpgo) API.
+Terraform objects have slightly different structures than the ones defined in the SFTPGo REST API, refer to the documentation for more details.
 
 You can find some usage examples [here](./examples).
 

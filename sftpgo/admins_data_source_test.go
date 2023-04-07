@@ -66,6 +66,7 @@ func TestAccAdminsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.#", "2"),
 					// The first admin is the default one
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.username", "admin"),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.id", "admin"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.password"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.email"),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.status", "1"),
@@ -84,6 +85,7 @@ func TestAccAdminsDataSource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.groups"),
 					// Check the admin created in the test case
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.username", admin.Username),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.id", admin.Username),
 					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.1.password"),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.email", admin.Email),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.status", "0"),
@@ -107,7 +109,7 @@ func TestAccAdminsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.filters.preferences.hide_user_page_sections",
 						fmt.Sprintf("%d", admin.Filters.Preferences.HideUserPageSections)),
 					// Verify placeholder id attribute
-					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "id", "placeholder"),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "id", placeholderID),
 				),
 			},
 		},

@@ -50,11 +50,18 @@ func (d *usersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 	resp.Schema = schema.Schema{
 		Description: "Fetches the list of users.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "Required to use the test framework. Just a placeholder.",
+			},
 			"users": schema.ListNestedAttribute{
 				Computed:    true,
 				Description: "List of users.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed: true,
+						},
 						"username": schema.StringAttribute{
 							Computed:    true,
 							Description: "Unique username.",
@@ -77,6 +84,10 @@ func (d *usersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 							ElementType: types.StringType,
 							Computed:    true,
 							Description: "List of public keys.",
+						},
+						"has_password": schema.BoolAttribute{
+							Computed:    true,
+							Description: "Indicates whether the password is set.",
 						},
 						"home_dir": schema.StringAttribute{
 							Computed:    true,
@@ -243,6 +254,8 @@ func (d *usersDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		state.Users = append(state.Users, userState)
 	}
 
+	state.ID = types.StringValue(placeholderID)
+
 	// Set state
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -253,5 +266,6 @@ func (d *usersDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 // usersDataSourceModel maps the data source schema data.
 type usersDataSourceModel struct {
+	ID    types.String        `tfsdk:"id"`
 	Users []userResourceModel `tfsdk:"users"`
 }

@@ -16,7 +16,13 @@ resource "sftpgo_folder" "test" {
     name    = "test"
     mapped_path    = "/tmp/test1"
     filesystem = {
-      provider = 0
+      provider = 3
+      azblobconfig = {
+        container = "fake container"
+        account_name = "my access key"
+        account_key = "my secret"
+        key_prefix = "prefix/"
+      }
     }
 }
 

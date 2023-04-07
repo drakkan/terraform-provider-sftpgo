@@ -29,20 +29,6 @@ import (
 	"github.com/sftpgo/sdk"
 )
 
-func getComputedSchemaForSecret() schema.SingleNestedAttribute {
-	return schema.SingleNestedAttribute{
-		Computed: true,
-		Attributes: map[string]schema.Attribute{
-			"status": schema.StringAttribute{
-				Computed: true,
-			},
-			"payload": schema.StringAttribute{
-				Computed: true,
-			},
-		},
-	}
-}
-
 func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Computed:    true,
@@ -54,6 +40,7 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"s3config": schema.SingleNestedAttribute{
 				Computed: true,
+				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
 						Computed: true,
@@ -64,7 +51,9 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					"access_key": schema.StringAttribute{
 						Computed: true,
 					},
-					"access_secret": getComputedSchemaForSecret(),
+					"access_secret": schema.StringAttribute{
+						Computed: true,
+					},
 					"key_prefix": schema.StringAttribute{
 						Computed:    true,
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with this prefix.`,
@@ -116,6 +105,7 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"gcsconfig": schema.SingleNestedAttribute{
 				Computed: true,
+				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
 						Computed: true,
@@ -124,7 +114,9 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed:    true,
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with this prefix.`,
 					},
-					"credentials": getComputedSchemaForSecret(),
+					"credentials": schema.StringAttribute{
+						Computed: true,
+					},
 					"automatic_credentials": schema.Int64Attribute{
 						Computed:    true,
 						Description: "If set to 1 SFTPGo will use credentials from the environment",
@@ -148,6 +140,7 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"azblobconfig": schema.SingleNestedAttribute{
 				Computed: true,
+				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"container": schema.StringAttribute{
 						Computed: true,
@@ -155,8 +148,12 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					"account_name": schema.StringAttribute{
 						Computed: true,
 					},
-					"account_key": getComputedSchemaForSecret(),
-					"sas_url":     getComputedSchemaForSecret(),
+					"account_key": schema.StringAttribute{
+						Computed: true,
+					},
+					"sas_url": schema.StringAttribute{
+						Computed: true,
+					},
 					"endpoint": schema.StringAttribute{
 						Computed:    true,
 						Description: "Optional endpoint",
@@ -191,12 +188,16 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"cryptconfig": schema.SingleNestedAttribute{
 				Computed: true,
+				Optional: true,
 				Attributes: map[string]schema.Attribute{
-					"passphrase": getComputedSchemaForSecret(),
+					"passphrase": schema.StringAttribute{
+						Computed: true,
+					},
 				},
 			},
 			"sftpconfig": schema.SingleNestedAttribute{
 				Computed: true,
+				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
 						Computed:    true,
@@ -205,8 +206,12 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					"username": schema.StringAttribute{
 						Computed: true,
 					},
-					"password":    getComputedSchemaForSecret(),
-					"private_key": getComputedSchemaForSecret(),
+					"password": schema.StringAttribute{
+						Computed: true,
+					},
+					"private_key": schema.StringAttribute{
+						Computed: true,
+					},
 					"fingerprints": schema.ListAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
@@ -230,6 +235,7 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"httpconfig": schema.SingleNestedAttribute{
 				Computed: true,
+				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
 						Computed: true,
@@ -237,8 +243,12 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					"username": schema.StringAttribute{
 						Computed: true,
 					},
-					"password": getComputedSchemaForSecret(),
-					"api_key":  getComputedSchemaForSecret(),
+					"password": schema.StringAttribute{
+						Computed: true,
+					},
+					"api_key": schema.StringAttribute{
+						Computed: true,
+					},
 					"skip_tls_verify": schema.BoolAttribute{
 						Computed: true,
 					},
@@ -246,23 +256,6 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed: true,
 					},
 				},
-			},
-		},
-	}
-}
-
-func getSchemaForSecret() schema.SingleNestedAttribute {
-	return schema.SingleNestedAttribute{
-		Optional: true,
-		Attributes: map[string]schema.Attribute{
-			"status": schema.StringAttribute{
-				Optional:    true,
-				Description: `Set to "Plain" to create a new secret. SFTPGo will encrypt the plain text payload before saving.`,
-			},
-			"payload": schema.StringAttribute{
-				Optional:    true,
-				Sensitive:   true,
-				Description: `This is the plain text secret if the status is "Plain"`,
 			},
 		},
 	}
@@ -282,7 +275,6 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"s3config": schema.SingleNestedAttribute{
 				Optional: true,
-				Computed: true,
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
 						Required: true,
@@ -293,7 +285,11 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"access_key": schema.StringAttribute{
 						Optional: true,
 					},
-					"access_secret": getSchemaForSecret(),
+					"access_secret": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text access secret.",
+					},
 					"key_prefix": schema.StringAttribute{
 						Optional:    true,
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"`,
@@ -346,12 +342,15 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"gcsconfig": schema.SingleNestedAttribute{
 				Optional: true,
-				Computed: true,
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
 						Required: true,
 					},
-					"credentials": getSchemaForSecret(),
+					"credentials": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text credentials.",
+					},
 					"automatic_credentials": schema.Int64Attribute{
 						Optional: true,
 					},
@@ -379,7 +378,6 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"azblobconfig": schema.SingleNestedAttribute{
 				Optional: true,
-				Computed: true,
 				Attributes: map[string]schema.Attribute{
 					"container": schema.StringAttribute{
 						Optional: true,
@@ -387,8 +385,16 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"account_name": schema.StringAttribute{
 						Optional: true,
 					},
-					"account_key": getSchemaForSecret(),
-					"sas_url":     getSchemaForSecret(),
+					"account_key": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text account key.",
+					},
+					"sas_url": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "SAS URL.",
+					},
 					"endpoint": schema.StringAttribute{
 						Optional:    true,
 						Description: `Optional endpoint. Default is "blob.core.windows.net". If you use the emulator the endpoint must include the protocol, for example "http://127.0.0.1:10000".`,
@@ -424,14 +430,16 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"cryptconfig": schema.SingleNestedAttribute{
 				Optional: true,
-				Computed: true,
 				Attributes: map[string]schema.Attribute{
-					"passphrase": getSchemaForSecret(),
+					"passphrase": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text passphrase.",
+					},
 				},
 			},
 			"sftpconfig": schema.SingleNestedAttribute{
 				Optional: true,
-				Computed: true,
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
 						Required:    true,
@@ -440,15 +448,23 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"username": schema.StringAttribute{
 						Required: true,
 					},
-					"password":    getSchemaForSecret(),
-					"private_key": getSchemaForSecret(),
+					"password": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text password.",
+					},
+					"private_key": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text private key.",
+					},
 					"fingerprints": schema.ListAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
 						Description: "SHA256 fingerprints to validate when connecting to the external SFTP server. If not set any host key will be accepted: this is a security risk.",
 					},
 					"prefix": schema.StringAttribute{
-						Optional:    true,
+						Required:    true,
 						Description: `Similar to a chroot for local filesystem. Example: "/somedir/subdir".`,
 					},
 					"disable_concurrent_reads": schema.BoolAttribute{
@@ -467,7 +483,6 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"httpconfig": schema.SingleNestedAttribute{
 				Optional: true,
-				Computed: true,
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
 						Required: true,
@@ -475,8 +490,16 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"username": schema.StringAttribute{
 						Optional: true,
 					},
-					"password": getSchemaForSecret(),
-					"api_key":  getSchemaForSecret(),
+					"password": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text password.",
+					},
+					"api_key": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text API key.",
+					},
 					"skip_tls_verify": schema.BoolAttribute{
 						Optional: true,
 					},
@@ -565,6 +588,7 @@ func getSchemaForVirtualFolders() schema.ListNestedAttribute {
 				},
 				"description": schema.StringAttribute{
 					Optional:    true,
+					Computed:    true,
 					Description: "Optional description.",
 				},
 				"used_quota_size": schema.Int64Attribute{
@@ -646,23 +670,17 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 				Computed:    true,
 				Description: `TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command.`,
 			},
-			"hooks": schema.SingleNestedAttribute{
+			"external_auth_disabled": schema.BoolAttribute{
 				Computed:    true,
-				Description: "User specific hook overrides.",
-				Attributes: map[string]schema.Attribute{
-					"external_auth_disabled": schema.BoolAttribute{
-						Computed:    true,
-						Description: "If set, external auth hook will not be executed.",
-					},
-					"pre_login_disabled": schema.BoolAttribute{
-						Computed:    true,
-						Description: "If set, external pre-login hook will not be executed.",
-					},
-					"check_password_disabled": schema.BoolAttribute{
-						Computed:    true,
-						Description: "If set, check password hook will not be executed.",
-					},
-				},
+				Description: "If set, external auth hook will not be executed.",
+			},
+			"pre_login_disabled": schema.BoolAttribute{
+				Computed:    true,
+				Description: "If set, external pre-login hook will not be executed.",
+			},
+			"check_password_disabled": schema.BoolAttribute{
+				Computed:    true,
+				Description: "If set, check password hook will not be executed.",
 			},
 			"disable_fs_checks": schema.BoolAttribute{
 				Computed:    true,
@@ -793,9 +811,9 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 				Description: `Disabled login methods. Valid values: "publickey", "password", "password-over-SSH", "keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "TLSCertificate", "TLSCertificate+password"`,
 				Validators: []validator.List{
 					listvalidator.UniqueValues(),
-					listvalidator.ValueStringsAre(stringvalidator.OneOf([]string{"publickey", "password", "password-over-SSH",
+					listvalidator.ValueStringsAre(stringvalidator.OneOf("publickey", "password", "password-over-SSH",
 						"keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "TLSCertificate",
-						"TLSCertificate+password"}...)),
+						"TLSCertificate+password")),
 				},
 			},
 			"denied_protocols": schema.ListAttribute{
@@ -843,23 +861,17 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 					stringvalidator.OneOf("None", "CommonName"),
 				},
 			},
-			"hooks": schema.SingleNestedAttribute{
-				Optional: true,
-				Computed: true,
-				Attributes: map[string]schema.Attribute{
-					"external_auth_disabled": schema.BoolAttribute{
-						Optional:    true,
-						Description: "If set, external auth hook will not be executed.",
-					},
-					"pre_login_disabled": schema.BoolAttribute{
-						Optional:    true,
-						Description: "If set, external pre-login hook will not be executed.",
-					},
-					"check_password_disabled": schema.BoolAttribute{
-						Optional:    true,
-						Description: "If set, check password hook will not be executed.",
-					},
-				},
+			"external_auth_disabled": schema.BoolAttribute{
+				Optional:    true,
+				Description: "If set, external auth hook will not be executed.",
+			},
+			"pre_login_disabled": schema.BoolAttribute{
+				Optional:    true,
+				Description: "If set, external pre-login hook will not be executed.",
+			},
+			"check_password_disabled": schema.BoolAttribute{
+				Optional:    true,
+				Description: "If set, check password hook will not be executed.",
 			},
 			"disable_fs_checks": schema.BoolAttribute{
 				Optional:    true,
@@ -882,7 +894,7 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 				Optional:    true,
 				Description: "Hint for authentication plugins. Valid values: LDAPUser, OSUser",
 				Validators: []validator.String{
-					stringvalidator.OneOf("LDAUser", "OSUser"),
+					stringvalidator.OneOf("LDAPUser", "OSUser"),
 				},
 			},
 			"bandwidth_limits": schema.ListNestedAttribute{
@@ -980,14 +992,23 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 }
 
 func preserveFsConfigPlanFields(ctx context.Context, fsPlan, fsState filesystem) (types.Object, diag.Diagnostics) {
-	fsState.S3Config.AccessSecret = fsPlan.S3Config.AccessSecret
-	fsState.GCSConfig.Credentials = fsPlan.GCSConfig.Credentials
-	fsState.AzBlobConfig.AccountKey = fsPlan.AzBlobConfig.AccountKey
-	fsState.AzBlobConfig.SASURL = fsPlan.AzBlobConfig.SASURL
-	fsState.CryptConfig.Passphrase = fsPlan.CryptConfig.Passphrase
-	fsState.SFTPConfig.Password = fsPlan.SFTPConfig.Password
-	fsState.SFTPConfig.PrivateKey = fsPlan.SFTPConfig.PrivateKey
-	fsState.HTTPConfig.Password = fsPlan.HTTPConfig.Password
-	fsState.HTTPConfig.APIKey = fsPlan.HTTPConfig.APIKey
+	switch sdk.FilesystemProvider(fsState.Provider.ValueInt64()) {
+	case sdk.S3FilesystemProvider:
+		fsState.S3Config.AccessSecret = fsPlan.S3Config.AccessSecret
+	case sdk.GCSFilesystemProvider:
+		fsState.GCSConfig.Credentials = fsPlan.GCSConfig.Credentials
+	case sdk.AzureBlobFilesystemProvider:
+		fsState.AzBlobConfig.AccountKey = fsPlan.AzBlobConfig.AccountKey
+		fsState.AzBlobConfig.SASURL = fsPlan.AzBlobConfig.SASURL
+	case sdk.CryptedFilesystemProvider:
+		fsState.CryptConfig.Passphrase = fsPlan.CryptConfig.Passphrase
+	case sdk.SFTPFilesystemProvider:
+		fsState.SFTPConfig.Password = fsPlan.SFTPConfig.Password
+		fsState.SFTPConfig.PrivateKey = fsPlan.SFTPConfig.PrivateKey
+	case sdk.HTTPFilesystemProvider:
+		fsState.HTTPConfig.Password = fsPlan.HTTPConfig.Password
+		fsState.HTTPConfig.APIKey = fsPlan.HTTPConfig.APIKey
+	}
+
 	return types.ObjectValueFrom(ctx, fsState.getTFAttributes(), fsState)
 }

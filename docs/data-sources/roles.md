@@ -17,6 +17,7 @@ Fetches the list of roles.
 
 ### Read-Only
 
+- `id` (String) Required to use the test framework. Just a placeholder.
 - `roles` (Attributes List) List of roles. (see [below for nested schema](#nestedatt--roles))
 
 <a id="nestedatt--roles"></a>
@@ -26,6 +27,7 @@ Read-Only:
 
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
 - `description` (String) Optional description.
+- `id` (String)
 - `name` (String) Unique name.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
 

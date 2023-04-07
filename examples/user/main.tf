@@ -28,10 +28,7 @@ resource "sftpgo_user" "test" {
         bucket = "abc"
         region = "us-west-1"
         access_key = "key"
-        access_secret = {
-          status = "Plain"
-          payload = "secret payload"
-        }
+        access_secret = "secret payload"
       }
     }
     groups = [
@@ -50,6 +47,7 @@ resource "sftpgo_user" "test" {
     ]
     filters = {
       allowed_ip = ["192.168.1.0/24", "10.0.0.0/8"]
+      denied_login_methods = ["publickey","password-over-SSH"]
       start_directory = "/start/dir"
       file_patterns = [
         {
@@ -66,9 +64,7 @@ resource "sftpgo_user" "test" {
           denied_patterns = ["*.abc"]
         }
       ]
-      hooks = {
-        external_auth_disabled = true
-      }
+      external_auth_disabled = true
       bandwidth_limits = [
         {
           sources = ["127.0.0.1/32","192.168.1.0/24"]

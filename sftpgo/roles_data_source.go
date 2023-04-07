@@ -19,6 +19,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 )
@@ -49,11 +50,18 @@ func (d *rolesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 	resp.Schema = schema.Schema{
 		Description: "Fetches the list of roles.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "Required to use the test framework. Just a placeholder.",
+			},
 			"roles": schema.ListNestedAttribute{
 				Computed:    true,
 				Description: "List of roles.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed: true,
+						},
 						"name": schema.StringAttribute{
 							Computed:    true,
 							Description: "Unique name.",
@@ -111,6 +119,8 @@ func (d *rolesDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		state.Roles = append(state.Roles, roleState)
 	}
 
+	state.ID = types.StringValue(placeholderID)
+
 	// Set state
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -121,5 +131,6 @@ func (d *rolesDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 // rolesDataSourceModel maps the data source schema data.
 type rolesDataSourceModel struct {
+	ID    types.String        `tfsdk:"id"`
 	Roles []roleResourceModel `tfsdk:"roles"`
 }

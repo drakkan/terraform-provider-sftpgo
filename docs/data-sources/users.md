@@ -17,6 +17,7 @@ Fetches the list of users.
 
 ### Read-Only
 
+- `id` (String) Required to use the test framework. Just a placeholder.
 - `users` (Attributes List) List of users. (see [below for nested schema](#nestedatt--users))
 
 <a id="nestedatt--users"></a>
@@ -37,7 +38,9 @@ Read-Only:
 - `first_upload` (Number) First upload time as unix timestamp in milliseconds.
 - `gid` (Number) If SFTPGo runs as root system user then the created files and directories will be assigned to this system GID.
 - `groups` (Attributes List) Groups. (see [below for nested schema](#nestedatt--users--groups))
+- `has_password` (Boolean) Indicates whether the password is set.
 - `home_dir` (String) The user cannot upload or download files outside this directory. Must be an absolute path.
+- `id` (String)
 - `last_login` (Number) Last login as unix timestamp in milliseconds.
 - `last_password_change` (Number) Last password change as unix timestamp in milliseconds.
 - `last_quota_update` (Number) Last quota update as unix timestamp in milliseconds.
@@ -64,15 +67,18 @@ Read-Only:
 <a id="nestedatt--users--filesystem"></a>
 ### Nested Schema for `users.filesystem`
 
-Read-Only:
+Optional:
 
 - `azblobconfig` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--azblobconfig))
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--cryptconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--httpconfig))
-- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 - `s3config` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--s3config))
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--sftpconfig))
+
+Read-Only:
+
+- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 
 <a id="nestedatt--users--filesystem--azblobconfig"></a>
 ### Nested Schema for `users.filesystem.azblobconfig`
@@ -80,35 +86,17 @@ Read-Only:
 Read-Only:
 
 - `access_tier` (String)
-- `account_key` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--azblobconfig--account_key))
+- `account_key` (String)
 - `account_name` (String)
 - `container` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads.
 - `endpoint` (String) Optional endpoint
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
-- `sas_url` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--azblobconfig--sas_url))
+- `sas_url` (String)
 - `upload_concurrency` (Number) How many parts are uploaded in parallel.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 - `use_emulator` (Boolean)
-
-<a id="nestedatt--users--filesystem--azblobconfig--account_key"></a>
-### Nested Schema for `users.filesystem.azblobconfig.use_emulator`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
-<a id="nestedatt--users--filesystem--azblobconfig--sas_url"></a>
-### Nested Schema for `users.filesystem.azblobconfig.use_emulator`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
 
 
 <a id="nestedatt--users--filesystem--cryptconfig"></a>
@@ -116,16 +104,7 @@ Read-Only:
 
 Read-Only:
 
-- `passphrase` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--cryptconfig--passphrase))
-
-<a id="nestedatt--users--filesystem--cryptconfig--passphrase"></a>
-### Nested Schema for `users.filesystem.cryptconfig.passphrase`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
+- `passphrase` (String)
 
 
 <a id="nestedatt--users--filesystem--gcsconfig"></a>
@@ -136,20 +115,11 @@ Read-Only:
 - `acl` (String) The ACL to apply to uploaded objects. Empty means the bucket default.
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String)
-- `credentials` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--gcsconfig--credentials))
+- `credentials` (String)
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads. The default value is 16MB. Not set means use the default.
-
-<a id="nestedatt--users--filesystem--gcsconfig--credentials"></a>
-### Nested Schema for `users.filesystem.gcsconfig.upload_part_size`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
 
 
 <a id="nestedatt--users--filesystem--httpconfig"></a>
@@ -157,30 +127,12 @@ Read-Only:
 
 Read-Only:
 
-- `api_key` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--httpconfig--api_key))
+- `api_key` (String)
 - `endpoint` (String)
 - `equality_check_mode` (Number)
-- `password` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--httpconfig--password))
+- `password` (String)
 - `skip_tls_verify` (Boolean)
 - `username` (String)
-
-<a id="nestedatt--users--filesystem--httpconfig--api_key"></a>
-### Nested Schema for `users.filesystem.httpconfig.username`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
-<a id="nestedatt--users--filesystem--httpconfig--password"></a>
-### Nested Schema for `users.filesystem.httpconfig.username`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
 
 
 <a id="nestedatt--users--filesystem--s3config"></a>
@@ -189,7 +141,7 @@ Read-Only:
 Read-Only:
 
 - `access_key` (String)
-- `access_secret` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--s3config--access_secret))
+- `access_secret` (String)
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
@@ -205,15 +157,6 @@ Read-Only:
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 
-<a id="nestedatt--users--filesystem--s3config--access_secret"></a>
-### Nested Schema for `users.filesystem.s3config.upload_part_size`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
 
 <a id="nestedatt--users--filesystem--sftpconfig"></a>
 ### Nested Schema for `users.filesystem.sftpconfig`
@@ -225,28 +168,10 @@ Read-Only:
 - `endpoint` (String) SFTP endpoint as host:port.
 - `equality_check_mode` (Number)
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
-- `password` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--sftpconfig--password))
+- `password` (String)
 - `prefix` (String) Restrict access to this path.
-- `private_key` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--sftpconfig--private_key))
+- `private_key` (String)
 - `username` (String)
-
-<a id="nestedatt--users--filesystem--sftpconfig--password"></a>
-### Nested Schema for `users.filesystem.sftpconfig.username`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
-<a id="nestedatt--users--filesystem--sftpconfig--private_key"></a>
-### Nested Schema for `users.filesystem.sftpconfig.username`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
 
 
 
@@ -258,6 +183,7 @@ Read-Only:
 - `allow_api_key_auth` (Boolean) If set, API Key authentication is allowed.
 - `allowed_ip` (List of String) Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"
 - `bandwidth_limits` (Attributes List) Per-source bandwidth limits. (see [below for nested schema](#nestedatt--users--filters--bandwidth_limits))
+- `check_password_disabled` (Boolean) If set, check password hook will not be executed.
 - `data_transfer_limits` (Attributes List) Per-source data transfer limits. (see [below for nested schema](#nestedatt--users--filters--data_transfer_limits))
 - `default_shares_expiration` (Number) Default expiration for newly created shares as number of days. Not set means no default expiration.
 - `denied_ip` (List of String) Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.
@@ -265,13 +191,14 @@ Read-Only:
 - `denied_protocols` (List of String) Disabled protocols.
 - `disable_fs_checks` (Boolean) Disable checks for existence and automatic creation of home directory and virtual folders after user login.
 - `external_auth_cache_time` (Number) Defines the cache time, in seconds, for users authenticated using an external auth hook. Not set means no cache.
+- `external_auth_disabled` (Boolean) If set, external auth hook will not be executed.
 - `file_patterns` (Attributes List) Filters based on shell patterns. (see [below for nested schema](#nestedatt--users--filters--file_patterns))
 - `ftp_security` (Number) FTP security mode. Set to 1 to require TLS for both data and control connection.
-- `hooks` (Attributes) User specific hook overrides. (see [below for nested schema](#nestedatt--users--filters--hooks))
 - `is_anonymous` (Boolean) If enabled the user can login with any password or no password at all. Anonymous users are supported for FTP and WebDAV protocols and permissions will be automatically set to "list" and "download" (read only)
 - `max_upload_file_size` (Number) Max size allowed for a single upload. Unset means no limit.
 - `password_expiration` (Number) The password expires after the defined number of days. Not set means no expiration
 - `password_strength` (Number) Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.
+- `pre_login_disabled` (Boolean) If set, external pre-login hook will not be executed.
 - `require_password_change` (Boolean) If set, user must change their password from WebClient/REST API at next login.
 - `start_directory` (String) Alternate starting directory. If not set, the default is "/". This option is supported for SFTP/SCP, FTP and HTTP (WebClient/REST API) protocols. Relative paths will use this directory as base.
 - `tls_username` (String) TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command.
@@ -311,16 +238,6 @@ Read-Only:
 - `path` (String) Virtual path, if no other specific filter is defined, the filter applies for sub directories too.
 
 
-<a id="nestedatt--users--filters--hooks"></a>
-### Nested Schema for `users.filters.hooks`
-
-Read-Only:
-
-- `check_password_disabled` (Boolean) If set, check password hook will not be executed.
-- `external_auth_disabled` (Boolean) If set, external auth hook will not be executed.
-- `pre_login_disabled` (Boolean) If set, external pre-login hook will not be executed.
-
-
 
 <a id="nestedatt--users--groups"></a>
 ### Nested Schema for `users.groups`
@@ -350,132 +267,81 @@ Read-Only:
 <a id="nestedatt--users--virtual_folders--filesystem"></a>
 ### Nested Schema for `users.virtual_folders.filesystem`
 
-Read-Only:
+Optional:
 
 - `azblobconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--azblobconfig))
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--cryptconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--httpconfig))
-- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 - `s3config` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--s3config))
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig))
 
+Read-Only:
+
+- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
+
 <a id="nestedatt--users--virtual_folders--filesystem--azblobconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.provider`
 
 Read-Only:
 
 - `access_tier` (String)
-- `account_key` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig--account_key))
+- `account_key` (String)
 - `account_name` (String)
 - `container` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads.
 - `endpoint` (String) Optional endpoint
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
-- `sas_url` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig--sas_url))
+- `sas_url` (String)
 - `upload_concurrency` (Number) How many parts are uploaded in parallel.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 - `use_emulator` (Boolean)
 
-<a id="nestedatt--users--virtual_folders--filesystem--sftpconfig--account_key"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig.account_key`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
-<a id="nestedatt--users--virtual_folders--filesystem--sftpconfig--sas_url"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig.sas_url`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
 
 <a id="nestedatt--users--virtual_folders--filesystem--cryptconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.provider`
 
 Read-Only:
 
-- `passphrase` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig--passphrase))
-
-<a id="nestedatt--users--virtual_folders--filesystem--sftpconfig--passphrase"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig.passphrase`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
+- `passphrase` (String)
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--gcsconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.provider`
 
 Read-Only:
 
 - `acl` (String) The ACL to apply to uploaded objects. Empty means the bucket default.
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String)
-- `credentials` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig--credentials))
+- `credentials` (String)
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads. The default value is 16MB. Not set means use the default.
 
-<a id="nestedatt--users--virtual_folders--filesystem--sftpconfig--credentials"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig.credentials`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
 
 <a id="nestedatt--users--virtual_folders--filesystem--httpconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.provider`
 
 Read-Only:
 
-- `api_key` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig--api_key))
+- `api_key` (String)
 - `endpoint` (String)
 - `equality_check_mode` (Number)
-- `password` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig--password))
+- `password` (String)
 - `skip_tls_verify` (Boolean)
 - `username` (String)
 
-<a id="nestedatt--users--virtual_folders--filesystem--sftpconfig--api_key"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig.api_key`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
-<a id="nestedatt--users--virtual_folders--filesystem--sftpconfig--password"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig.password`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
 
 <a id="nestedatt--users--virtual_folders--filesystem--s3config"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.provider`
 
 Read-Only:
 
 - `access_key` (String)
-- `access_secret` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig--access_secret))
+- `access_secret` (String)
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
@@ -491,18 +357,9 @@ Read-Only:
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 
-<a id="nestedatt--users--virtual_folders--filesystem--sftpconfig--access_secret"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig.access_secret`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
 
 <a id="nestedatt--users--virtual_folders--filesystem--sftpconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.provider`
 
 Read-Only:
 
@@ -511,26 +368,9 @@ Read-Only:
 - `endpoint` (String) SFTP endpoint as host:port.
 - `equality_check_mode` (Number)
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
-- `password` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig--password))
+- `password` (String)
 - `prefix` (String) Restrict access to this path.
-- `private_key` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig--private_key))
+- `private_key` (String)
 - `username` (String)
-
-<a id="nestedatt--users--virtual_folders--filesystem--sftpconfig--password"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig.password`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
-
-
-<a id="nestedatt--users--virtual_folders--filesystem--sftpconfig--private_key"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig.private_key`
-
-Read-Only:
-
-- `payload` (String)
-- `status` (String)
 
 

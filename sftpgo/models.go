@@ -30,12 +30,14 @@ import (
 
 // userResourceModel maps users schema data.
 type userResourceModel struct {
+	ID                       types.String       `tfsdk:"id"`
 	Username                 types.String       `tfsdk:"username"`
 	Email                    types.String       `tfsdk:"email"`
 	Status                   types.Int64        `tfsdk:"status"`
 	ExpirationDate           types.Int64        `tfsdk:"expiration_date"`
 	Password                 types.String       `tfsdk:"password"`
 	PublicKeys               types.List         `tfsdk:"public_keys"`
+	HasPassword              types.Bool         `tfsdk:"has_password"`
 	HomeDir                  types.String       `tfsdk:"home_dir"`
 	UID                      types.Int64        `tfsdk:"uid"`
 	GID                      types.Int64        `tfsdk:"gid"`
@@ -68,29 +70,31 @@ type userResourceModel struct {
 	FsConfig                 types.Object       `tfsdk:"filesystem"`
 }
 
-func (u *userResourceModel) toSFTPGo(ctx context.Context) (*sdk.User, diag.Diagnostics) {
-	user := &sdk.User{
-		BaseUser: sdk.BaseUser{
-			Username:             u.Username.ValueString(),
-			Status:               int(u.Status.ValueInt64()),
-			Email:                u.Email.ValueString(),
-			ExpirationDate:       u.ExpirationDate.ValueInt64(),
-			Password:             u.Password.ValueString(),
-			HomeDir:              u.HomeDir.ValueString(),
-			UID:                  int(u.UID.ValueInt64()),
-			GID:                  int(u.GID.ValueInt64()),
-			MaxSessions:          int(u.MaxSessions.ValueInt64()),
-			QuotaSize:            u.QuotaSize.ValueInt64(),
-			QuotaFiles:           int(u.QuotaFiles.ValueInt64()),
-			UploadBandwidth:      u.UploadBandwidth.ValueInt64(),
-			DownloadBandwidth:    u.DownloadBandwidth.ValueInt64(),
-			UploadDataTransfer:   u.UploadDataTransfer.ValueInt64(),
-			DownloadDataTransfer: u.DownloadDataTransfer.ValueInt64(),
-			TotalDataTransfer:    u.TotalDataTransfer.ValueInt64(),
-			Description:          u.Description.ValueString(),
-			AdditionalInfo:       u.AdditionalInfo.ValueString(),
-			Role:                 u.AdditionalInfo.ValueString(),
+func (u *userResourceModel) toSFTPGo(ctx context.Context) (*client.User, diag.Diagnostics) {
+	user := &client.User{
+		User: sdk.User{
+			BaseUser: sdk.BaseUser{
+				Username:             u.Username.ValueString(),
+				Status:               int(u.Status.ValueInt64()),
+				Email:                u.Email.ValueString(),
+				ExpirationDate:       u.ExpirationDate.ValueInt64(),
+				HomeDir:              u.HomeDir.ValueString(),
+				UID:                  int(u.UID.ValueInt64()),
+				GID:                  int(u.GID.ValueInt64()),
+				MaxSessions:          int(u.MaxSessions.ValueInt64()),
+				QuotaSize:            u.QuotaSize.ValueInt64(),
+				QuotaFiles:           int(u.QuotaFiles.ValueInt64()),
+				UploadBandwidth:      u.UploadBandwidth.ValueInt64(),
+				DownloadBandwidth:    u.DownloadBandwidth.ValueInt64(),
+				UploadDataTransfer:   u.UploadDataTransfer.ValueInt64(),
+				DownloadDataTransfer: u.DownloadDataTransfer.ValueInt64(),
+				TotalDataTransfer:    u.TotalDataTransfer.ValueInt64(),
+				Description:          u.Description.ValueString(),
+				AdditionalInfo:       u.AdditionalInfo.ValueString(),
+				Role:                 u.Role.ValueString(),
+			},
 		},
+		Password: u.Password.ValueString(),
 	}
 	if !u.PublicKeys.IsNull() {
 		diags := u.PublicKeys.ElementsAs(ctx, &user.PublicKeys, false)
@@ -151,12 +155,14 @@ func (u *userResourceModel) toSFTPGo(ctx context.Context) (*sdk.User, diag.Diagn
 	return user, nil
 }
 
-func (u *userResourceModel) fromSFTPGo(ctx context.Context, user *sdk.User) diag.Diagnostics {
+func (u *userResourceModel) fromSFTPGo(ctx context.Context, user *client.User) diag.Diagnostics {
 	u.Username = types.StringValue(user.Username)
+	u.ID = u.Username
 	u.Status = types.Int64Value(int64(user.Status))
 	u.Email = getOptionalString(user.Email)
 	u.ExpirationDate = getOptionalInt64(user.ExpirationDate)
-	u.Password = types.StringValue(user.Password)
+	u.Password = getOptionalString(user.Password)
+	u.HasPassword = types.BoolValue(user.HasPassword)
 	u.HomeDir = types.StringValue(user.HomeDir)
 	u.UID = getOptionalInt64(int64(user.UID))
 	u.GID = getOptionalInt64(int64(user.GID))
@@ -251,12 +257,6 @@ type patternsFilter struct {
 	DenyPolicy      types.Int64  `tfsdk:"deny_policy"`
 }
 
-type hooksFilter struct {
-	ExternalAuthDisabled  types.Bool `tfsdk:"external_auth_disabled"`
-	PreLoginDisabled      types.Bool `tfsdk:"pre_login_disabled"`
-	CheckPasswordDisabled types.Bool `tfsdk:"check_password_disabled"`
-}
-
 type bandwidthLimit struct {
 	Sources           types.List  `tfsdk:"sources"`
 	UploadBandwidth   types.Int64 `tfsdk:"upload_bandwidth"`
@@ -270,32 +270,6 @@ type dataTransferLimit struct {
 	TotalDataTransfer    types.Int64 `tfsdk:"total_data_transfer"`
 }
 
-type baseSecret struct {
-	Status  types.String `tfsdk:"status"`
-	Payload types.String `tfsdk:"payload"`
-}
-
-func (s *baseSecret) getTFObject() types.ObjectType {
-	return types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"status":  types.StringType,
-			"payload": types.StringType,
-		},
-	}
-}
-
-func (s *baseSecret) toSFTPGo() kms.BaseSecret {
-	return kms.BaseSecret{
-		Status:  s.Status.ValueString(),
-		Payload: s.Payload.ValueString(),
-	}
-}
-
-func (s *baseSecret) fromSFTPGo(secret *kms.BaseSecret) {
-	s.Status = getOptionalString(secret.Status)
-	s.Payload = getOptionalString(secret.Payload)
-}
-
 type baseUserFilters struct {
 	AllowedIP               types.List          `tfsdk:"allowed_ip"`
 	DeniedIP                types.List          `tfsdk:"denied_ip"`
@@ -304,7 +278,9 @@ type baseUserFilters struct {
 	FilePatterns            []patternsFilter    `tfsdk:"file_patterns"`
 	MaxUploadFileSize       types.Int64         `tfsdk:"max_upload_file_size"`
 	TLSUsername             types.String        `tfsdk:"tls_username"`
-	Hooks                   hooksFilter         `tfsdk:"hooks"`
+	ExternalAuthDisabled    types.Bool          `tfsdk:"external_auth_disabled"`
+	PreLoginDisabled        types.Bool          `tfsdk:"pre_login_disabled"`
+	CheckPasswordDisabled   types.Bool          `tfsdk:"check_password_disabled"`
 	DisableFsChecks         types.Bool          `tfsdk:"disable_fs_checks"`
 	WebClient               types.List          `tfsdk:"web_client"`
 	AllowAPIKeyAuth         types.Bool          `tfsdk:"allow_api_key_auth"`
@@ -349,16 +325,12 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 				},
 			},
 		},
-		"max_upload_file_size": types.Int64Type,
-		"tls_username":         types.StringType,
-		"hooks": types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"external_auth_disabled":  types.BoolType,
-				"pre_login_disabled":      types.BoolType,
-				"check_password_disabled": types.BoolType,
-			},
-		},
-		"disable_fs_checks": types.BoolType,
+		"max_upload_file_size":    types.Int64Type,
+		"tls_username":            types.StringType,
+		"external_auth_disabled":  types.BoolType,
+		"pre_login_disabled":      types.BoolType,
+		"check_password_disabled": types.BoolType,
+		"disable_fs_checks":       types.BoolType,
 		"web_client": types.ListType{
 			ElemType: types.StringType,
 		},
@@ -405,9 +377,9 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (sdk.BaseUserFilters, di
 		MaxUploadFileSize: f.MaxUploadFileSize.ValueInt64(),
 		TLSUsername:       sdk.TLSUsername(f.TLSUsername.ValueString()),
 		Hooks: sdk.HooksFilter{
-			ExternalAuthDisabled:  f.Hooks.ExternalAuthDisabled.ValueBool(),
-			PreLoginDisabled:      f.Hooks.PreLoginDisabled.ValueBool(),
-			CheckPasswordDisabled: f.Hooks.CheckPasswordDisabled.ValueBool(),
+			ExternalAuthDisabled:  f.ExternalAuthDisabled.ValueBool(),
+			PreLoginDisabled:      f.PreLoginDisabled.ValueBool(),
+			CheckPasswordDisabled: f.CheckPasswordDisabled.ValueBool(),
 		},
 		DisableFsChecks:         f.DisableFsChecks.ValueBool(),
 		AllowAPIKeyAuth:         f.AllowAPIKeyAuth.ValueBool(),
@@ -545,11 +517,9 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 	}
 	f.MaxUploadFileSize = getOptionalInt64(filters.MaxUploadFileSize)
 	f.TLSUsername = getOptionalString(string(filters.TLSUsername))
-	f.Hooks = hooksFilter{
-		ExternalAuthDisabled:  getOptionalBool(filters.Hooks.ExternalAuthDisabled),
-		PreLoginDisabled:      getOptionalBool(filters.Hooks.PreLoginDisabled),
-		CheckPasswordDisabled: getOptionalBool(filters.Hooks.CheckPasswordDisabled),
-	}
+	f.ExternalAuthDisabled = getOptionalBool(filters.Hooks.ExternalAuthDisabled)
+	f.PreLoginDisabled = getOptionalBool(filters.Hooks.PreLoginDisabled)
+	f.CheckPasswordDisabled = getOptionalBool(filters.Hooks.CheckPasswordDisabled)
 	f.DisableFsChecks = getOptionalBool(filters.DisableFsChecks)
 	webClient, diags := types.ListValueFrom(ctx, types.StringType, filters.WebClient)
 	if diags.HasError() {
@@ -576,9 +546,9 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 		}
 		f.DataTransferLimits = append(f.DataTransferLimits, dataTransferLimit{
 			Sources:              sources,
-			UploadDataTransfer:   types.Int64Value(limit.UploadDataTransfer),
-			DownloadDataTransfer: types.Int64Value(limit.DownloadDataTransfer),
-			TotalDataTransfer:    types.Int64Value(limit.TotalDataTransfer),
+			UploadDataTransfer:   getOptionalInt64(limit.UploadDataTransfer),
+			DownloadDataTransfer: getOptionalInt64(limit.DownloadDataTransfer),
+			TotalDataTransfer:    getOptionalInt64(limit.TotalDataTransfer),
 		})
 	}
 	f.ExternalAuthCacheTime = getOptionalInt64(filters.ExternalAuthCacheTime)
@@ -592,7 +562,7 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 	f.IsAnonymous = getOptionalBool(filters.IsAnonymous)
 	f.DefaultSharesExpiration = getOptionalInt64(int64(filters.DefaultSharesExpiration))
 	f.PasswordExpiration = getOptionalInt64(int64(filters.PasswordExpiration))
-	f.PasswordExpiration = getOptionalInt64(int64(filters.PasswordStrength))
+	f.PasswordStrength = getOptionalInt64(int64(filters.PasswordStrength))
 	return nil
 }
 
@@ -606,7 +576,9 @@ type userFilters struct {
 	FilePatterns            []patternsFilter    `tfsdk:"file_patterns"`
 	MaxUploadFileSize       types.Int64         `tfsdk:"max_upload_file_size"`
 	TLSUsername             types.String        `tfsdk:"tls_username"`
-	Hooks                   hooksFilter         `tfsdk:"hooks"`
+	ExternalAuthDisabled    types.Bool          `tfsdk:"external_auth_disabled"`
+	PreLoginDisabled        types.Bool          `tfsdk:"pre_login_disabled"`
+	CheckPasswordDisabled   types.Bool          `tfsdk:"check_password_disabled"`
 	DisableFsChecks         types.Bool          `tfsdk:"disable_fs_checks"`
 	WebClient               types.List          `tfsdk:"web_client"`
 	AllowAPIKeyAuth         types.Bool          `tfsdk:"allow_api_key_auth"`
@@ -647,7 +619,9 @@ func (f *userFilters) getBaseFilters() baseUserFilters {
 		FilePatterns:            f.FilePatterns,
 		MaxUploadFileSize:       f.MaxUploadFileSize,
 		TLSUsername:             f.TLSUsername,
-		Hooks:                   f.Hooks,
+		ExternalAuthDisabled:    f.ExternalAuthDisabled,
+		PreLoginDisabled:        f.PreLoginDisabled,
+		CheckPasswordDisabled:   f.CheckPasswordDisabled,
 		DisableFsChecks:         f.DisableFsChecks,
 		WebClient:               f.WebClient,
 		AllowAPIKeyAuth:         f.AllowAPIKeyAuth,
@@ -673,7 +647,9 @@ func (f *userFilters) fromBaseFilters(filters *baseUserFilters) {
 	f.FilePatterns = filters.FilePatterns
 	f.MaxUploadFileSize = filters.MaxUploadFileSize
 	f.TLSUsername = filters.TLSUsername
-	f.Hooks = filters.Hooks
+	f.ExternalAuthDisabled = filters.ExternalAuthDisabled
+	f.PreLoginDisabled = filters.PreLoginDisabled
+	f.CheckPasswordDisabled = filters.CheckPasswordDisabled
 	f.DisableFsChecks = filters.DisableFsChecks
 	f.WebClient = filters.WebClient
 	f.AllowAPIKeyAuth = filters.AllowAPIKeyAuth
@@ -719,7 +695,7 @@ type s3FsConfig struct {
 	KeyPrefix           types.String `tfsdk:"key_prefix"`
 	Region              types.String `tfsdk:"region"`
 	AccessKey           types.String `tfsdk:"access_key"`
-	AccessSecret        baseSecret   `tfsdk:"access_secret"`
+	AccessSecret        types.String `tfsdk:"access_secret"`
 	RoleARN             types.String `tfsdk:"role_arn"`
 	Endpoint            types.String `tfsdk:"endpoint"`
 	StorageClass        types.String `tfsdk:"storage_class"`
@@ -736,7 +712,7 @@ type s3FsConfig struct {
 type gcsFsConfig struct {
 	Bucket               types.String `tfsdk:"bucket"`
 	KeyPrefix            types.String `tfsdk:"key_prefix"`
-	Credentials          baseSecret   `tfsdk:"credentials"`
+	Credentials          types.String `tfsdk:"credentials"`
 	AutomaticCredentials types.Int64  `tfsdk:"automatic_credentials"`
 	StorageClass         types.String `tfsdk:"storage_class"`
 	ACL                  types.String `tfsdk:"acl"`
@@ -747,8 +723,8 @@ type gcsFsConfig struct {
 type azBlobFsConfig struct {
 	Container           types.String `tfsdk:"container"`
 	AccountName         types.String `tfsdk:"account_name"`
-	AccountKey          baseSecret   `tfsdk:"account_key"`
-	SASURL              baseSecret   `tfsdk:"sas_url"`
+	AccountKey          types.String `tfsdk:"account_key"`
+	SASURL              types.String `tfsdk:"sas_url"`
 	Endpoint            types.String `tfsdk:"endpoint"`
 	KeyPrefix           types.String `tfsdk:"key_prefix"`
 	UploadPartSize      types.Int64  `tfsdk:"upload_part_size"`
@@ -760,14 +736,14 @@ type azBlobFsConfig struct {
 }
 
 type cryptFsConfig struct {
-	Passphrase baseSecret `tfsdk:"passphrase"`
+	Passphrase types.String `tfsdk:"passphrase"`
 }
 
 type sftpFsConfig struct {
 	Endpoint                types.String `tfsdk:"endpoint"`
 	Username                types.String `tfsdk:"username"`
-	Password                baseSecret   `tfsdk:"password"`
-	PrivateKey              baseSecret   `tfsdk:"private_key"`
+	Password                types.String `tfsdk:"password"`
+	PrivateKey              types.String `tfsdk:"private_key"`
 	Fingerprints            types.List   `tfsdk:"fingerprints"`
 	Prefix                  types.String `tfsdk:"prefix"`
 	DisableCouncurrentReads types.Bool   `tfsdk:"disable_concurrent_reads"`
@@ -778,20 +754,41 @@ type sftpFsConfig struct {
 type httpFsConfig struct {
 	Endpoint          types.String `tfsdk:"endpoint"`
 	Username          types.String `tfsdk:"username"`
-	Password          baseSecret   `tfsdk:"password"`
-	APIKey            baseSecret   `tfsdk:"api_key"`
+	Password          types.String `tfsdk:"password"`
+	APIKey            types.String `tfsdk:"api_key"`
 	SkipTLSVerify     types.Bool   `tfsdk:"skip_tls_verify"`
 	EqualityCheckMode types.Int64  `tfsdk:"equality_check_mode"`
 }
 
 type filesystem struct {
-	Provider     types.Int64    `tfsdk:"provider"`
-	S3Config     s3FsConfig     `tfsdk:"s3config"`
-	GCSConfig    gcsFsConfig    `tfsdk:"gcsconfig"`
-	AzBlobConfig azBlobFsConfig `tfsdk:"azblobconfig"`
-	CryptConfig  cryptFsConfig  `tfsdk:"cryptconfig"`
-	SFTPConfig   sftpFsConfig   `tfsdk:"sftpconfig"`
-	HTTPConfig   httpFsConfig   `tfsdk:"httpconfig"`
+	Provider     types.Int64     `tfsdk:"provider"`
+	S3Config     *s3FsConfig     `tfsdk:"s3config"`
+	GCSConfig    *gcsFsConfig    `tfsdk:"gcsconfig"`
+	AzBlobConfig *azBlobFsConfig `tfsdk:"azblobconfig"`
+	CryptConfig  *cryptFsConfig  `tfsdk:"cryptconfig"`
+	SFTPConfig   *sftpFsConfig   `tfsdk:"sftpconfig"`
+	HTTPConfig   *httpFsConfig   `tfsdk:"httpconfig"`
+}
+
+func (f *filesystem) ensureNotNull() {
+	if f.S3Config == nil {
+		f.S3Config = &s3FsConfig{}
+	}
+	if f.GCSConfig == nil {
+		f.GCSConfig = &gcsFsConfig{}
+	}
+	if f.AzBlobConfig == nil {
+		f.AzBlobConfig = &azBlobFsConfig{}
+	}
+	if f.CryptConfig == nil {
+		f.CryptConfig = &cryptFsConfig{}
+	}
+	if f.SFTPConfig == nil {
+		f.SFTPConfig = &sftpFsConfig{}
+	}
+	if f.HTTPConfig == nil {
+		f.HTTPConfig = &httpFsConfig{}
+	}
 }
 
 func (f *filesystem) getTFAttributes() map[string]attr.Type {
@@ -803,7 +800,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"key_prefix":             types.StringType,
 				"region":                 types.StringType,
 				"access_key":             types.StringType,
-				"access_secret":          f.S3Config.AccessSecret.getTFObject(),
+				"access_secret":          types.StringType,
 				"role_arn":               types.StringType,
 				"endpoint":               types.StringType,
 				"storage_class":          types.StringType,
@@ -821,7 +818,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 			AttrTypes: map[string]attr.Type{
 				"bucket":                types.StringType,
 				"key_prefix":            types.StringType,
-				"credentials":           f.GCSConfig.Credentials.getTFObject(),
+				"credentials":           types.StringType,
 				"automatic_credentials": types.Int64Type,
 				"storage_class":         types.StringType,
 				"acl":                   types.StringType,
@@ -833,8 +830,8 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 			AttrTypes: map[string]attr.Type{
 				"container":            types.StringType,
 				"account_name":         types.StringType,
-				"account_key":          f.AzBlobConfig.AccountKey.getTFObject(),
-				"sas_url":              f.AzBlobConfig.SASURL.getTFObject(),
+				"account_key":          types.StringType,
+				"sas_url":              types.StringType,
 				"endpoint":             types.StringType,
 				"key_prefix":           types.StringType,
 				"upload_part_size":     types.Int64Type,
@@ -847,15 +844,15 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 		},
 		"cryptconfig": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"passphrase": f.CryptConfig.Passphrase.getTFObject(),
+				"passphrase": types.StringType,
 			},
 		},
 		"sftpconfig": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
 				"endpoint":    types.StringType,
 				"username":    types.StringType,
-				"password":    f.SFTPConfig.Password.getTFObject(),
-				"private_key": f.SFTPConfig.PrivateKey.getTFObject(),
+				"password":    types.StringType,
+				"private_key": types.StringType,
 				"fingerprints": types.ListType{
 					ElemType: types.StringType,
 				},
@@ -869,8 +866,8 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 			AttrTypes: map[string]attr.Type{
 				"endpoint":            types.StringType,
 				"username":            types.StringType,
-				"password":            f.HTTPConfig.Password.getTFObject(),
-				"api_key":             f.HTTPConfig.APIKey.getTFObject(),
+				"password":            types.StringType,
+				"api_key":             types.StringType,
 				"skip_tls_verify":     types.BoolType,
 				"equality_check_mode": types.Int64Type,
 			},
@@ -879,6 +876,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 }
 
 func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnostics) {
+	f.ensureNotNull()
 	fs := sdk.Filesystem{
 		Provider: sdk.FilesystemProvider(f.Provider.ValueInt64()),
 		S3Config: sdk.S3FsConfig{
@@ -899,7 +897,7 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 				DownloadPartMaxTime: int(f.S3Config.DownloadPartMaxTime.ValueInt64()),
 				ForcePathStyle:      f.S3Config.ForcePathStyle.ValueBool(),
 			},
-			AccessSecret: f.S3Config.AccessSecret.toSFTPGo(),
+			AccessSecret: getSFTPGoSecret(f.S3Config.AccessKey.ValueString()),
 		},
 		GCSConfig: sdk.GCSFsConfig{
 			BaseGCSFsConfig: sdk.BaseGCSFsConfig{
@@ -911,7 +909,7 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 				UploadPartSize:       f.GCSConfig.UploadPartSize.ValueInt64(),
 				UploadPartMaxTime:    int(f.GCSConfig.UploadPartMaxTime.ValueInt64()),
 			},
-			Credentials: f.GCSConfig.Credentials.toSFTPGo(),
+			Credentials: getSFTPGoSecret(f.GCSConfig.Credentials.ValueString()),
 		},
 		AzBlobConfig: sdk.AzBlobFsConfig{
 			BaseAzBlobFsConfig: sdk.BaseAzBlobFsConfig{
@@ -926,11 +924,11 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 				UseEmulator:         f.AzBlobConfig.UseEmulator.ValueBool(),
 				AccessTier:          f.AzBlobConfig.AccessTier.ValueString(),
 			},
-			AccountKey: f.AzBlobConfig.AccountKey.toSFTPGo(),
-			SASURL:     f.AzBlobConfig.SASURL.toSFTPGo(),
+			AccountKey: getSFTPGoSecret(f.AzBlobConfig.AccountKey.ValueString()),
+			SASURL:     getSFTPGoSecret(f.AzBlobConfig.SASURL.ValueString()),
 		},
 		CryptConfig: sdk.CryptFsConfig{
-			Passphrase: f.CryptConfig.Passphrase.toSFTPGo(),
+			Passphrase: getSFTPGoSecret(f.CryptConfig.Passphrase.ValueString()),
 		},
 		SFTPConfig: sdk.SFTPFsConfig{
 			BaseSFTPFsConfig: sdk.BaseSFTPFsConfig{
@@ -941,8 +939,8 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 				BufferSize:              f.SFTPConfig.BufferSize.ValueInt64(),
 				EqualityCheckMode:       int(f.SFTPConfig.EqualityCheckMode.ValueInt64()),
 			},
-			Password:   f.SFTPConfig.Password.toSFTPGo(),
-			PrivateKey: f.SFTPConfig.PrivateKey.toSFTPGo(),
+			Password:   getSFTPGoSecret(f.SFTPConfig.Password.ValueString()),
+			PrivateKey: getSFTPGoSecret(f.SFTPConfig.PrivateKey.ValueString()),
 		},
 		HTTPConfig: sdk.HTTPFsConfig{
 			BaseHTTPFsConfig: sdk.BaseHTTPFsConfig{
@@ -951,8 +949,8 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 				SkipTLSVerify:     f.HTTPConfig.SkipTLSVerify.ValueBool(),
 				EqualityCheckMode: int(f.HTTPConfig.EqualityCheckMode.ValueInt64()),
 			},
-			Password: f.HTTPConfig.Password.toSFTPGo(),
-			APIKey:   f.HTTPConfig.APIKey.toSFTPGo(),
+			Password: getSFTPGoSecret(f.HTTPConfig.Password.ValueString()),
+			APIKey:   getSFTPGoSecret(f.HTTPConfig.APIKey.ValueString()),
 		},
 	}
 
@@ -967,76 +965,94 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 
 func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Diagnostics {
 	f.Provider = types.Int64Value(int64(fs.Provider))
-	f.S3Config = s3FsConfig{
-		Bucket:              getOptionalString(fs.S3Config.Bucket),
-		KeyPrefix:           getOptionalString(fs.S3Config.KeyPrefix),
-		Region:              getOptionalString(fs.S3Config.Region),
-		AccessKey:           getOptionalString(fs.S3Config.AccessKey),
-		RoleARN:             getOptionalString(fs.S3Config.RoleARN),
-		Endpoint:            getOptionalString(fs.S3Config.Endpoint),
-		StorageClass:        getOptionalString(fs.S3Config.StorageClass),
-		ACL:                 getOptionalString(fs.S3Config.ACL),
-		UploadPartSize:      getOptionalInt64(fs.S3Config.UploadPartSize),
-		UploadConcurrency:   getOptionalInt64(int64(fs.S3Config.UploadConcurrency)),
-		DownloadPartSize:    getOptionalInt64(fs.S3Config.DownloadPartSize),
-		UploadPartMaxTime:   getOptionalInt64(int64(fs.S3Config.UploadPartMaxTime)),
-		DownloadConcurrency: getOptionalInt64(int64(fs.S3Config.DownloadConcurrency)),
-		DownloadPartMaxTime: getOptionalInt64(int64(fs.S3Config.DownloadPartMaxTime)),
-		ForcePathStyle:      getOptionalBool(fs.S3Config.ForcePathStyle),
+	f.S3Config = nil
+	f.GCSConfig = nil
+	f.AzBlobConfig = nil
+	f.CryptConfig = nil
+	f.SFTPConfig = nil
+	f.HTTPConfig = nil
+	switch fs.Provider {
+	case sdk.S3FilesystemProvider:
+		f.S3Config = &s3FsConfig{
+			Bucket:              getOptionalString(fs.S3Config.Bucket),
+			KeyPrefix:           getOptionalString(fs.S3Config.KeyPrefix),
+			Region:              getOptionalString(fs.S3Config.Region),
+			AccessKey:           getOptionalString(fs.S3Config.AccessKey),
+			AccessSecret:        getOptionalString(fs.S3Config.AccessSecret.Payload),
+			RoleARN:             getOptionalString(fs.S3Config.RoleARN),
+			Endpoint:            getOptionalString(fs.S3Config.Endpoint),
+			StorageClass:        getOptionalString(fs.S3Config.StorageClass),
+			ACL:                 getOptionalString(fs.S3Config.ACL),
+			UploadPartSize:      getOptionalInt64(fs.S3Config.UploadPartSize),
+			UploadConcurrency:   getOptionalInt64(int64(fs.S3Config.UploadConcurrency)),
+			DownloadPartSize:    getOptionalInt64(fs.S3Config.DownloadPartSize),
+			UploadPartMaxTime:   getOptionalInt64(int64(fs.S3Config.UploadPartMaxTime)),
+			DownloadConcurrency: getOptionalInt64(int64(fs.S3Config.DownloadConcurrency)),
+			DownloadPartMaxTime: getOptionalInt64(int64(fs.S3Config.DownloadPartMaxTime)),
+			ForcePathStyle:      getOptionalBool(fs.S3Config.ForcePathStyle),
+		}
+	case sdk.GCSFilesystemProvider:
+		f.GCSConfig = &gcsFsConfig{
+			Bucket:               getOptionalString(fs.GCSConfig.Bucket),
+			KeyPrefix:            getOptionalString(fs.GCSConfig.KeyPrefix),
+			Credentials:          getOptionalString(fs.GCSConfig.Credentials.Payload),
+			AutomaticCredentials: getOptionalInt64(int64(fs.GCSConfig.AutomaticCredentials)),
+			StorageClass:         getOptionalString(fs.GCSConfig.StorageClass),
+			ACL:                  getOptionalString(fs.GCSConfig.ACL),
+			UploadPartSize:       getOptionalInt64(fs.GCSConfig.UploadPartSize),
+			UploadPartMaxTime:    getOptionalInt64(int64(fs.GCSConfig.UploadPartMaxTime)),
+		}
+	case sdk.AzureBlobFilesystemProvider:
+		f.AzBlobConfig = &azBlobFsConfig{
+			Container:           getOptionalString(fs.AzBlobConfig.Container),
+			AccountName:         getOptionalString(fs.AzBlobConfig.AccountName),
+			AccountKey:          getOptionalString(fs.AzBlobConfig.AccountKey.Payload),
+			SASURL:              getOptionalString(fs.AzBlobConfig.SASURL.Payload),
+			Endpoint:            getOptionalString(fs.AzBlobConfig.Endpoint),
+			KeyPrefix:           getOptionalString(fs.AzBlobConfig.KeyPrefix),
+			UploadPartSize:      getOptionalInt64(fs.AzBlobConfig.UploadPartSize),
+			UploadConcurrency:   getOptionalInt64(int64(fs.AzBlobConfig.UploadConcurrency)),
+			DownloadPartSize:    getOptionalInt64(fs.AzBlobConfig.DownloadPartSize),
+			DownloadConcurrency: getOptionalInt64(int64(fs.AzBlobConfig.DownloadConcurrency)),
+			UseEmulator:         getOptionalBool(fs.AzBlobConfig.UseEmulator),
+			AccessTier:          getOptionalString(fs.AzBlobConfig.AccessTier),
+		}
+	case sdk.CryptedFilesystemProvider:
+		f.CryptConfig = &cryptFsConfig{
+			Passphrase: getOptionalString(fs.CryptConfig.Passphrase.Payload),
+		}
+	case sdk.SFTPFilesystemProvider:
+		f.SFTPConfig = &sftpFsConfig{
+			Endpoint:                getOptionalString(fs.SFTPConfig.Endpoint),
+			Username:                getOptionalString(fs.SFTPConfig.Username),
+			Password:                getOptionalString(fs.SFTPConfig.Password.Payload),
+			PrivateKey:              getOptionalString(fs.SFTPConfig.PrivateKey.Payload),
+			Prefix:                  getOptionalString(fs.SFTPConfig.Prefix),
+			DisableCouncurrentReads: getOptionalBool(fs.SFTPConfig.DisableCouncurrentReads),
+			BufferSize:              getOptionalInt64(fs.SFTPConfig.BufferSize),
+			EqualityCheckMode:       getOptionalInt64(int64(fs.SFTPConfig.EqualityCheckMode)),
+		}
+		fingerprints, diags := types.ListValueFrom(ctx, types.StringType, fs.SFTPConfig.Fingerprints)
+		if diags.HasError() {
+			return diags
+		}
+		f.SFTPConfig.Fingerprints = fingerprints
+	case sdk.HTTPFilesystemProvider:
+		f.HTTPConfig = &httpFsConfig{
+			Endpoint:          getOptionalString(fs.HTTPConfig.Endpoint),
+			Username:          getOptionalString(fs.HTTPConfig.Username),
+			Password:          getOptionalString(fs.HTTPConfig.Password.Payload),
+			APIKey:            getOptionalString(fs.HTTPConfig.APIKey.Payload),
+			SkipTLSVerify:     getOptionalBool(fs.HTTPConfig.SkipTLSVerify),
+			EqualityCheckMode: getOptionalInt64(int64(fs.HTTPConfig.EqualityCheckMode)),
+		}
 	}
-	f.S3Config.AccessSecret.fromSFTPGo(&fs.S3Config.AccessSecret)
-	f.GCSConfig = gcsFsConfig{
-		Bucket:               getOptionalString(fs.GCSConfig.Bucket),
-		KeyPrefix:            getOptionalString(fs.GCSConfig.KeyPrefix),
-		AutomaticCredentials: getOptionalInt64(int64(fs.GCSConfig.AutomaticCredentials)),
-		StorageClass:         getOptionalString(fs.GCSConfig.StorageClass),
-		ACL:                  getOptionalString(fs.GCSConfig.ACL),
-		UploadPartSize:       getOptionalInt64(fs.GCSConfig.UploadPartSize),
-		UploadPartMaxTime:    getOptionalInt64(int64(fs.GCSConfig.UploadPartMaxTime)),
-	}
-	f.GCSConfig.Credentials.fromSFTPGo(&fs.GCSConfig.Credentials)
-	f.AzBlobConfig = azBlobFsConfig{
-		Container:           getOptionalString(fs.AzBlobConfig.Container),
-		AccountName:         getOptionalString(fs.AzBlobConfig.AccountName),
-		Endpoint:            getOptionalString(fs.AzBlobConfig.Endpoint),
-		KeyPrefix:           getOptionalString(fs.AzBlobConfig.KeyPrefix),
-		UploadPartSize:      getOptionalInt64(fs.AzBlobConfig.UploadPartSize),
-		UploadConcurrency:   getOptionalInt64(int64(fs.AzBlobConfig.UploadConcurrency)),
-		DownloadPartSize:    getOptionalInt64(fs.AzBlobConfig.DownloadPartSize),
-		DownloadConcurrency: getOptionalInt64(int64(fs.AzBlobConfig.DownloadConcurrency)),
-		UseEmulator:         getOptionalBool(fs.AzBlobConfig.UseEmulator),
-		AccessTier:          getOptionalString(fs.AzBlobConfig.AccessTier),
-	}
-	f.AzBlobConfig.AccountKey.fromSFTPGo(&fs.AzBlobConfig.AccountKey)
-	f.AzBlobConfig.SASURL.fromSFTPGo(&fs.AzBlobConfig.SASURL)
-	f.CryptConfig.Passphrase.fromSFTPGo(&fs.CryptConfig.Passphrase)
-	f.SFTPConfig = sftpFsConfig{
-		Endpoint:                getOptionalString(fs.SFTPConfig.Endpoint),
-		Username:                getOptionalString(fs.SFTPConfig.Username),
-		Prefix:                  getOptionalString(fs.SFTPConfig.Prefix),
-		DisableCouncurrentReads: getOptionalBool(fs.SFTPConfig.DisableCouncurrentReads),
-		BufferSize:              getOptionalInt64(fs.SFTPConfig.BufferSize),
-		EqualityCheckMode:       getOptionalInt64(int64(fs.SFTPConfig.EqualityCheckMode)),
-	}
-	f.SFTPConfig.Password.fromSFTPGo(&fs.SFTPConfig.Password)
-	f.SFTPConfig.PrivateKey.fromSFTPGo(&fs.SFTPConfig.PrivateKey)
-	fingerprints, diags := types.ListValueFrom(ctx, types.StringType, fs.SFTPConfig.Fingerprints)
-	if diags.HasError() {
-		return diags
-	}
-	f.SFTPConfig.Fingerprints = fingerprints
-	f.HTTPConfig = httpFsConfig{
-		Endpoint:          getOptionalString(fs.HTTPConfig.Endpoint),
-		Username:          getOptionalString(fs.HTTPConfig.Username),
-		SkipTLSVerify:     getOptionalBool(fs.HTTPConfig.SkipTLSVerify),
-		EqualityCheckMode: getOptionalInt64(int64(fs.HTTPConfig.EqualityCheckMode)),
-	}
-	f.HTTPConfig.Password.fromSFTPGo(&fs.HTTPConfig.Password)
-	f.HTTPConfig.APIKey.fromSFTPGo(&fs.HTTPConfig.APIKey)
+
 	return nil
 }
 
 type virtualFolderResourceModel struct {
+	ID              types.String `tfsdk:"id"`
 	Name            types.String `tfsdk:"name"`
 	MappedPath      types.String `tfsdk:"mapped_path"`
 	Description     types.String `tfsdk:"description"`
@@ -1074,11 +1090,12 @@ func (f *virtualFolderResourceModel) toSFTPGo(ctx context.Context) (*sdk.BaseVir
 
 func (f *virtualFolderResourceModel) fromSFTPGo(ctx context.Context, folder *sdk.BaseVirtualFolder) diag.Diagnostics {
 	f.Name = types.StringValue(folder.Name)
+	f.ID = f.Name
 	f.MappedPath = getOptionalString(folder.MappedPath)
 	f.Description = getOptionalString(folder.Description)
-	f.UsedQuotaSize = getOptionalInt64(folder.UsedQuotaSize)
-	f.UsedQuotaFiles = getOptionalInt64(int64(folder.UsedQuotaFiles))
-	f.LastQuotaUpdate = getOptionalInt64(folder.LastQuotaUpdate)
+	f.UsedQuotaSize = types.Int64Value(folder.UsedQuotaSize)
+	f.UsedQuotaFiles = types.Int64Value(int64(folder.UsedQuotaFiles))
+	f.LastQuotaUpdate = types.Int64Value(folder.LastQuotaUpdate)
 
 	var fsConfig filesystem
 	diags := fsConfig.fromSFTPGo(ctx, &folder.FsConfig)
@@ -1161,6 +1178,7 @@ func (f *virtualFolder) fromSFTPGo(ctx context.Context, folder *sdk.VirtualFolde
 }
 
 type roleResourceModel struct {
+	ID          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
 	CreatedAt   types.Int64  `tfsdk:"created_at"`
@@ -1180,6 +1198,7 @@ func (r *roleResourceModel) toSFTPGo(ctx context.Context) (*client.Role, diag.Di
 
 func (r *roleResourceModel) fromSFTPGo(ctx context.Context, role *client.Role) diag.Diagnostics {
 	r.Name = types.StringValue(role.Name)
+	r.ID = r.Name
 	r.Description = getOptionalString(role.Description)
 	r.CreatedAt = types.Int64Value(role.CreatedAt)
 	r.UpdatedAt = types.Int64Value(role.UpdatedAt)
@@ -1339,6 +1358,7 @@ func (s *groupUserSettings) fromSFTPGo(ctx context.Context, settings *sdk.GroupU
 }
 
 type groupResourceModel struct {
+	ID             types.String    `tfsdk:"id"`
 	Name           types.String    `tfsdk:"name"`
 	Description    types.String    `tfsdk:"description"`
 	CreatedAt      types.Int64     `tfsdk:"created_at"`
@@ -1384,6 +1404,7 @@ func (g *groupResourceModel) toSFTPGo(ctx context.Context) (*sdk.Group, diag.Dia
 
 func (g *groupResourceModel) fromSFTPGo(ctx context.Context, group *sdk.Group) diag.Diagnostics {
 	g.Name = types.StringValue(group.Name)
+	g.ID = g.Name
 	g.Description = getOptionalString(group.Description)
 	g.CreatedAt = types.Int64Value(group.CreatedAt)
 	g.UpdatedAt = types.Int64Value(group.UpdatedAt)
@@ -1659,4 +1680,14 @@ func getOptionalBool(val bool) types.Bool {
 		return types.BoolNull()
 	}
 	return types.BoolValue(val)
+}
+
+func getSFTPGoSecret(payload string) kms.BaseSecret {
+	if payload == "" {
+		return kms.BaseSecret{}
+	}
+	return kms.BaseSecret{
+		Status:  kms.SecretStatusPlain,
+		Payload: payload,
+	}
 }

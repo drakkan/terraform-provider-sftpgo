@@ -21,6 +21,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -63,6 +66,13 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 	resp.Schema = schema.Schema{
 		Description: "User",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "Required to use the test framework. Matches the username.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"username": schema.StringAttribute{
 				Required:    true,
 				Description: "Unique username.",
@@ -79,13 +89,18 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Description: "Account expiration date as unix timestamp in milliseconds. An expired account cannot login.",
 			},
 			"password": schema.StringAttribute{
-				Optional:  true,
-				Sensitive: true,
+				Optional:    true,
+				Sensitive:   true,
+				Description: "Set to empty to remove the password.",
 			},
 			"public_keys": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
 				Description: "List of public keys in OpenSSH format.",
+			},
+			"has_password": schema.BoolAttribute{
+				Computed:    true,
+				Description: "Indicates whether the password is set.",
 			},
 			"home_dir": schema.StringAttribute{
 				Required:    true,
@@ -166,6 +181,9 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"created_at": schema.Int64Attribute{
 				Computed:    true,
 				Description: "Creation time as unix timestamp in milliseconds.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"updated_at": schema.Int64Attribute{
 				Computed:    true,

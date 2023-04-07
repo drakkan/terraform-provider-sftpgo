@@ -209,6 +209,6 @@ func (d *adminsDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 // adminsDataSourceModel maps the data source schema data.
 type adminsDataSourceModel struct {
-	Admins []adminResourceModel `tfsdk:"admins"`
 	ID     types.String         `tfsdk:"id"`
+	Admins []adminResourceModel `tfsdk:"admins"`
 }
