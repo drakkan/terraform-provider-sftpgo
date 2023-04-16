@@ -218,6 +218,9 @@ func (p *sftpgoProvider) DataSources(_ context.Context) []func() datasource.Data
 		NewFoldersDataSource,
 		NewGroupsDataSource,
 		NewAdminsDataSource,
+		NewDefenderEntriesDataSource,
+		NewAllowListEntriesDataSource,
+		NewRlSafeListEntriesDataSource,
 	}
 }
 
@@ -229,5 +232,8 @@ func (p *sftpgoProvider) Resources(_ context.Context) []func() resource.Resource
 		NewFolderResource,
 		NewGroupResource,
 		NewAdminResource,
+		NewDefenderEntryResource,
+		NewAllowListEntryResource,
+		NewRlSafeListEntryResource,
 	}
 }

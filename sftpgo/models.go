@@ -1693,6 +1693,98 @@ func (a *adminResourceModel) fromSFTPGo(ctx context.Context, admin *client.Admin
 	return nil
 }
 
+type defenderEntryResourceModel struct {
+	ID          types.String `tfsdk:"id"`
+	IPOrNet     types.String `tfsdk:"ipornet"`
+	Description types.String `tfsdk:"description"`
+	Mode        types.Int64  `tfsdk:"mode"`
+	Protocols   types.Int64  `tfsdk:"protocols"`
+	CreatedAt   types.Int64  `tfsdk:"created_at"`
+	UpdatedAt   types.Int64  `tfsdk:"updated_at"`
+}
+
+func (e *defenderEntryResourceModel) toSFTPGo(ctx context.Context) (*client.IPListEntry, diag.Diagnostics) {
+	entry := &client.IPListEntry{
+		IPOrNet:     e.IPOrNet.ValueString(),
+		Description: e.Description.ValueString(),
+		Type:        2,
+		Mode:        int(e.Mode.ValueInt64()),
+		Protocols:   int(e.Protocols.ValueInt64()),
+	}
+	return entry, nil
+}
+
+func (e *defenderEntryResourceModel) fromSFTPGo(ctx context.Context, entry *client.IPListEntry) diag.Diagnostics {
+	e.IPOrNet = types.StringValue(entry.IPOrNet)
+	e.ID = e.IPOrNet
+	e.Description = getOptionalString(entry.Description)
+	e.Mode = types.Int64Value(int64(entry.Mode))
+	e.Protocols = types.Int64Value(int64(entry.Protocols))
+	e.CreatedAt = types.Int64Value(entry.CreatedAt)
+	e.UpdatedAt = types.Int64Value(entry.UpdatedAt)
+	return nil
+}
+
+type allowListEntryResourceModel struct {
+	ID          types.String `tfsdk:"id"`
+	IPOrNet     types.String `tfsdk:"ipornet"`
+	Description types.String `tfsdk:"description"`
+	Protocols   types.Int64  `tfsdk:"protocols"`
+	CreatedAt   types.Int64  `tfsdk:"created_at"`
+	UpdatedAt   types.Int64  `tfsdk:"updated_at"`
+}
+
+func (e *allowListEntryResourceModel) toSFTPGo(ctx context.Context) (*client.IPListEntry, diag.Diagnostics) {
+	entry := &client.IPListEntry{
+		IPOrNet:     e.IPOrNet.ValueString(),
+		Description: e.Description.ValueString(),
+		Type:        1,
+		Mode:        1,
+		Protocols:   int(e.Protocols.ValueInt64()),
+	}
+	return entry, nil
+}
+
+func (e *allowListEntryResourceModel) fromSFTPGo(ctx context.Context, entry *client.IPListEntry) diag.Diagnostics {
+	e.IPOrNet = types.StringValue(entry.IPOrNet)
+	e.ID = e.IPOrNet
+	e.Description = getOptionalString(entry.Description)
+	e.Protocols = types.Int64Value(int64(entry.Protocols))
+	e.CreatedAt = types.Int64Value(entry.CreatedAt)
+	e.UpdatedAt = types.Int64Value(entry.UpdatedAt)
+	return nil
+}
+
+type rlSafeListEntryResourceModel struct {
+	ID          types.String `tfsdk:"id"`
+	IPOrNet     types.String `tfsdk:"ipornet"`
+	Description types.String `tfsdk:"description"`
+	Protocols   types.Int64  `tfsdk:"protocols"`
+	CreatedAt   types.Int64  `tfsdk:"created_at"`
+	UpdatedAt   types.Int64  `tfsdk:"updated_at"`
+}
+
+func (e *rlSafeListEntryResourceModel) toSFTPGo(ctx context.Context) (*client.IPListEntry, diag.Diagnostics) {
+	entry := &client.IPListEntry{
+		IPOrNet:     e.IPOrNet.ValueString(),
+		Description: e.Description.ValueString(),
+		Type:        3,
+		Mode:        1,
+		Protocols:   int(e.Protocols.ValueInt64()),
+	}
+	return entry, nil
+}
+
+func (e *rlSafeListEntryResourceModel) fromSFTPGo(ctx context.Context, entry *client.IPListEntry) diag.Diagnostics {
+	e.IPOrNet = types.StringValue(entry.IPOrNet)
+	e.ID = e.IPOrNet
+	e.Description = getOptionalString(entry.Description)
+	e.Protocols = types.Int64Value(int64(entry.Protocols))
+	e.CreatedAt = types.Int64Value(entry.CreatedAt)
+	e.UpdatedAt = types.Int64Value(entry.UpdatedAt)
+	return nil
+}
+
 func getOptionalInt64(val int64) types.Int64 {
 	if val == 0 {
 		return types.Int64Null()
