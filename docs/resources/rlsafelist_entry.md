@@ -3,12 +3,12 @@
 page_title: "sftpgo_rlsafelist_entry Resource - sftpgo"
 subcategory: ""
 description: |-
-  Rate limites safe list entry
+  Rate limiters safe list entry
 ---
 
 # sftpgo_rlsafelist_entry (Resource)
 
-Rate limites safe list entry
+Rate limiters safe list entry
 
 
 

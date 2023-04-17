@@ -61,7 +61,7 @@ func (r *rlSafeListEntryResource) Metadata(_ context.Context, req resource.Metad
 // Schema defines the schema for the resource.
 func (r *rlSafeListEntryResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Rate limites safe list entry",
+		Description: "Rate limiters safe list entry",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -116,8 +116,8 @@ func (r *rlSafeListEntryResource) Create(ctx context.Context, req resource.Creat
 	entry, err := r.client.CreateIPListEntry(*entry)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating rate limites safe list entry",
-			"Could not create rate limites safe list entry, unexpected error: "+err.Error(),
+			"Error creating rate limiters safe list entry",
+			"Could not create rate limiters safe list entry, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -149,8 +149,8 @@ func (r *rlSafeListEntryResource) Read(ctx context.Context, req resource.ReadReq
 	entry, err := r.client.GetIPListEntry(3, state.IPOrNet.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Reading SFTPGo rate limites safe list entry",
-			"Could not read SFTPGo rate limites safe list entry "+state.IPOrNet.ValueString()+": "+err.Error(),
+			"Error Reading SFTPGo rate limiters safe list entry",
+			"Could not read SFTPGo rate limiters safe list entry "+state.IPOrNet.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -187,8 +187,8 @@ func (r *rlSafeListEntryResource) Update(ctx context.Context, req resource.Updat
 	err := r.client.UpdateIPListEntry(*entry)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating rate limites safe list entry",
-			"Could not update rate limites safe list entry, unexpected error: "+err.Error(),
+			"Error updating rate limiters safe list entry",
+			"Could not update rate limiters safe list entry, unexpected error: "+err.Error(),
 		)
 		return
 	}
@@ -196,8 +196,8 @@ func (r *rlSafeListEntryResource) Update(ctx context.Context, req resource.Updat
 	entry, err = r.client.GetIPListEntry(3, plan.IPOrNet.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Reading SFTPGo rate limites safe list entry",
-			"Could not read SFTPGo rate limites safe list entry "+plan.IPOrNet.ValueString()+": "+err.Error(),
+			"Error Reading SFTPGo rate limiters safe list entry",
+			"Could not read SFTPGo rate limiters safe list entry "+plan.IPOrNet.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -230,8 +230,8 @@ func (r *rlSafeListEntryResource) Delete(ctx context.Context, req resource.Delet
 	err := r.client.DeleteIPListEntry(3, state.IPOrNet.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Deleting SFTPGo rate limites safe list entry",
-			"Could not delete rate limites safe list entry, unexpected error: "+err.Error(),
+			"Error Deleting SFTPGo rate limiters safe list entry",
+			"Could not delete rate limiters safe list entry, unexpected error: "+err.Error(),
 		)
 		return
 	}
