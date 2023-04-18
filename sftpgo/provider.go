@@ -48,6 +48,7 @@ type sftpgoProviderModel struct {
 	Host     types.String `tfsdk:"host"`
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
+	APIKey   types.String `tfsdk:"api_key"`
 }
 
 // sftpgoProvider is the provider implementation.
@@ -75,6 +76,11 @@ func (p *sftpgoProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Optional:    true,
 				Sensitive:   true,
 				Description: "Password for SFTPGo API. May also be provided via SFTPGO_PASSWORD environment variable.",
+			},
+			"api_key": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				Description: "SFTPGo API key. May also be provided via SFTPGO_API_KEY environment variable. You must provide an API key or username and password. If both an API key and username and password are provided, the API key will be used.",
 			},
 		},
 	}
@@ -123,6 +129,15 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		)
 	}
 
+	if config.APIKey.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("api_key"),
+			"Unknown SFTPGo API Key",
+			"The provider cannot create the SFTPGo API client as there is an unknown configuration value for the SFTPGo API key. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the SFTPGO_API_KEY environment variable.",
+		)
+	}
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -133,6 +148,7 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	host := os.Getenv("SFTPGO_HOST")
 	username := os.Getenv("SFTPGO_USERNAME")
 	password := os.Getenv("SFTPGO_PASSWORD")
+	apiKey := os.Getenv("SFTPGO_API_KEY")
 
 	if !config.Host.IsNull() {
 		host = config.Host.ValueString()
@@ -144,6 +160,10 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	if !config.Password.IsNull() {
 		password = config.Password.ValueString()
+	}
+
+	if !config.APIKey.IsNull() {
+		apiKey = config.APIKey.ValueString()
 	}
 
 	// If any of the expected configurations are missing, return
@@ -159,24 +179,26 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		)
 	}
 
-	if username == "" {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("username"),
-			"Missing SFTPGo API Username",
-			"The provider cannot create the SFTPGo API client as there is a missing or empty value for the SFTPGo API username. "+
-				"Set the username value in the configuration or use the SFTPGO_USERNAME environment variable. "+
-				"If either is already set, ensure the value is not empty.",
-		)
-	}
+	if apiKey == "" {
+		if username == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("username"),
+				"Missing SFTPGo API Username",
+				"The provider cannot create the SFTPGo API client as there is a missing or empty value for the SFTPGo API username. "+
+					"Set the username value in the configuration or use the SFTPGO_USERNAME environment variable. "+
+					"If either is already set, ensure the value is not empty.",
+			)
+		}
 
-	if password == "" {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("password"),
-			"Missing SFTPGo API Password",
-			"The provider cannot create the SFTPGo API client as there is a missing or empty value for the SFTPGo API password. "+
-				"Set the password value in the configuration or use the SFTPGO_PASSWORD environment variable. "+
-				"If either is already set, ensure the value is not empty.",
-		)
+		if password == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("password"),
+				"Missing SFTPGo API Password",
+				"The provider cannot create the SFTPGo API client as there is a missing or empty value for the SFTPGo API password. "+
+					"Set the password value in the configuration or use the SFTPGO_PASSWORD environment variable. "+
+					"If either is already set, ensure the value is not empty.",
+			)
+		}
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -186,12 +208,14 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	ctx = tflog.SetField(ctx, "SFTPGo_host", config.Host)
 	ctx = tflog.SetField(ctx, "SFTPGo_username", config.Username)
 	ctx = tflog.SetField(ctx, "SFTPGo_password", config.Password)
+	ctx = tflog.SetField(ctx, "SFTPGo_api_key", config.APIKey)
 	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "SFTPGo_password")
+	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "SFTPGo_api_key")
 
 	tflog.Debug(ctx, "Creating SFTPGo client")
 
 	// Create a new SFTPGo client using the configuration values
-	client, err := client.NewClient(&host, &username, &password)
+	client, err := client.NewClient(&host, &username, &password, &apiKey)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create SFTPGo API Client",

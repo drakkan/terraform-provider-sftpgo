@@ -26,6 +26,7 @@ provider "sftpgo" {
 
 ### Optional
 
+- `api_key` (String, Sensitive) SFTPGo API key. May also be provided via SFTPGO_API_KEY environment variable. You must provide an API key or username and password. If both an API key and username and password are provided, the API key will be used.
 - `host` (String) URI for SFTPGo API. May also be provided via SFTPGO_HOST environment variable.
 - `password` (String, Sensitive) Password for SFTPGo API. May also be provided via SFTPGO_PASSWORD environment variable.
 - `username` (String) Username for SFTPGo API. May also be provided via SFTPGO_USERNAME environment variable.

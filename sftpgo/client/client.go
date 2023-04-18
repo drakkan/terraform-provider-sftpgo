@@ -31,6 +31,7 @@ type Client struct {
 	HostURL     string
 	HTTPClient  *http.Client
 	AccessToken string
+	APIKey      string
 	Auth        AuthStruct
 }
 
@@ -55,7 +56,7 @@ type backupData struct {
 }
 
 // NewClient return an SFTPGo API client
-func NewClient(host, username, password *string) (*Client, error) {
+func NewClient(host, username, password, apiKey *string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		// Default SFTPGo URL
@@ -66,8 +67,13 @@ func NewClient(host, username, password *string) (*Client, error) {
 		c.HostURL = *host
 	}
 
+	if getStringFromPointer(apiKey) != "" {
+		c.APIKey = *apiKey
+		return &c, nil
+	}
+
 	// If username or password not provided, return empty client
-	if username == nil || password == nil {
+	if getStringFromPointer(username) == "" || getStringFromPointer(password) == "" {
 		return nil, fmt.Errorf("define username and password")
 	}
 
@@ -89,6 +95,8 @@ func NewClient(host, username, password *string) (*Client, error) {
 func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, error) {
 	if c.AccessToken != "" {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.AccessToken))
+	} else if c.APIKey != "" {
+		req.Header.Set("X-SFTPGO-API-KEY", c.APIKey)
 	}
 
 	res, err := c.HTTPClient.Do(req)
@@ -107,4 +115,11 @@ func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, e
 	}
 
 	return body, err
+}
+
+func getStringFromPointer(val *string) string {
+	if val == nil {
+		return ""
+	}
+	return *val
 }
