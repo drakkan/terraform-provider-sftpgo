@@ -26,32 +26,22 @@ import (
 
 // GetGroups - Returns list of groups
 func (c *Client) GetGroups() ([]sdk.Group, error) {
-	var result []sdk.Group
-	limit := 100
-
-	for {
-		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/groups?limit=%d&offset=%d", c.HostURL, limit, len(result)), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		body, err := c.doRequest(req, http.StatusOK)
-		if err != nil {
-			return nil, err
-		}
-
-		var groups []sdk.Group
-		err = json.Unmarshal(body, &groups)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, groups...)
-		if len(groups) < limit {
-			break
-		}
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/dumpdata?output-data=1&scopes=groups", c.HostURL), nil)
+	if err != nil {
+		return nil, err
 	}
 
-	return result, nil
+	body, err := c.doRequest(req, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
+
+	var data backupData
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+	return data.Groups, nil
 }
 
 // CreateGroup - creates a new group
@@ -60,7 +50,8 @@ func (c *Client) CreateGroup(group sdk.Group) (*sdk.Group, error) {
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v2/groups", c.HostURL), bytes.NewBuffer(rb))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v2/groups?confidential_data=1", c.HostURL),
+		bytes.NewBuffer(rb))
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +68,8 @@ func (c *Client) CreateGroup(group sdk.Group) (*sdk.Group, error) {
 
 // GetGroup - Returns a specifc group
 func (c *Client) GetGroup(name string) (*sdk.Group, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/groups/%s", c.HostURL, url.PathEscape(name)), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/groups/%s?confidential_data=1", c.HostURL,
+		url.PathEscape(name)), nil)
 	if err != nil {
 		return nil, err
 	}

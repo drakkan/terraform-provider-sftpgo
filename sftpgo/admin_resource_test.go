@@ -88,6 +88,12 @@ func TestAccAdminResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_admin.test", "groups"),
 				),
 			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_admin.test",
+				ImportState:       true,
+				ImportStateVerify: false, // SFTPGo will not return plain text password/secrets
+			},
 			// Update and Read testing
 			{
 				Config: `

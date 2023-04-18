@@ -238,7 +238,7 @@ func (r *rlSafeListEntryResource) Delete(ctx context.Context, req resource.Delet
 }
 
 // ImportState imports an existing the resource and save the Terraform state
-func (r *rlSafeListEntryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*rlSafeListEntryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ipornet and save to ipornet attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("ipornet"), req, resp)
 }

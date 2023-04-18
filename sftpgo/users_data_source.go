@@ -78,16 +78,13 @@ func (d *usersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 							Description: "Account expiration date as unix timestamp in milliseconds. An expired account cannot login.",
 						},
 						"password": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "Password hash saved in the SFTPGo data provider.",
 						},
 						"public_keys": schema.ListAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
 							Description: "List of public keys.",
-						},
-						"has_password": schema.BoolAttribute{
-							Computed:    true,
-							Description: "Indicates whether the password is set.",
 						},
 						"home_dir": schema.StringAttribute{
 							Computed:    true,

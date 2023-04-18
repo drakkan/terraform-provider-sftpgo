@@ -98,32 +98,22 @@ type Admin struct {
 
 // GetAdmins - Returns list of admin
 func (c *Client) GetAdmins() ([]Admin, error) {
-	var result []Admin
-	limit := 100
-
-	for {
-		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/admins?limit=%d&offset=%d", c.HostURL, limit, len(result)), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		body, err := c.doRequest(req, http.StatusOK)
-		if err != nil {
-			return nil, err
-		}
-
-		var admins []Admin
-		err = json.Unmarshal(body, &admins)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, admins...)
-		if len(admins) < limit {
-			break
-		}
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/dumpdata?output-data=1&scopes=admins", c.HostURL), nil)
+	if err != nil {
+		return nil, err
 	}
 
-	return result, nil
+	body, err := c.doRequest(req, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
+
+	var data backupData
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+	return data.Admins, nil
 }
 
 // CreateAdmin - creates a new admin
@@ -132,7 +122,8 @@ func (c *Client) CreateAdmin(admin Admin) (*Admin, error) {
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v2/admins", c.HostURL), bytes.NewBuffer(rb))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v2/admins?confidential_data=1", c.HostURL),
+		bytes.NewBuffer(rb))
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +140,8 @@ func (c *Client) CreateAdmin(admin Admin) (*Admin, error) {
 
 // GetAdmin - Returns a specifc admin
 func (c *Client) GetAdmin(username string) (*Admin, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/admins/%s", c.HostURL, url.PathEscape(username)), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/admins/%s?confidential_data=1", c.HostURL,
+		url.PathEscape(username)), nil)
 	if err != nil {
 		return nil, err
 	}

@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -33,8 +34,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &adminResource{}
-	_ resource.ResourceWithConfigure = &adminResource{}
+	_ resource.Resource                = &adminResource{}
+	_ resource.ResourceWithConfigure   = &adminResource{}
+	_ resource.ResourceWithImportState = &adminResource{}
 )
 
 // NewAdminResource is a helper function to simplify the provider implementation.
@@ -85,8 +87,9 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				},
 			},
 			"password": schema.StringAttribute{
-				Required:  true,
-				Sensitive: true,
+				Required:    true,
+				Sensitive:   true,
+				Description: "Plain text password or hash format supported by SFTPGo.",
 			},
 			"email": schema.StringAttribute{
 				Optional: true,
@@ -331,4 +334,10 @@ func (r *adminResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		)
 		return
 	}
+}
+
+// ImportState imports an existing the resource and save the Terraform state
+func (*adminResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import username and save to username attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("username"), req, resp)
 }

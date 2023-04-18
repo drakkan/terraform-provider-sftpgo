@@ -88,7 +88,7 @@ func TestAccAdminsDataSource(t *testing.T) {
 					// The first admin is the default one
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.username", "admin"),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.id", "admin"),
-					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.password"),
+					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.0.password"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.0.email"),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.status", "1"),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.0.permissions.#", "1"),
@@ -107,7 +107,7 @@ func TestAccAdminsDataSource(t *testing.T) {
 					// Check the admin created in the test case
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.username", admin.Username),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.id", admin.Username),
-					resource.TestCheckNoResourceAttr("data.sftpgo_admins.test", "admins.1.password"),
+					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.1.password"),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.email", admin.Email),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.status", "0"),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.permissions.#",

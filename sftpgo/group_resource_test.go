@@ -124,6 +124,12 @@ func TestAccGroupResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "virtual_folders"),
 				),
 			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_group.test",
+				ImportState:       true,
+				ImportStateVerify: false, // SFTPGo will not return plain text secrets
+			},
 			// Update and Read testing
 			{
 				Config: `

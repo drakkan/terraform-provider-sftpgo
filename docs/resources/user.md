@@ -35,7 +35,7 @@ User
 - `gid` (Number) If SFTPGo runs as root system user then the created files and directories will be assigned to this system GID. Default not set.
 - `groups` (Attributes List) Groups. (see [below for nested schema](#nestedatt--groups))
 - `max_sessions` (Number) Maximum concurrent sessions. Not set means no limit.
-- `password` (String, Sensitive) Set to empty to remove the password.
+- `password` (String, Sensitive) Plain text password or hash format supported by SFTPGo. Set to empty to remove the password.
 - `public_keys` (List of String) List of public keys in OpenSSH format.
 - `quota_files` (Number) Maximum number of files allowed. Not set means no limit.
 - `quota_size` (Number) Maximum size allowed as bytes. Not set means no limit.
@@ -51,7 +51,6 @@ User
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
 - `first_download` (Number) First download time as unix timestamp in milliseconds.
 - `first_upload` (Number) First upload time as unix timestamp in milliseconds.
-- `has_password` (Boolean) Indicates whether the password is set.
 - `id` (String) Required to use the test framework. Matches the username.
 - `last_login` (Number) Last login as unix timestamp in milliseconds.
 - `last_password_change` (Number) Last password change as unix timestamp in milliseconds.
@@ -84,14 +83,14 @@ Optional:
 Optional:
 
 - `access_tier` (String) Blob Access Tier. Not set means the container default.
-- `account_key` (String, Sensitive) Plain text account key.
+- `account_key` (String, Sensitive) Plain text account key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `account_name` (String)
 - `container` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Default: 5.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads. If this value is not set, the default value (5MB) will be used.
 - `endpoint` (String) Optional endpoint. Default is "blob.core.windows.net". If you use the emulator the endpoint must include the protocol, for example "http://127.0.0.1:10000".
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"
-- `sas_url` (String, Sensitive) SAS URL.
+- `sas_url` (String, Sensitive) Plain text SAS URL. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `upload_concurrency` (Number) How many parts are uploaded in parallel. Default: 5.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads. If this value is not set, the default value (5MB) will be used.
 - `use_emulator` (Boolean)
@@ -102,7 +101,7 @@ Optional:
 
 Optional:
 
-- `passphrase` (String, Sensitive) Plain text passphrase.
+- `passphrase` (String, Sensitive) Plain text passphrase. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 
 
 <a id="nestedatt--filesystem--gcsconfig"></a>
@@ -116,7 +115,7 @@ Optional:
 
 - `acl` (String) The ACL to apply to uploaded objects. Not set means the bucket default.
 - `automatic_credentials` (Number)
-- `credentials` (String, Sensitive) Plain text credentials.
+- `credentials` (String, Sensitive) Plain text credentials. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"
 - `storage_class` (String) The storage class to use when storing objects. Leave not set for default.
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
@@ -132,9 +131,9 @@ Required:
 
 Optional:
 
-- `api_key` (String, Sensitive) Plain text API key.
+- `api_key` (String, Sensitive) Plain text API key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `equality_check_mode` (Number)
-- `password` (String, Sensitive) Plain text password.
+- `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `skip_tls_verify` (Boolean)
 - `username` (String)
 
@@ -149,7 +148,7 @@ Required:
 Optional:
 
 - `access_key` (String)
-- `access_secret` (String, Sensitive) Plain text access secret.
+- `access_secret` (String, Sensitive) Plain text access secret. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `acl` (String) The canned ACL to apply to uploaded objects. Not set means the bucket default.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Not set means the default (5). Ignored for partial downloads.
 - `download_part_max_time` (Number) The maximum time allowed, in seconds, to download a single chunk. Not set means no timeout. Ignored for partial downloads.
@@ -180,8 +179,8 @@ Optional:
 - `disable_concurrent_reads` (Boolean) Concurrent reads are safe to use and disabling them will degrade performance so they are enabled by default. Some servers automatically delete files once they are downloaded. Using concurrent reads is problematic with such servers.
 - `equality_check_mode` (Number) Defines how to check if this config points to the same server as another config. By default both the endpoint and the username must match. 1 means that only the endpoint must match. If different configs point to the same server the renaming between the fs configs is allowed.
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server. If not set any host key will be accepted: this is a security risk.
-- `password` (String, Sensitive) Plain text password.
-- `private_key` (String, Sensitive) Plain text private key.
+- `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `private_key` (String, Sensitive) Plain text private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 
 
 
@@ -311,14 +310,14 @@ Read-Only:
 Read-Only:
 
 - `access_tier` (String)
-- `account_key` (String)
+- `account_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `account_name` (String)
 - `container` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads.
 - `endpoint` (String) Optional endpoint
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
-- `sas_url` (String)
+- `sas_url` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `upload_concurrency` (Number) How many parts are uploaded in parallel.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 - `use_emulator` (Boolean)
@@ -329,7 +328,7 @@ Read-Only:
 
 Read-Only:
 
-- `passphrase` (String)
+- `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 
 
 <a id="nestedatt--virtual_folders--filesystem--gcsconfig"></a>
@@ -340,7 +339,7 @@ Read-Only:
 - `acl` (String) The ACL to apply to uploaded objects. Empty means the bucket default.
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String)
-- `credentials` (String)
+- `credentials` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
@@ -352,10 +351,10 @@ Read-Only:
 
 Read-Only:
 
-- `api_key` (String)
+- `api_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `endpoint` (String)
 - `equality_check_mode` (Number)
-- `password` (String)
+- `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `skip_tls_verify` (Boolean)
 - `username` (String)
 
@@ -366,7 +365,7 @@ Read-Only:
 Read-Only:
 
 - `access_key` (String)
-- `access_secret` (String)
+- `access_secret` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
@@ -393,9 +392,9 @@ Read-Only:
 - `endpoint` (String) SFTP endpoint as host:port.
 - `equality_check_mode` (Number)
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
-- `password` (String)
+- `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `prefix` (String) Restrict access to this path.
-- `private_key` (String)
+- `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `username` (String)
 
 

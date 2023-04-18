@@ -29,6 +29,11 @@ import (
 	"github.com/sftpgo/sdk"
 )
 
+const (
+	computedSecretDescription = `SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".`
+	secretDescriptionGeneric  = `If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).`
+)
+
 func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Computed:    true,
@@ -52,7 +57,8 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed: true,
 					},
 					"access_secret": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: computedSecretDescription,
 					},
 					"key_prefix": schema.StringAttribute{
 						Computed:    true,
@@ -115,7 +121,8 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with this prefix.`,
 					},
 					"credentials": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: computedSecretDescription,
 					},
 					"automatic_credentials": schema.Int64Attribute{
 						Computed:    true,
@@ -149,10 +156,12 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed: true,
 					},
 					"account_key": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: computedSecretDescription,
 					},
 					"sas_url": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: computedSecretDescription,
 					},
 					"endpoint": schema.StringAttribute{
 						Computed:    true,
@@ -191,7 +200,8 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"passphrase": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: computedSecretDescription,
 					},
 				},
 			},
@@ -207,10 +217,12 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed: true,
 					},
 					"password": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: computedSecretDescription,
 					},
 					"private_key": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: computedSecretDescription,
 					},
 					"fingerprints": schema.ListAttribute{
 						ElementType: types.StringType,
@@ -244,10 +256,12 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed: true,
 					},
 					"password": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: computedSecretDescription,
 					},
 					"api_key": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: computedSecretDescription,
 					},
 					"skip_tls_verify": schema.BoolAttribute{
 						Computed: true,
@@ -288,7 +302,7 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"access_secret": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Plain text access secret.",
+						Description: "Plain text access secret. " + secretDescriptionGeneric,
 					},
 					"key_prefix": schema.StringAttribute{
 						Optional:    true,
@@ -349,7 +363,7 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"credentials": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Plain text credentials.",
+						Description: "Plain text credentials. " + secretDescriptionGeneric,
 					},
 					"automatic_credentials": schema.Int64Attribute{
 						Optional: true,
@@ -388,12 +402,12 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"account_key": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Plain text account key.",
+						Description: "Plain text account key. " + secretDescriptionGeneric,
 					},
 					"sas_url": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "SAS URL.",
+						Description: "Plain text SAS URL. " + secretDescriptionGeneric,
 					},
 					"endpoint": schema.StringAttribute{
 						Optional:    true,
@@ -434,7 +448,7 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"passphrase": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Plain text passphrase.",
+						Description: "Plain text passphrase. " + secretDescriptionGeneric,
 					},
 				},
 			},
@@ -451,12 +465,12 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"password": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Plain text password.",
+						Description: "Plain text password. " + secretDescriptionGeneric,
 					},
 					"private_key": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Plain text private key.",
+						Description: "Plain text private key. " + secretDescriptionGeneric,
 					},
 					"fingerprints": schema.ListAttribute{
 						ElementType: types.StringType,
@@ -493,12 +507,12 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"password": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Plain text password.",
+						Description: "Plain text password. " + secretDescriptionGeneric,
 					},
 					"api_key": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Plain text API key.",
+						Description: "Plain text API key. " + secretDescriptionGeneric,
 					},
 					"skip_tls_verify": schema.BoolAttribute{
 						Optional: true,
@@ -994,21 +1008,43 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 func preserveFsConfigPlanFields(ctx context.Context, fsPlan, fsState filesystem) (types.Object, diag.Diagnostics) {
 	switch sdk.FilesystemProvider(fsState.Provider.ValueInt64()) {
 	case sdk.S3FilesystemProvider:
-		fsState.S3Config.AccessSecret = fsPlan.S3Config.AccessSecret
+		if fsPlan.S3Config != nil {
+			fsState.S3Config.AccessSecret = fsPlan.S3Config.AccessSecret
+		}
 	case sdk.GCSFilesystemProvider:
-		fsState.GCSConfig.Credentials = fsPlan.GCSConfig.Credentials
+		if fsPlan.GCSConfig != nil {
+			fsState.GCSConfig.Credentials = fsPlan.GCSConfig.Credentials
+		}
 	case sdk.AzureBlobFilesystemProvider:
-		fsState.AzBlobConfig.AccountKey = fsPlan.AzBlobConfig.AccountKey
-		fsState.AzBlobConfig.SASURL = fsPlan.AzBlobConfig.SASURL
+		if fsPlan.AzBlobConfig != nil {
+			fsState.AzBlobConfig.AccountKey = fsPlan.AzBlobConfig.AccountKey
+			fsState.AzBlobConfig.SASURL = fsPlan.AzBlobConfig.SASURL
+		}
 	case sdk.CryptedFilesystemProvider:
-		fsState.CryptConfig.Passphrase = fsPlan.CryptConfig.Passphrase
+		if fsPlan.CryptConfig != nil {
+			fsState.CryptConfig.Passphrase = fsPlan.CryptConfig.Passphrase
+		}
 	case sdk.SFTPFilesystemProvider:
-		fsState.SFTPConfig.Password = fsPlan.SFTPConfig.Password
-		fsState.SFTPConfig.PrivateKey = fsPlan.SFTPConfig.PrivateKey
+		if fsPlan.SFTPConfig != nil {
+			fsState.SFTPConfig.Password = fsPlan.SFTPConfig.Password
+			fsState.SFTPConfig.PrivateKey = fsPlan.SFTPConfig.PrivateKey
+		}
 	case sdk.HTTPFilesystemProvider:
-		fsState.HTTPConfig.Password = fsPlan.HTTPConfig.Password
-		fsState.HTTPConfig.APIKey = fsPlan.HTTPConfig.APIKey
+		if fsPlan.HTTPConfig != nil {
+			fsState.HTTPConfig.Password = fsPlan.HTTPConfig.Password
+			fsState.HTTPConfig.APIKey = fsPlan.HTTPConfig.APIKey
+		}
 	}
 
 	return types.ObjectValueFrom(ctx, fsState.getTFAttributes(), fsState)
+}
+
+// contains reports whether v is present in elems.
+func contains[T comparable](elems []T, v T) bool {
+	for _, s := range elems {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }

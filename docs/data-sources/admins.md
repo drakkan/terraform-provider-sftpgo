@@ -33,7 +33,7 @@ Read-Only:
 - `groups` (Attributes List) Groups automatically selected for new users created by this admin. (see [below for nested schema](#nestedatt--admins--groups))
 - `id` (String)
 - `last_login` (Number) Last login as unix timestamp in milliseconds.
-- `password` (String)
+- `password` (String) Password hash saved in the SFTPGo data provider.
 - `permissions` (List of String) Granted permissions.
 - `preferences` (Attributes) Admin preferences. (see [below for nested schema](#nestedatt--admins--preferences))
 - `role` (String) Role name. If set the admin can only administer users with the same role.

@@ -26,32 +26,22 @@ import (
 
 // GetFolders - Returns list of folders
 func (c *Client) GetFolders() ([]sdk.BaseVirtualFolder, error) {
-	var result []sdk.BaseVirtualFolder
-	limit := 100
-
-	for {
-		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/folders?limit=%d&offset=%d", c.HostURL, limit, len(result)), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		body, err := c.doRequest(req, http.StatusOK)
-		if err != nil {
-			return nil, err
-		}
-
-		var folders []sdk.BaseVirtualFolder
-		err = json.Unmarshal(body, &folders)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, folders...)
-		if len(folders) < limit {
-			break
-		}
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/dumpdata?output-data=1&scopes=folders", c.HostURL), nil)
+	if err != nil {
+		return nil, err
 	}
 
-	return result, nil
+	body, err := c.doRequest(req, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
+
+	var data backupData
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+	return data.Folders, nil
 }
 
 // CreateFolder - creates a new folder
@@ -60,7 +50,8 @@ func (c *Client) CreateFolder(folder sdk.BaseVirtualFolder) (*sdk.BaseVirtualFol
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v2/folders", c.HostURL), bytes.NewBuffer(rb))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v2/folders?confidential_data=1", c.HostURL),
+		bytes.NewBuffer(rb))
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +68,8 @@ func (c *Client) CreateFolder(folder sdk.BaseVirtualFolder) (*sdk.BaseVirtualFol
 
 // GetFolder - Returns a specifc folder
 func (c *Client) GetFolder(name string) (*sdk.BaseVirtualFolder, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/folders/%s", c.HostURL, url.PathEscape(name)), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/folders/%s?confidential_data=1", c.HostURL,
+		url.PathEscape(name)), nil)
 	if err != nil {
 		return nil, err
 	}

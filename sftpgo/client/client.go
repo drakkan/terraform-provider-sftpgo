@@ -19,6 +19,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/sftpgo/sdk"
 )
 
 // HostURL - Default SFTPGo URL
@@ -42,6 +44,14 @@ type AuthStruct struct {
 type AuthResponse struct {
 	AccessToken string    `json:"access_token"`
 	ExpiresAt   time.Time `json:"expires_at"`
+}
+
+type backupData struct {
+	Users   []User                  `json:"users"`
+	Groups  []sdk.Group             `json:"groups"`
+	Folders []sdk.BaseVirtualFolder `json:"folders"`
+	Admins  []Admin                 `json:"admins"`
+	Version int                     `json:"version"`
 }
 
 // NewClient return an SFTPGo API client

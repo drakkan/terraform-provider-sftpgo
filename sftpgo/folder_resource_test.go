@@ -63,6 +63,12 @@ func TestAccFolderResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.azblobconfig.sas_url"),
 				),
 			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_folder.test",
+				ImportState:       true,
+				ImportStateVerify: false, // SFTPGo will not return plain text secrets
+			},
 			// Update and Read testing
 			{
 				Config: `

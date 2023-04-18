@@ -247,7 +247,7 @@ func (r *defenderEntryResource) Delete(ctx context.Context, req resource.DeleteR
 }
 
 // ImportState imports an existing the resource and save the Terraform state
-func (r *defenderEntryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*defenderEntryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ipornet and save to ipornet attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("ipornet"), req, resp)
 }

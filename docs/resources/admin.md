@@ -17,7 +17,7 @@ Admin
 
 ### Required
 
-- `password` (String, Sensitive)
+- `password` (String, Sensitive) Plain text password or hash format supported by SFTPGo.
 - `permissions` (List of String) Granted permissions.
 - `status` (Number) 1 enabled, 0 disabled (login is not allowed).
 - `username` (String) Unique username.

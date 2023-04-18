@@ -119,7 +119,6 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("sftpgo_user.test", "created_at"),
 					resource.TestCheckResourceAttrSet("sftpgo_user.test", "updated_at"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "password", "secret pwd"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "has_password", "true"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "home_dir", "/tmp/testuser"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "email", "test@test.com"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "2"),
@@ -170,6 +169,12 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "role", testRole.Name),
 				),
 			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_user.test",
+				ImportState:       true,
+				ImportStateVerify: false, // SFTPGo will not return plain text password/secrets
+			},
 			// Update and Read testing
 			{
 				Config: `
@@ -215,7 +220,6 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("sftpgo_user.test", "created_at"),
 					resource.TestCheckResourceAttrSet("sftpgo_user.test", "updated_at"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "password"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "has_password", "false"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "home_dir", "/tmp/testuser"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "email"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "2"),
@@ -280,7 +284,6 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("sftpgo_user.test", "created_at"),
 					resource.TestCheckResourceAttrSet("sftpgo_user.test", "updated_at"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "password"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "has_password", "false"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "home_dir", "/tmp/testuser"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "email"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "1"),

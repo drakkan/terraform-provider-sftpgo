@@ -19,6 +19,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -33,8 +34,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &userResource{}
-	_ resource.ResourceWithConfigure = &userResource{}
+	_ resource.Resource                = &userResource{}
+	_ resource.ResourceWithConfigure   = &userResource{}
+	_ resource.ResourceWithImportState = &userResource{}
 )
 
 // NewUserResource is a helper function to simplify the provider implementation.
@@ -91,16 +93,12 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"password": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
-				Description: "Set to empty to remove the password.",
+				Description: "Plain text password or hash format supported by SFTPGo. Set to empty to remove the password.",
 			},
 			"public_keys": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
 				Description: "List of public keys in OpenSSH format.",
-			},
-			"has_password": schema.BoolAttribute{
-				Computed:    true,
-				Description: "Indicates whether the password is set.",
 			},
 			"home_dir": schema.StringAttribute{
 				Required:    true,
@@ -315,7 +313,7 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	// Set refreshed state
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -395,8 +393,20 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 }
 
+// ImportState imports an existing the resource and save the Terraform state
+func (*userResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import username and save to username attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("username"), req, resp)
+}
+
 func (*userResource) preservePlanFields(ctx context.Context, plan, state *userResourceModel) diag.Diagnostics {
-	state.Password = plan.Password
+	if !plan.Password.IsNull() {
+		state.Password = plan.Password
+	}
+
+	if plan.FsConfig.IsNull() {
+		return nil
+	}
 
 	var fsPlan filesystem
 	diags := plan.FsConfig.As(ctx, &fsPlan, basetypes.ObjectAsOptions{

@@ -234,7 +234,7 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 }
 
 // ImportState imports an existing the resource and save the Terraform state
-func (r *roleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*roleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import name and save to name attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }

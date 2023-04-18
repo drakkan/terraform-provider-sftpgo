@@ -71,7 +71,8 @@ func (d *adminsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 							Description: "1 enabled, 0 disabled (login is not allowed).",
 						},
 						"password": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "Password hash saved in the SFTPGo data provider.",
 						},
 						"email": schema.StringAttribute{
 							Computed: true,

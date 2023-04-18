@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -31,8 +32,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &groupResource{}
-	_ resource.ResourceWithConfigure = &groupResource{}
+	_ resource.Resource                = &groupResource{}
+	_ resource.ResourceWithConfigure   = &groupResource{}
+	_ resource.ResourceWithImportState = &groupResource{}
 )
 
 // NewGroupResource is a helper function to simplify the provider implementation.
@@ -305,7 +307,16 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	}
 }
 
+// ImportState imports an existing the resource and save the Terraform state
+func (*groupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import name and save to name attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
+}
+
 func (*groupResource) preservePlanFields(ctx context.Context, plan, state *groupResourceModel) diag.Diagnostics {
+	if plan.UserSettings.IsNull() {
+		return nil
+	}
 	var settingsPlan groupUserSettings
 	diags := plan.UserSettings.As(ctx, &settingsPlan, basetypes.ObjectAsOptions{
 		UnhandledNullAsEmpty:    true,

@@ -56,14 +56,14 @@ Read-Only:
 Read-Only:
 
 - `access_tier` (String)
-- `account_key` (String)
+- `account_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `account_name` (String)
 - `container` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads.
 - `endpoint` (String) Optional endpoint
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
-- `sas_url` (String)
+- `sas_url` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `upload_concurrency` (Number) How many parts are uploaded in parallel.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 - `use_emulator` (Boolean)
@@ -74,7 +74,7 @@ Read-Only:
 
 Read-Only:
 
-- `passphrase` (String)
+- `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 
 
 <a id="nestedatt--folders--filesystem--gcsconfig"></a>
@@ -85,7 +85,7 @@ Read-Only:
 - `acl` (String) The ACL to apply to uploaded objects. Empty means the bucket default.
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String)
-- `credentials` (String)
+- `credentials` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
@@ -97,10 +97,10 @@ Read-Only:
 
 Read-Only:
 
-- `api_key` (String)
+- `api_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `endpoint` (String)
 - `equality_check_mode` (Number)
-- `password` (String)
+- `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `skip_tls_verify` (Boolean)
 - `username` (String)
 
@@ -111,7 +111,7 @@ Read-Only:
 Read-Only:
 
 - `access_key` (String)
-- `access_secret` (String)
+- `access_secret` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
@@ -138,9 +138,9 @@ Read-Only:
 - `endpoint` (String) SFTP endpoint as host:port.
 - `equality_check_mode` (Number)
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
-- `password` (String)
+- `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `prefix` (String) Restrict access to this path.
-- `private_key` (String)
+- `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `username` (String)
 
 

@@ -35,32 +35,23 @@ type User struct {
 
 // GetUsers - Returns list of users
 func (c *Client) GetUsers() ([]User, error) {
-	var result []User
-	limit := 100
-
-	for {
-		req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/users?limit=%d&offset=%d", c.HostURL, limit, len(result)), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		body, err := c.doRequest(req, http.StatusOK)
-		if err != nil {
-			return nil, err
-		}
-
-		var users []User
-		err = json.Unmarshal(body, &users)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, users...)
-		if len(users) < limit {
-			break
-		}
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/dumpdata?output-data=1&scopes=users", c.HostURL), nil)
+	if err != nil {
+		return nil, err
 	}
 
-	return result, nil
+	body, err := c.doRequest(req, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
+
+	var data backupData
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data.Users, nil
 }
 
 // CreateUser - creates a new user
@@ -69,7 +60,8 @@ func (c *Client) CreateUser(user User) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v2/users", c.HostURL), bytes.NewBuffer(rb))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/v2/users?confidential_data=1", c.HostURL),
+		bytes.NewBuffer(rb))
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +78,8 @@ func (c *Client) CreateUser(user User) (*User, error) {
 
 // GetUser - Returns a specifc user
 func (c *Client) GetUser(username string) (*User, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/users/%s", c.HostURL, url.PathEscape(username)), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/users/%s?confidential_data=1", c.HostURL,
+		url.PathEscape(username)), nil)
 	if err != nil {
 		return nil, err
 	}

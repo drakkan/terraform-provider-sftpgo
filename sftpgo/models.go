@@ -16,6 +16,8 @@ package sftpgo
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -37,7 +39,6 @@ type userResourceModel struct {
 	ExpirationDate           types.Int64        `tfsdk:"expiration_date"`
 	Password                 types.String       `tfsdk:"password"`
 	PublicKeys               types.List         `tfsdk:"public_keys"`
-	HasPassword              types.Bool         `tfsdk:"has_password"`
 	HomeDir                  types.String       `tfsdk:"home_dir"`
 	UID                      types.Int64        `tfsdk:"uid"`
 	GID                      types.Int64        `tfsdk:"gid"`
@@ -162,7 +163,6 @@ func (u *userResourceModel) fromSFTPGo(ctx context.Context, user *client.User) d
 	u.Email = getOptionalString(user.Email)
 	u.ExpirationDate = getOptionalInt64(user.ExpirationDate)
 	u.Password = getOptionalString(user.Password)
-	u.HasPassword = types.BoolValue(user.HasPassword)
 	u.HomeDir = types.StringValue(user.HomeDir)
 	u.UID = getOptionalInt64(int64(user.UID))
 	u.GID = getOptionalInt64(int64(user.GID))
@@ -897,7 +897,7 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 				DownloadPartMaxTime: int(f.S3Config.DownloadPartMaxTime.ValueInt64()),
 				ForcePathStyle:      f.S3Config.ForcePathStyle.ValueBool(),
 			},
-			AccessSecret: getSFTPGoSecret(f.S3Config.AccessKey.ValueString()),
+			AccessSecret: getSFTPGoSecret(f.S3Config.AccessSecret.ValueString()),
 		},
 		GCSConfig: sdk.GCSFsConfig{
 			BaseGCSFsConfig: sdk.BaseGCSFsConfig{
@@ -978,7 +978,7 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 			KeyPrefix:           getOptionalString(fs.S3Config.KeyPrefix),
 			Region:              getOptionalString(fs.S3Config.Region),
 			AccessKey:           getOptionalString(fs.S3Config.AccessKey),
-			AccessSecret:        getOptionalString(fs.S3Config.AccessSecret.Payload),
+			AccessSecret:        getOptionalString(getSecretFromSFTPGo(fs.S3Config.AccessSecret)),
 			RoleARN:             getOptionalString(fs.S3Config.RoleARN),
 			Endpoint:            getOptionalString(fs.S3Config.Endpoint),
 			StorageClass:        getOptionalString(fs.S3Config.StorageClass),
@@ -995,7 +995,7 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 		f.GCSConfig = &gcsFsConfig{
 			Bucket:               getOptionalString(fs.GCSConfig.Bucket),
 			KeyPrefix:            getOptionalString(fs.GCSConfig.KeyPrefix),
-			Credentials:          getOptionalString(fs.GCSConfig.Credentials.Payload),
+			Credentials:          getOptionalString(getSecretFromSFTPGo(fs.GCSConfig.Credentials)),
 			AutomaticCredentials: getOptionalInt64(int64(fs.GCSConfig.AutomaticCredentials)),
 			StorageClass:         getOptionalString(fs.GCSConfig.StorageClass),
 			ACL:                  getOptionalString(fs.GCSConfig.ACL),
@@ -1006,8 +1006,8 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 		f.AzBlobConfig = &azBlobFsConfig{
 			Container:           getOptionalString(fs.AzBlobConfig.Container),
 			AccountName:         getOptionalString(fs.AzBlobConfig.AccountName),
-			AccountKey:          getOptionalString(fs.AzBlobConfig.AccountKey.Payload),
-			SASURL:              getOptionalString(fs.AzBlobConfig.SASURL.Payload),
+			AccountKey:          getOptionalString(getSecretFromSFTPGo(fs.AzBlobConfig.AccountKey)),
+			SASURL:              getOptionalString(getSecretFromSFTPGo(fs.AzBlobConfig.SASURL)),
 			Endpoint:            getOptionalString(fs.AzBlobConfig.Endpoint),
 			KeyPrefix:           getOptionalString(fs.AzBlobConfig.KeyPrefix),
 			UploadPartSize:      getOptionalInt64(fs.AzBlobConfig.UploadPartSize),
@@ -1019,14 +1019,14 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 		}
 	case sdk.CryptedFilesystemProvider:
 		f.CryptConfig = &cryptFsConfig{
-			Passphrase: getOptionalString(fs.CryptConfig.Passphrase.Payload),
+			Passphrase: getOptionalString(getSecretFromSFTPGo(fs.CryptConfig.Passphrase)),
 		}
 	case sdk.SFTPFilesystemProvider:
 		f.SFTPConfig = &sftpFsConfig{
 			Endpoint:                getOptionalString(fs.SFTPConfig.Endpoint),
 			Username:                getOptionalString(fs.SFTPConfig.Username),
-			Password:                getOptionalString(fs.SFTPConfig.Password.Payload),
-			PrivateKey:              getOptionalString(fs.SFTPConfig.PrivateKey.Payload),
+			Password:                getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.Password)),
+			PrivateKey:              getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.PrivateKey)),
 			Prefix:                  getOptionalString(fs.SFTPConfig.Prefix),
 			DisableCouncurrentReads: getOptionalBool(fs.SFTPConfig.DisableCouncurrentReads),
 			BufferSize:              getOptionalInt64(fs.SFTPConfig.BufferSize),
@@ -1041,8 +1041,8 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 		f.HTTPConfig = &httpFsConfig{
 			Endpoint:          getOptionalString(fs.HTTPConfig.Endpoint),
 			Username:          getOptionalString(fs.HTTPConfig.Username),
-			Password:          getOptionalString(fs.HTTPConfig.Password.Payload),
-			APIKey:            getOptionalString(fs.HTTPConfig.APIKey.Payload),
+			Password:          getOptionalString(getSecretFromSFTPGo(fs.HTTPConfig.Password)),
+			APIKey:            getOptionalString(getSecretFromSFTPGo(fs.HTTPConfig.APIKey)),
 			SkipTLSVerify:     getOptionalBool(fs.HTTPConfig.SkipTLSVerify),
 			EqualityCheckMode: getOptionalInt64(int64(fs.HTTPConfig.EqualityCheckMode)),
 		}
@@ -1806,12 +1806,38 @@ func getOptionalBool(val bool) types.Bool {
 	return types.BoolValue(val)
 }
 
-func getSFTPGoSecret(payload string) kms.BaseSecret {
-	if payload == "" {
+var supportedSecretStatues = []string{kms.SecretStatusSecretBox, kms.SecretStatusAES256GCM, kms.SecretStatusGCP,
+	kms.SecretStatusAWS, kms.SecretStatusVaultTransit, kms.SecretStatusAzureKeyVault}
+
+func getSFTPGoSecret(val string) kms.BaseSecret {
+	if val == "" {
 		return kms.BaseSecret{}
+	}
+	parts := strings.SplitN(val, "$", 5)
+	if len(parts) == 5 && parts[0] == "" && contains(supportedSecretStatues, parts[1]) {
+		additionalDataLen, err := strconv.Atoi(parts[3])
+		if err == nil && len(parts[4]) > additionalDataLen {
+			return kms.BaseSecret{
+				Status:         parts[1],
+				Payload:        parts[4][additionalDataLen:],
+				Key:            parts[2],
+				AdditionalData: parts[4][:additionalDataLen],
+			}
+		}
 	}
 	return kms.BaseSecret{
 		Status:  kms.SecretStatusPlain,
-		Payload: payload,
+		Payload: val,
 	}
+}
+
+func getSecretFromSFTPGo(secret kms.BaseSecret) string {
+	if secret.Status == "" {
+		return ""
+	}
+	if secret.Status == kms.SecretStatusPlain {
+		return secret.Payload
+	}
+	return fmt.Sprintf("$%s$%s$%d$%s%s", secret.Status, secret.Key, len(secret.AdditionalData),
+		secret.AdditionalData, secret.Payload)
 }

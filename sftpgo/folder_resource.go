@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -29,8 +30,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &folderResource{}
-	_ resource.ResourceWithConfigure = &folderResource{}
+	_ resource.Resource                = &folderResource{}
+	_ resource.ResourceWithConfigure   = &folderResource{}
+	_ resource.ResourceWithImportState = &folderResource{}
 )
 
 // NewFolderResource is a helper function to simplify the provider implementation.
@@ -254,7 +256,16 @@ func (r *folderResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
+// ImportState imports an existing the resource and save the Terraform state
+func (*folderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import name and save to name attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
+}
+
 func (*folderResource) preservePlanFields(ctx context.Context, plan, state *virtualFolderResourceModel) diag.Diagnostics {
+	if plan.FsConfig.IsNull() {
+		return nil
+	}
 	var fsPlan filesystem
 	diags := plan.FsConfig.As(ctx, &fsPlan, basetypes.ObjectAsOptions{
 		UnhandledNullAsEmpty:    true,
