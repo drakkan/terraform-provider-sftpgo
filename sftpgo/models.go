@@ -203,14 +203,14 @@ func (u *userResourceModel) fromSFTPGo(ctx context.Context, user *client.User) d
 		return diags
 	}
 	u.Permissions = tfMap
-	var groups []userGroupMapping
+
+	u.Groups = nil
 	for _, g := range user.Groups {
-		groups = append(groups, userGroupMapping{
+		u.Groups = append(u.Groups, userGroupMapping{
 			Name: types.StringValue(g.Name),
 			Type: types.Int64Value(int64(g.Type)),
 		})
 	}
-	u.Groups = groups
 
 	var f userFilters
 	diags = f.fromSFTPGo(ctx, &user.Filters)
@@ -223,6 +223,7 @@ func (u *userResourceModel) fromSFTPGo(ctx context.Context, user *client.User) d
 	}
 	u.Filters = filters
 
+	u.VirtualFolders = nil
 	for _, f := range user.VirtualFolders {
 		var folder virtualFolder
 		diags := folder.fromSFTPGo(ctx, &f)
@@ -231,6 +232,7 @@ func (u *userResourceModel) fromSFTPGo(ctx context.Context, user *client.User) d
 		}
 		u.VirtualFolders = append(u.VirtualFolders, folder)
 	}
+
 	var fsConfig filesystem
 	diags = fsConfig.fromSFTPGo(ctx, &user.FsConfig)
 	if diags.HasError() {
@@ -499,6 +501,8 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 		return diags
 	}
 	f.DeniedProtocols = deniedProtocols
+
+	f.FilePatterns = nil
 	for _, patterns := range filters.FilePatterns {
 		allowedPatterns, diags := types.ListValueFrom(ctx, types.StringType, patterns.AllowedPatterns)
 		if diags.HasError() {
@@ -515,6 +519,7 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 			DenyPolicy:      getOptionalInt64(int64(patterns.DenyPolicy)),
 		})
 	}
+
 	f.MaxUploadFileSize = getOptionalInt64(filters.MaxUploadFileSize)
 	f.TLSUsername = getOptionalString(string(filters.TLSUsername))
 	f.ExternalAuthDisabled = getOptionalBool(filters.Hooks.ExternalAuthDisabled)
@@ -528,6 +533,8 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 	f.WebClient = webClient
 	f.AllowAPIKeyAuth = getOptionalBool(filters.AllowAPIKeyAuth)
 	f.UserType = getOptionalString(filters.UserType)
+
+	f.BandwidthLimits = nil
 	for _, limit := range filters.BandwidthLimits {
 		sources, diags := types.ListValueFrom(ctx, types.StringType, limit.Sources)
 		if diags.HasError() {
@@ -539,6 +546,8 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 			DownloadBandwidth: getOptionalInt64(limit.DownloadBandwidth),
 		})
 	}
+
+	f.DataTransferLimits = nil
 	for _, limit := range filters.DataTransferLimits {
 		sources, diags := types.ListValueFrom(ctx, types.StringType, limit.Sources)
 		if diags.HasError() {
@@ -551,6 +560,7 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 			TotalDataTransfer:    getOptionalInt64(limit.TotalDataTransfer),
 		})
 	}
+
 	f.ExternalAuthCacheTime = getOptionalInt64(filters.ExternalAuthCacheTime)
 	f.StartDirectory = getOptionalString(filters.StartDirectory)
 	twoFactorProtos, diags := types.ListValueFrom(ctx, types.StringType, filters.TwoFactorAuthProtocols)
@@ -1420,6 +1430,7 @@ func (g *groupResourceModel) fromSFTPGo(ctx context.Context, group *sdk.Group) d
 	}
 	g.UserSettings = settings
 
+	g.VirtualFolders = nil
 	for _, f := range group.VirtualFolders {
 		var folder virtualFolder
 		diags := folder.fromSFTPGo(ctx, &f)
@@ -1782,6 +1793,915 @@ func (e *rlSafeListEntryResourceModel) fromSFTPGo(ctx context.Context, entry *cl
 	e.Protocols = types.Int64Value(int64(entry.Protocols))
 	e.CreatedAt = types.Int64Value(entry.CreatedAt)
 	e.UpdatedAt = types.Int64Value(entry.UpdatedAt)
+	return nil
+}
+
+type keyValue struct {
+	Key   types.String `tfsdk:"key"`
+	Value types.String `tfsdk:"value"`
+}
+
+func (*keyValue) getTFAttributes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"key":   types.StringType,
+		"value": types.StringType,
+	}
+}
+
+type httpPart struct {
+	Name     types.String `tfsdk:"name"`
+	Filepath types.String `tfsdk:"filepath"`
+	Headers  []keyValue   `tfsdk:"headers"`
+	Body     types.String `tfsdk:"body"`
+}
+
+type eventActionHTTPConfig struct {
+	Endpoint        types.String `tfsdk:"endpoint"`
+	Username        types.String `tfsdk:"username"`
+	Password        types.String `tfsdk:"password"`
+	Headers         []keyValue   `tfsdk:"headers"`
+	Timeout         types.Int64  `tfsdk:"timeout"`
+	SkipTLSVerify   types.Bool   `tfsdk:"skip_tls_verify"`
+	Method          types.String `tfsdk:"method"`
+	QueryParameters []keyValue   `tfsdk:"query_parameters"`
+	Body            types.String `tfsdk:"body"`
+	Parts           []httpPart   `tfsdk:"parts"`
+}
+
+type eventActionCommandConfig struct {
+	Cmd     types.String `tfsdk:"cmd"`
+	Args    types.List   `tfsdk:"args"`
+	Timeout types.Int64  `tfsdk:"timeout"`
+	EnvVars []keyValue   `tfsdk:"env_vars"`
+}
+
+type eventActionEmailConfig struct {
+	Recipients  types.List   `tfsdk:"recipients"`
+	Subject     types.String `tfsdk:"subject"`
+	Body        types.String `tfsdk:"body"`
+	Attachments types.List   `tfsdk:"attachments"`
+}
+
+type folderRetention struct {
+	Path                  types.String `tfsdk:"path"`
+	Retention             types.Int64  `tfsdk:"retention"`
+	DeleteEmptyDirs       types.Bool   `tfsdk:"delete_empty_dirs"`
+	IgnoreUserPermissions types.Bool   `tfsdk:"ignore_user_permissions"`
+}
+
+type eventActionDataRetentionConfig struct {
+	Folders []folderRetention `tfsdk:"folders"`
+}
+
+type eventActionFsCompress struct {
+	Name  types.String `tfsdk:"name"`
+	Paths types.List   `tfsdk:"paths"`
+}
+
+type eventActionFilesystemConfig struct {
+	Type     types.Int64            `tfsdk:"type"`
+	Renames  []keyValue             `tfsdk:"renames"`
+	MkDirs   types.List             `tfsdk:"mkdirs"`
+	Deletes  types.List             `tfsdk:"deletes"`
+	Exist    types.List             `tfsdk:"exist"`
+	Copy     []keyValue             `tfsdk:"copy"`
+	Compress *eventActionFsCompress `tfsdk:"compress"`
+}
+
+type eventActionPasswordExpiration struct {
+	Threshold types.Int64 `tfsdk:"threshold"`
+}
+
+type eventActionIDPAccountCheck struct {
+	Mode          types.Int64  `tfsdk:"mode"`
+	TemplateUser  types.String `tfsdk:"template_user"`
+	TemplateAdmin types.String `tfsdk:"template_admin"`
+}
+
+type eventActionOptions struct {
+	HTTPConfig          *eventActionHTTPConfig          `tfsdk:"http_config"`
+	CmdConfig           *eventActionCommandConfig       `tfsdk:"cmd_config"`
+	EmailConfig         *eventActionEmailConfig         `tfsdk:"email_config"`
+	RetentionConfig     *eventActionDataRetentionConfig `tfsdk:"retention_config"`
+	FsConfig            *eventActionFilesystemConfig    `tfsdk:"fs_config"`
+	PwdExpirationConfig *eventActionPasswordExpiration  `tfsdk:"pwd_expiration_config"`
+	IDPConfig           *eventActionIDPAccountCheck     `tfsdk:"idp_config"`
+}
+
+func (o *eventActionOptions) ensureNotNull() {
+	if o.HTTPConfig == nil {
+		o.HTTPConfig = &eventActionHTTPConfig{}
+	}
+	if o.CmdConfig == nil {
+		o.CmdConfig = &eventActionCommandConfig{}
+	}
+	if o.EmailConfig == nil {
+		o.EmailConfig = &eventActionEmailConfig{}
+	}
+	if o.RetentionConfig == nil {
+		o.RetentionConfig = &eventActionDataRetentionConfig{}
+	}
+	if o.FsConfig == nil {
+		o.FsConfig = &eventActionFilesystemConfig{}
+	}
+	if o.FsConfig.Compress == nil {
+		o.FsConfig.Compress = &eventActionFsCompress{}
+	}
+	if o.PwdExpirationConfig == nil {
+		o.PwdExpirationConfig = &eventActionPasswordExpiration{}
+	}
+	if o.IDPConfig == nil {
+		o.IDPConfig = &eventActionIDPAccountCheck{}
+	}
+}
+
+func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
+	kv := keyValue{}
+
+	return map[string]attr.Type{
+		"http_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"endpoint": types.StringType,
+				"username": types.StringType,
+				"password": types.StringType,
+				"headers": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: map[string]attr.Type{
+							"key":   types.StringType,
+							"value": types.StringType,
+						},
+					},
+				},
+				"timeout":         types.Int64Type,
+				"skip_tls_verify": types.BoolType,
+				"method":          types.StringType,
+				"query_parameters": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: kv.getTFAttributes(),
+					},
+				},
+				"body": types.StringType,
+				"parts": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: map[string]attr.Type{
+							"name":     types.StringType,
+							"filepath": types.StringType,
+							"headers": types.ListType{
+								ElemType: types.ObjectType{
+									AttrTypes: kv.getTFAttributes(),
+								},
+							},
+							"body": types.StringType,
+						},
+					},
+				},
+			},
+		},
+		"cmd_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"cmd": types.StringType,
+				"args": types.ListType{
+					ElemType: types.StringType,
+				},
+				"timeout": types.Int64Type,
+				"env_vars": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: kv.getTFAttributes(),
+					},
+				},
+			},
+		},
+		"email_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"recipients": types.ListType{
+					ElemType: types.StringType,
+				},
+				"subject": types.StringType,
+				"body":    types.StringType,
+				"attachments": types.ListType{
+					ElemType: types.StringType,
+				},
+			},
+		},
+		"retention_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"folders": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: map[string]attr.Type{
+							"path":                    types.StringType,
+							"retention":               types.Int64Type,
+							"delete_empty_dirs":       types.BoolType,
+							"ignore_user_permissions": types.BoolType,
+						},
+					},
+				},
+			},
+		},
+		"fs_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"type": types.Int64Type,
+				"renames": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: kv.getTFAttributes(),
+					},
+				},
+				"mkdirs": types.ListType{
+					ElemType: types.StringType,
+				},
+				"deletes": types.ListType{
+					ElemType: types.StringType,
+				},
+				"exist": types.ListType{
+					ElemType: types.StringType,
+				},
+				"copy": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: kv.getTFAttributes(),
+					},
+				},
+				"compress": types.ObjectType{
+					AttrTypes: map[string]attr.Type{
+						"name": types.StringType,
+						"paths": types.ListType{
+							ElemType: types.StringType,
+						},
+					},
+				},
+			},
+		},
+		"pwd_expiration_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"threshold": types.Int64Type,
+			},
+		},
+		"idp_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"mode":           types.Int64Type,
+				"template_user":  types.StringType,
+				"template_admin": types.StringType,
+			},
+		},
+	}
+}
+
+func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOptions, diag.Diagnostics) {
+	o.ensureNotNull()
+	options := client.EventActionOptions{
+		HTTPConfig: client.EventActionHTTPConfig{
+			Endpoint:      o.HTTPConfig.Endpoint.ValueString(),
+			Username:      o.HTTPConfig.Username.ValueString(),
+			Password:      getSFTPGoSecret(o.HTTPConfig.Password.ValueString()),
+			Timeout:       int(o.HTTPConfig.Timeout.ValueInt64()),
+			SkipTLSVerify: o.HTTPConfig.SkipTLSVerify.ValueBool(),
+			Method:        o.HTTPConfig.Method.ValueString(),
+			Body:          o.HTTPConfig.Body.ValueString(),
+		},
+		CmdConfig: client.EventActionCommandConfig{
+			Cmd:     o.CmdConfig.Cmd.ValueString(),
+			Timeout: int(o.CmdConfig.Timeout.ValueInt64()),
+		},
+		EmailConfig: client.EventActionEmailConfig{
+			Subject: o.EmailConfig.Subject.ValueString(),
+			Body:    o.EmailConfig.Body.ValueString(),
+		},
+		FsConfig: client.EventActionFilesystemConfig{
+			Type: int(o.FsConfig.Type.ValueInt64()),
+			Compress: client.EventActionFsCompress{
+				Name: o.FsConfig.Compress.Name.ValueString(),
+			},
+		},
+		PwdExpirationConfig: client.EventActionPasswordExpiration{
+			Threshold: int(o.PwdExpirationConfig.Threshold.ValueInt64()),
+		},
+		IDPConfig: client.EventActionIDPAccountCheck{
+			Mode:          int(o.IDPConfig.Mode.ValueInt64()),
+			TemplateUser:  o.IDPConfig.TemplateUser.ValueString(),
+			TemplateAdmin: o.IDPConfig.TemplateAdmin.ValueString(),
+		},
+	}
+
+	for _, h := range o.HTTPConfig.Headers {
+		options.HTTPConfig.Headers = append(options.HTTPConfig.Headers, client.KeyValue{
+			Key:   h.Key.ValueString(),
+			Value: h.Value.ValueString(),
+		})
+	}
+	for _, q := range o.HTTPConfig.QueryParameters {
+		options.HTTPConfig.QueryParameters = append(options.HTTPConfig.QueryParameters, client.KeyValue{
+			Key:   q.Key.ValueString(),
+			Value: q.Value.ValueString(),
+		})
+	}
+	for _, p := range o.HTTPConfig.Parts {
+		var headers []client.KeyValue
+		for _, h := range p.Headers {
+			headers = append(headers, client.KeyValue{
+				Key:   h.Key.ValueString(),
+				Value: h.Value.ValueString(),
+			})
+		}
+		options.HTTPConfig.Parts = append(options.HTTPConfig.Parts, client.HTTPPart{
+			Name:     p.Name.ValueString(),
+			Filepath: p.Filepath.ValueString(),
+			Headers:  headers,
+			Body:     p.Body.ValueString(),
+		})
+	}
+
+	if !o.CmdConfig.Args.IsNull() {
+		diags := o.CmdConfig.Args.ElementsAs(ctx, options.CmdConfig.Args, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
+	for _, h := range o.CmdConfig.EnvVars {
+		options.CmdConfig.EnvVars = append(options.CmdConfig.EnvVars, client.KeyValue{
+			Key:   h.Key.ValueString(),
+			Value: h.Value.ValueString(),
+		})
+	}
+
+	if !o.EmailConfig.Recipients.IsNull() {
+		diags := o.EmailConfig.Recipients.ElementsAs(ctx, options.EmailConfig.Recipients, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
+	if !o.EmailConfig.Attachments.IsNull() {
+		diags := o.EmailConfig.Recipients.ElementsAs(ctx, options.EmailConfig.Attachments, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
+
+	for _, folder := range o.RetentionConfig.Folders {
+		options.RetentionConfig.Folders = append(options.RetentionConfig.Folders, client.FolderRetention{
+			Path:                  folder.Path.ValueString(),
+			Retention:             int(folder.Retention.ValueInt64()),
+			DeleteEmptyDirs:       folder.DeleteEmptyDirs.ValueBool(),
+			IgnoreUserPermissions: folder.IgnoreUserPermissions.ValueBool(),
+		})
+	}
+
+	for _, v := range o.FsConfig.Renames {
+		options.FsConfig.Renames = append(options.FsConfig.Renames, client.KeyValue{
+			Key:   v.Key.ValueString(),
+			Value: v.Value.ValueString(),
+		})
+	}
+	for _, v := range o.FsConfig.Copy {
+		options.FsConfig.Copy = append(options.FsConfig.Copy, client.KeyValue{
+			Key:   v.Key.ValueString(),
+			Value: v.Value.ValueString(),
+		})
+	}
+	if !o.FsConfig.MkDirs.IsNull() {
+		diags := o.FsConfig.MkDirs.ElementsAs(ctx, options.FsConfig.MkDirs, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
+	if !o.FsConfig.Deletes.IsNull() {
+		diags := o.FsConfig.MkDirs.ElementsAs(ctx, options.FsConfig.Deletes, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
+	if !o.FsConfig.Exist.IsNull() {
+		diags := o.FsConfig.MkDirs.ElementsAs(ctx, options.FsConfig.Exist, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
+	if !o.FsConfig.Compress.Paths.IsNull() {
+		diags := o.FsConfig.Compress.Paths.ElementsAs(ctx, options.FsConfig.Compress.Paths, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
+
+	return options, nil
+}
+
+func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.BaseEventAction) diag.Diagnostics {
+	o.HTTPConfig = nil
+	o.CmdConfig = nil
+	o.EmailConfig = nil
+	o.RetentionConfig = nil
+	o.FsConfig = nil
+	o.PwdExpirationConfig = nil
+	o.IDPConfig = nil
+
+	switch action.Type {
+	case client.ActionTypeHTTP:
+		o.HTTPConfig = &eventActionHTTPConfig{
+			Endpoint:      getOptionalString(action.Options.HTTPConfig.Endpoint),
+			Username:      getOptionalString(action.Options.HTTPConfig.Username),
+			Password:      getOptionalString(getSecretFromSFTPGo(action.Options.HTTPConfig.Password)),
+			Timeout:       types.Int64Value(int64(action.Options.HTTPConfig.Timeout)),
+			SkipTLSVerify: getOptionalBool(action.Options.HTTPConfig.SkipTLSVerify),
+			Method:        getOptionalString(action.Options.HTTPConfig.Method),
+			Body:          getOptionalString(action.Options.HTTPConfig.Body),
+		}
+		for _, h := range action.Options.HTTPConfig.Headers {
+			o.HTTPConfig.Headers = append(o.HTTPConfig.Headers, keyValue{
+				Key:   types.StringValue(h.Key),
+				Value: types.StringValue(h.Value),
+			})
+		}
+		for _, q := range action.Options.HTTPConfig.QueryParameters {
+			o.HTTPConfig.QueryParameters = append(o.HTTPConfig.QueryParameters, keyValue{
+				Key:   types.StringValue(q.Key),
+				Value: types.StringValue(q.Value),
+			})
+		}
+		for _, p := range action.Options.HTTPConfig.Parts {
+			var headers []keyValue
+			for _, h := range p.Headers {
+				headers = append(headers, keyValue{
+					Key:   types.StringValue(h.Key),
+					Value: types.StringValue(h.Value),
+				})
+			}
+			o.HTTPConfig.Parts = append(o.HTTPConfig.Parts, httpPart{
+				Name:     types.StringValue(p.Name),
+				Headers:  headers,
+				Filepath: getOptionalString(p.Filepath),
+				Body:     getOptionalString(p.Body),
+			})
+		}
+	case client.ActionTypeCommand:
+		o.CmdConfig = &eventActionCommandConfig{
+			Cmd:     types.StringValue(action.Options.CmdConfig.Cmd),
+			Timeout: types.Int64Value(int64(action.Options.CmdConfig.Timeout)),
+		}
+		args, diags := types.ListValueFrom(ctx, types.StringType, action.Options.CmdConfig.Args)
+		if diags.HasError() {
+			return diags
+		}
+		o.CmdConfig.Args = args
+		for _, e := range action.Options.CmdConfig.EnvVars {
+			o.CmdConfig.EnvVars = append(o.CmdConfig.EnvVars, keyValue{
+				Key:   types.StringValue(e.Key),
+				Value: types.StringValue(e.Value),
+			})
+		}
+	case client.ActionTypeEmail:
+		o.EmailConfig = &eventActionEmailConfig{
+			Subject: types.StringValue(action.Options.EmailConfig.Subject),
+			Body:    types.StringValue(action.Options.EmailConfig.Body),
+		}
+		recipients, diags := types.ListValueFrom(ctx, types.StringType, action.Options.EmailConfig.Recipients)
+		if diags.HasError() {
+			return diags
+		}
+		o.EmailConfig.Recipients = recipients
+		attachments, diags := types.ListValueFrom(ctx, types.StringType, action.Options.EmailConfig.Attachments)
+		if diags.HasError() {
+			return diags
+		}
+		o.EmailConfig.Attachments = attachments
+	case client.ActionTypeDataRetentionCheck:
+		o.RetentionConfig = &eventActionDataRetentionConfig{}
+		for _, f := range action.Options.RetentionConfig.Folders {
+			o.RetentionConfig.Folders = append(o.RetentionConfig.Folders, folderRetention{
+				Path:                  types.StringValue(f.Path),
+				Retention:             types.Int64Value(int64(f.Retention)),
+				DeleteEmptyDirs:       getOptionalBool(f.DeleteEmptyDirs),
+				IgnoreUserPermissions: getOptionalBool(f.IgnoreUserPermissions),
+			})
+		}
+	case client.ActionTypeFilesystem:
+		o.FsConfig = &eventActionFilesystemConfig{
+			Type: types.Int64Value(int64(action.Options.FsConfig.Type)),
+		}
+
+		switch action.Options.FsConfig.Type {
+		case client.FilesystemActionRename:
+			for _, v := range action.Options.FsConfig.Renames {
+				o.FsConfig.Renames = append(o.FsConfig.Renames, keyValue{
+					Key:   types.StringValue(v.Key),
+					Value: types.StringValue(v.Value),
+				})
+			}
+		case client.FilesystemActionDelete:
+			deletes, diags := types.ListValueFrom(ctx, types.StringType, action.Options.FsConfig.Deletes)
+			if diags.HasError() {
+				return diags
+			}
+			o.FsConfig.Deletes = deletes
+		case client.FilesystemActionMkdirs:
+			mkdirs, diags := types.ListValueFrom(ctx, types.StringType, action.Options.FsConfig.MkDirs)
+			if diags.HasError() {
+				return diags
+			}
+			o.FsConfig.MkDirs = mkdirs
+		case client.FilesystemActionExist:
+			exist, diags := types.ListValueFrom(ctx, types.StringType, action.Options.FsConfig.Exist)
+			if diags.HasError() {
+				return diags
+			}
+			o.FsConfig.Exist = exist
+		case client.FilesystemActionCompress:
+			o.FsConfig.Compress = &eventActionFsCompress{
+				Name: types.StringValue(action.Options.FsConfig.Compress.Name),
+			}
+			paths, diags := types.ListValueFrom(ctx, types.StringType, action.Options.FsConfig.Compress.Paths)
+			if diags.HasError() {
+				return diags
+			}
+			o.FsConfig.Compress.Paths = paths
+		case client.FilesystemActionCopy:
+			for _, v := range action.Options.FsConfig.Copy {
+				o.FsConfig.Copy = append(o.FsConfig.Copy, keyValue{
+					Key:   types.StringValue(v.Key),
+					Value: types.StringValue(v.Value),
+				})
+			}
+		}
+	case client.ActionTypePasswordExpirationCheck:
+		o.PwdExpirationConfig = &eventActionPasswordExpiration{
+			Threshold: types.Int64Value(int64(action.Options.PwdExpirationConfig.Threshold)),
+		}
+	case client.ActionTypeIDPAccountCheck:
+		o.IDPConfig = &eventActionIDPAccountCheck{
+			Mode:          types.Int64Value(int64(action.Options.IDPConfig.Mode)),
+			TemplateUser:  getOptionalString(action.Options.IDPConfig.TemplateUser),
+			TemplateAdmin: getOptionalString(action.Options.IDPConfig.TemplateAdmin),
+		}
+	}
+
+	return nil
+}
+
+type eventActionResourceModel struct {
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	Type        types.Int64  `tfsdk:"type"`
+	Options     types.Object `tfsdk:"options"` // eventActionOptions
+}
+
+func (a *eventActionResourceModel) toSFTPGo(ctx context.Context) (*client.BaseEventAction, diag.Diagnostics) {
+	action := &client.BaseEventAction{
+		Name:        a.Name.ValueString(),
+		Description: a.Description.ValueString(),
+		Type:        int(a.Type.ValueInt64()),
+	}
+	var options eventActionOptions
+	diags := a.Options.As(ctx, &options, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return action, diags
+	}
+	sftpgoOptions, diags := options.toSFTPGo(ctx)
+	if diags.HasError() {
+		return action, diags
+	}
+	action.Options = sftpgoOptions
+
+	return action, nil
+}
+
+func (a *eventActionResourceModel) fromSFTPGo(ctx context.Context, action *client.BaseEventAction) diag.Diagnostics {
+	a.Name = types.StringValue(action.Name)
+	a.ID = a.Name
+	a.Type = types.Int64Value(int64(action.Type))
+	a.Description = getOptionalString(action.Description)
+	var opts eventActionOptions
+	diags := opts.fromSFTPGo(ctx, action)
+	if diags.HasError() {
+		return diags
+	}
+	options, diags := types.ObjectValueFrom(ctx, opts.getTFAttributes(), opts)
+	if diags.HasError() {
+		return diags
+	}
+	a.Options = options
+	return nil
+}
+
+type ruleSchedule struct {
+	Hours      types.String `tfsdk:"hour"`
+	DayOfWeek  types.String `tfsdk:"day_of_week"`
+	DayOfMonth types.String `tfsdk:"day_of_month"`
+	Month      types.String `tfsdk:"month"`
+}
+
+type ruleConditionPattern struct {
+	Pattern      types.String `tfsdk:"pattern"`
+	InverseMatch types.Bool   `tfsdk:"inverse_match"`
+}
+
+func (*ruleConditionPattern) getTFAttributes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"pattern":       types.StringType,
+		"inverse_match": types.BoolType,
+	}
+}
+
+type ruleConditionOptions struct {
+	Names               []ruleConditionPattern `tfsdk:"names"`
+	GroupNames          []ruleConditionPattern `tfsdk:"group_names"`
+	RoleNames           []ruleConditionPattern `tfsdk:"role_names"`
+	FsPaths             []ruleConditionPattern `tfsdk:"fs_paths"`
+	Protocols           types.List             `tfsdk:"protocols"`
+	ProviderObjects     types.List             `tfsdk:"provider_objects"`
+	MinFileSize         types.Int64            `tfsdk:"min_size"`
+	MaxFileSize         types.Int64            `tfsdk:"max_size"`
+	ConcurrentExecution types.Bool             `tfsdk:"concurrent_execution"`
+}
+
+type ruleConditions struct {
+	FsEvents       types.List            `tfsdk:"fs_events"`
+	ProviderEvents types.List            `tfsdk:"provider_events"`
+	Schedules      []ruleSchedule        `tfsdk:"schedules"`
+	IDPLoginEvent  types.Int64           `tfsdk:"idp_login_event"`
+	Options        *ruleConditionOptions `tfsdk:"options"`
+}
+
+func (*ruleConditions) getTFAttributes() map[string]attr.Type {
+	p := ruleConditionPattern{}
+
+	return map[string]attr.Type{
+		"fs_events": types.ListType{
+			ElemType: types.StringType,
+		},
+		"provider_events": types.ListType{
+			ElemType: types.StringType,
+		},
+		"schedules": types.ListType{
+			ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"hour":         types.StringType,
+					"day_of_week":  types.StringType,
+					"day_of_month": types.StringType,
+					"month":        types.StringType,
+				},
+			},
+		},
+		"idp_login_event": types.Int64Type,
+		"options": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"names": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: p.getTFAttributes(),
+					},
+				},
+				"group_names": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: p.getTFAttributes(),
+					},
+				},
+				"role_names": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: p.getTFAttributes(),
+					},
+				},
+				"fs_paths": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: p.getTFAttributes(),
+					},
+				},
+				"protocols": types.ListType{
+					ElemType: types.StringType,
+				},
+				"provider_objects": types.ListType{
+					ElemType: types.StringType,
+				},
+				"min_size":             types.Int64Type,
+				"max_size":             types.Int64Type,
+				"concurrent_execution": types.BoolType,
+			},
+		},
+	}
+}
+
+func (c *ruleConditions) toSFTPGo(ctx context.Context) (client.EventRuleConditions, diag.Diagnostics) {
+	conditions := client.EventRuleConditions{
+		IDPLoginEvent: int(c.IDPLoginEvent.ValueInt64()),
+	}
+	if !c.FsEvents.IsNull() {
+		diags := c.FsEvents.ElementsAs(ctx, &conditions.FsEvents, false)
+		if diags.HasError() {
+			return conditions, diags
+		}
+	}
+	if !c.ProviderEvents.IsNull() {
+		diags := c.FsEvents.ElementsAs(ctx, &conditions.ProviderEvents, false)
+		if diags.HasError() {
+			return conditions, diags
+		}
+	}
+	for _, schedule := range c.Schedules {
+		conditions.Schedules = append(conditions.Schedules, client.Schedule{
+			Hours:      schedule.Hours.ValueString(),
+			DayOfWeek:  schedule.DayOfWeek.ValueString(),
+			DayOfMonth: schedule.DayOfMonth.ValueString(),
+			Month:      schedule.Month.ValueString(),
+		})
+	}
+	if c.Options != nil {
+		conditions.Options = client.ConditionOptions{
+			MinFileSize:         c.Options.MaxFileSize.ValueInt64(),
+			MaxFileSize:         c.Options.MaxFileSize.ValueInt64(),
+			ConcurrentExecution: c.Options.ConcurrentExecution.ValueBool(),
+		}
+		for _, val := range c.Options.Names {
+			conditions.Options.Names = append(conditions.Options.Names, client.ConditionPattern{
+				Pattern:      val.Pattern.ValueString(),
+				InverseMatch: val.InverseMatch.ValueBool(),
+			})
+		}
+		for _, val := range c.Options.GroupNames {
+			conditions.Options.GroupNames = append(conditions.Options.GroupNames, client.ConditionPattern{
+				Pattern:      val.Pattern.ValueString(),
+				InverseMatch: val.InverseMatch.ValueBool(),
+			})
+		}
+		for _, val := range c.Options.RoleNames {
+			conditions.Options.RoleNames = append(conditions.Options.RoleNames, client.ConditionPattern{
+				Pattern:      val.Pattern.ValueString(),
+				InverseMatch: val.InverseMatch.ValueBool(),
+			})
+		}
+		for _, val := range c.Options.FsPaths {
+			conditions.Options.FsPaths = append(conditions.Options.FsPaths, client.ConditionPattern{
+				Pattern:      val.Pattern.ValueString(),
+				InverseMatch: val.InverseMatch.ValueBool(),
+			})
+		}
+		if !c.Options.Protocols.IsNull() {
+			diags := c.Options.Protocols.ElementsAs(ctx, &conditions.Options.Protocols, false)
+			if diags.HasError() {
+				return conditions, diags
+			}
+		}
+		if !c.Options.ProviderObjects.IsNull() {
+			diags := c.Options.ProviderObjects.ElementsAs(ctx, &conditions.Options.ProviderObjects, false)
+			if diags.HasError() {
+				return conditions, diags
+			}
+		}
+	}
+
+	return conditions, nil
+}
+
+func (c *ruleConditions) fromSFTPGo(ctx context.Context, conditions *client.EventRuleConditions) diag.Diagnostics {
+	fsEvents, diags := types.ListValueFrom(ctx, types.StringType, conditions.FsEvents)
+	if diags.HasError() {
+		return diags
+	}
+	c.FsEvents = fsEvents
+
+	providerEvents, diags := types.ListValueFrom(ctx, types.StringType, conditions.ProviderEvents)
+	if diags.HasError() {
+		return diags
+	}
+	c.ProviderEvents = providerEvents
+
+	for _, schedule := range conditions.Schedules {
+		c.Schedules = append(c.Schedules, ruleSchedule{
+			Hours:      types.StringValue(schedule.Hours),
+			DayOfWeek:  types.StringValue(schedule.DayOfWeek),
+			DayOfMonth: types.StringValue(schedule.DayOfMonth),
+			Month:      types.StringValue(schedule.Month),
+		})
+	}
+	c.IDPLoginEvent = getOptionalInt64(int64(conditions.IDPLoginEvent))
+
+	c.Options = &ruleConditionOptions{
+		MinFileSize:         getOptionalInt64(conditions.Options.MinFileSize),
+		MaxFileSize:         getOptionalInt64(conditions.Options.MaxFileSize),
+		ConcurrentExecution: getOptionalBool(conditions.Options.ConcurrentExecution),
+	}
+	for _, val := range conditions.Options.Names {
+		c.Options.Names = append(c.Options.Names, ruleConditionPattern{
+			Pattern:      types.StringValue(val.Pattern),
+			InverseMatch: getOptionalBool(val.InverseMatch),
+		})
+	}
+	for _, val := range conditions.Options.GroupNames {
+		c.Options.GroupNames = append(c.Options.GroupNames, ruleConditionPattern{
+			Pattern:      types.StringValue(val.Pattern),
+			InverseMatch: getOptionalBool(val.InverseMatch),
+		})
+	}
+	for _, val := range conditions.Options.RoleNames {
+		c.Options.RoleNames = append(c.Options.RoleNames, ruleConditionPattern{
+			Pattern:      types.StringValue(val.Pattern),
+			InverseMatch: getOptionalBool(val.InverseMatch),
+		})
+	}
+	for _, val := range conditions.Options.FsPaths {
+		c.Options.FsPaths = append(c.Options.FsPaths, ruleConditionPattern{
+			Pattern:      types.StringValue(val.Pattern),
+			InverseMatch: getOptionalBool(val.InverseMatch),
+		})
+	}
+	protocols, diags := types.ListValueFrom(ctx, types.StringType, conditions.Options.Protocols)
+	if diags.HasError() {
+		return diags
+	}
+	c.Options.Protocols = protocols
+	providerObjects, diags := types.ListValueFrom(ctx, types.StringType, conditions.Options.ProviderObjects)
+	if diags.HasError() {
+		return diags
+	}
+	c.Options.ProviderObjects = providerObjects
+
+	return nil
+}
+
+type ruleAction struct {
+	Name            types.String `tfsdk:"name"`
+	IsFailureAction types.Bool   `tfsdk:"is_failure_action"`
+	StopOnFailure   types.Bool   `tfsdk:"stop_on_failure"`
+	ExecuteSync     types.Bool   `tfsdk:"execute_sync"`
+}
+
+type eventRuleResourceModel struct {
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Status      types.Int64  `tfsdk:"status"`
+	Description types.String `tfsdk:"description"`
+	Trigger     types.Int64  `tfsdk:"trigger"`
+	Conditions  types.Object `tfsdk:"conditions"` // ruleConditions
+	Actions     []ruleAction `tfsdk:"actions"`
+	CreatedAt   types.Int64  `tfsdk:"created_at"`
+	UpdatedAt   types.Int64  `tfsdk:"updated_at"`
+}
+
+func (r *eventRuleResourceModel) toSFTPGo(ctx context.Context) (*client.EventRule, diag.Diagnostics) {
+	rule := &client.EventRule{
+		Name:        r.Name.ValueString(),
+		Status:      int(r.Status.ValueInt64()),
+		Description: r.Description.ValueString(),
+		Trigger:     int(r.Trigger.ValueInt64()),
+	}
+
+	for idx, action := range r.Actions {
+		rule.Actions = append(rule.Actions, client.EventAction{
+			Name:  action.Name.ValueString(),
+			Order: idx + 1,
+			Options: client.EventActionRelationOptions{
+				IsFailureAction: action.IsFailureAction.ValueBool(),
+				StopOnFailure:   action.StopOnFailure.ValueBool(),
+				ExecuteSync:     action.ExecuteSync.ValueBool(),
+			},
+		})
+	}
+
+	var conditions ruleConditions
+	diags := r.Conditions.As(ctx, &conditions, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return rule, diags
+	}
+	sftpgoConditions, diags := conditions.toSFTPGo(ctx)
+	if diags.HasError() {
+		return rule, diags
+	}
+	rule.Conditions = sftpgoConditions
+
+	return rule, nil
+}
+
+func (r *eventRuleResourceModel) fromSFTPGo(ctx context.Context, rule *client.EventRule) diag.Diagnostics {
+	r.Name = types.StringValue(rule.Name)
+	r.ID = r.Name
+	r.Status = types.Int64Value(int64(rule.Status))
+	r.Description = getOptionalString(rule.Description)
+	r.Trigger = types.Int64Value(int64(rule.Trigger))
+	r.CreatedAt = types.Int64Value(rule.CreatedAt)
+	r.UpdatedAt = types.Int64Value(rule.UpdatedAt)
+
+	r.Actions = nil
+	for _, action := range rule.Actions {
+		r.Actions = append(r.Actions, ruleAction{
+			Name:            types.StringValue(action.Name),
+			IsFailureAction: getOptionalBool(action.Options.IsFailureAction),
+			StopOnFailure:   getOptionalBool(action.Options.StopOnFailure),
+			ExecuteSync:     getOptionalBool(action.Options.ExecuteSync),
+		})
+	}
+
+	var c ruleConditions
+	diags := c.fromSFTPGo(ctx, &rule.Conditions)
+	if diags.HasError() {
+		return diags
+	}
+	conditions, diags := types.ObjectValueFrom(ctx, c.getTFAttributes(), c)
+	if diags.HasError() {
+		return diags
+	}
+	r.Conditions = conditions
+
 	return nil
 }
 

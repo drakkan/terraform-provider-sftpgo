@@ -48,11 +48,12 @@ type AuthResponse struct {
 }
 
 type backupData struct {
-	Users   []User                  `json:"users"`
-	Groups  []sdk.Group             `json:"groups"`
-	Folders []sdk.BaseVirtualFolder `json:"folders"`
-	Admins  []Admin                 `json:"admins"`
-	Version int                     `json:"version"`
+	Users        []User                  `json:"users"`
+	Groups       []sdk.Group             `json:"groups"`
+	Folders      []sdk.BaseVirtualFolder `json:"folders"`
+	Admins       []Admin                 `json:"admins"`
+	EventActions []BaseEventAction       `json:"event_actions"`
+	Version      int                     `json:"version"`
 }
 
 // NewClient return an SFTPGo API client

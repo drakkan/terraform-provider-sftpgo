@@ -45,7 +45,6 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"s3config": schema.SingleNestedAttribute{
 				Computed: true,
-				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
 						Computed: true,
@@ -111,7 +110,6 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"gcsconfig": schema.SingleNestedAttribute{
 				Computed: true,
-				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
 						Computed: true,
@@ -147,7 +145,6 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"azblobconfig": schema.SingleNestedAttribute{
 				Computed: true,
-				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"container": schema.StringAttribute{
 						Computed: true,
@@ -197,7 +194,6 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"cryptconfig": schema.SingleNestedAttribute{
 				Computed: true,
-				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"passphrase": schema.StringAttribute{
 						Computed:    true,
@@ -207,7 +203,6 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"sftpconfig": schema.SingleNestedAttribute{
 				Computed: true,
-				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
 						Computed:    true,
@@ -247,7 +242,6 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"httpconfig": schema.SingleNestedAttribute{
 				Computed: true,
-				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
 						Computed: true,

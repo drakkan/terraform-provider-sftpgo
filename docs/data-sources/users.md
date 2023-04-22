@@ -66,18 +66,15 @@ Read-Only:
 <a id="nestedatt--users--filesystem"></a>
 ### Nested Schema for `users.filesystem`
 
-Optional:
+Read-Only:
 
 - `azblobconfig` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--azblobconfig))
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--cryptconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--httpconfig))
+- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 - `s3config` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--s3config))
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--users--filesystem--sftpconfig))
-
-Read-Only:
-
-- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 
 <a id="nestedatt--users--filesystem--azblobconfig"></a>
 ### Nested Schema for `users.filesystem.azblobconfig`
@@ -266,21 +263,18 @@ Read-Only:
 <a id="nestedatt--users--virtual_folders--filesystem"></a>
 ### Nested Schema for `users.virtual_folders.filesystem`
 
-Optional:
+Read-Only:
 
 - `azblobconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--azblobconfig))
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--cryptconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--httpconfig))
+- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 - `s3config` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--s3config))
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig))
 
-Read-Only:
-
-- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
-
 <a id="nestedatt--users--virtual_folders--filesystem--azblobconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.provider`
+### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
 
 Read-Only:
 
@@ -299,7 +293,7 @@ Read-Only:
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--cryptconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.provider`
+### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
 
 Read-Only:
 
@@ -307,7 +301,7 @@ Read-Only:
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--gcsconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.provider`
+### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
 
 Read-Only:
 
@@ -322,7 +316,7 @@ Read-Only:
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--httpconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.provider`
+### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
 
 Read-Only:
 
@@ -335,7 +329,7 @@ Read-Only:
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--s3config"></a>
-### Nested Schema for `users.virtual_folders.filesystem.provider`
+### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
 
 Read-Only:
 
@@ -358,7 +352,7 @@ Read-Only:
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--sftpconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.provider`
+### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
 
 Read-Only:
 

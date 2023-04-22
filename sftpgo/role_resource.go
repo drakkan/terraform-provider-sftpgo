@@ -183,8 +183,8 @@ func (r *roleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	err := r.client.UpdateRole(*role)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating user",
-			"Could not update user, unexpected error: "+err.Error(),
+			"Error updating role",
+			"Could not update role, unexpected error: "+err.Error(),
 		)
 		return
 	}

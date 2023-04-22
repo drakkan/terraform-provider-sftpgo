@@ -37,18 +37,15 @@ Read-Only:
 <a id="nestedatt--folders--filesystem"></a>
 ### Nested Schema for `folders.filesystem`
 
-Optional:
+Read-Only:
 
 - `azblobconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--azblobconfig))
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--cryptconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--httpconfig))
+- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 - `s3config` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--s3config))
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--sftpconfig))
-
-Read-Only:
-
-- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 
 <a id="nestedatt--folders--filesystem--azblobconfig"></a>
 ### Nested Schema for `folders.filesystem.azblobconfig`
