@@ -236,6 +236,9 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							"recipients": schema.ListAttribute{
 								ElementType: types.StringType,
 								Required:    true,
+								Validators: []validator.List{
+									listvalidator.UniqueValues(),
+								},
 							},
 							"subject": schema.StringAttribute{
 								Required: true,

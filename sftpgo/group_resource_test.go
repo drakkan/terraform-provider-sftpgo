@@ -76,6 +76,7 @@ func TestAccGroupResource(t *testing.T) {
 							password = "sftppwd"
 							prefix = "/"
 							equality_check_mode = 1
+							fingerprints = ["SHA256:RFzBCUItH9LZS0cKB5UE6ceAYhBD5C8GeOBip8Z11+4"]
 						  }
 					    }
 					  }
@@ -117,7 +118,9 @@ func TestAccGroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.prefix", "/"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.equality_check_mode", "1"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.private_key"),
-					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.fingerprints"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.fingerprints.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.fingerprints.0",
+						"SHA256:RFzBCUItH9LZS0cKB5UE6ceAYhBD5C8GeOBip8Z11+4"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.disable_concurrent_reads"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.s3config"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.gcsconfig"),

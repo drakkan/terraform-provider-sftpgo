@@ -965,7 +965,7 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 	}
 
 	if !f.SFTPConfig.Fingerprints.IsNull() {
-		diags := f.SFTPConfig.Fingerprints.ElementsAs(ctx, fs.SFTPConfig.Fingerprints, false)
+		diags := f.SFTPConfig.Fingerprints.ElementsAs(ctx, &fs.SFTPConfig.Fingerprints, false)
 		if diags.HasError() {
 			return fs, diags
 		}
@@ -2109,7 +2109,7 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 	}
 
 	if !o.CmdConfig.Args.IsNull() {
-		diags := o.CmdConfig.Args.ElementsAs(ctx, options.CmdConfig.Args, false)
+		diags := o.CmdConfig.Args.ElementsAs(ctx, &options.CmdConfig.Args, false)
 		if diags.HasError() {
 			return options, diags
 		}
@@ -2122,13 +2122,13 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 	}
 
 	if !o.EmailConfig.Recipients.IsNull() {
-		diags := o.EmailConfig.Recipients.ElementsAs(ctx, options.EmailConfig.Recipients, false)
+		diags := o.EmailConfig.Recipients.ElementsAs(ctx, &options.EmailConfig.Recipients, false)
 		if diags.HasError() {
 			return options, diags
 		}
 	}
 	if !o.EmailConfig.Attachments.IsNull() {
-		diags := o.EmailConfig.Recipients.ElementsAs(ctx, options.EmailConfig.Attachments, false)
+		diags := o.EmailConfig.Attachments.ElementsAs(ctx, &options.EmailConfig.Attachments, false)
 		if diags.HasError() {
 			return options, diags
 		}
@@ -2156,25 +2156,25 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 		})
 	}
 	if !o.FsConfig.MkDirs.IsNull() {
-		diags := o.FsConfig.MkDirs.ElementsAs(ctx, options.FsConfig.MkDirs, false)
+		diags := o.FsConfig.MkDirs.ElementsAs(ctx, &options.FsConfig.MkDirs, false)
 		if diags.HasError() {
 			return options, diags
 		}
 	}
 	if !o.FsConfig.Deletes.IsNull() {
-		diags := o.FsConfig.MkDirs.ElementsAs(ctx, options.FsConfig.Deletes, false)
+		diags := o.FsConfig.Deletes.ElementsAs(ctx, &options.FsConfig.Deletes, false)
 		if diags.HasError() {
 			return options, diags
 		}
 	}
 	if !o.FsConfig.Exist.IsNull() {
-		diags := o.FsConfig.MkDirs.ElementsAs(ctx, options.FsConfig.Exist, false)
+		diags := o.FsConfig.Exist.ElementsAs(ctx, &options.FsConfig.Exist, false)
 		if diags.HasError() {
 			return options, diags
 		}
 	}
 	if !o.FsConfig.Compress.Paths.IsNull() {
-		diags := o.FsConfig.Compress.Paths.ElementsAs(ctx, options.FsConfig.Compress.Paths, false)
+		diags := o.FsConfig.Compress.Paths.ElementsAs(ctx, &options.FsConfig.Compress.Paths, false)
 		if diags.HasError() {
 			return options, diags
 		}
@@ -2273,7 +2273,10 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 		}
 	case client.ActionTypeFilesystem:
 		o.FsConfig = &eventActionFilesystemConfig{
-			Type: types.Int64Value(int64(action.Options.FsConfig.Type)),
+			Type:    types.Int64Value(int64(action.Options.FsConfig.Type)),
+			MkDirs:  types.ListNull(types.StringType),
+			Deletes: types.ListNull(types.StringType),
+			Exist:   types.ListNull(types.StringType),
 		}
 
 		switch action.Options.FsConfig.Type {
@@ -2505,7 +2508,7 @@ func (c *ruleConditions) toSFTPGo(ctx context.Context) (client.EventRuleConditio
 	}
 	if c.Options != nil {
 		conditions.Options = client.ConditionOptions{
-			MinFileSize:         c.Options.MaxFileSize.ValueInt64(),
+			MinFileSize:         c.Options.MinFileSize.ValueInt64(),
 			MaxFileSize:         c.Options.MaxFileSize.ValueInt64(),
 			ConcurrentExecution: c.Options.ConcurrentExecution.ValueBool(),
 		}
@@ -2550,7 +2553,7 @@ func (c *ruleConditions) toSFTPGo(ctx context.Context) (client.EventRuleConditio
 	return conditions, nil
 }
 
-func (c *ruleConditions) fromSFTPGo(ctx context.Context, conditions *client.EventRuleConditions) diag.Diagnostics {
+func (c *ruleConditions) fromSFTPGo(ctx context.Context, conditions *client.EventRuleConditions, trigger int) diag.Diagnostics {
 	fsEvents, diags := types.ListValueFrom(ctx, types.StringType, conditions.FsEvents)
 	if diags.HasError() {
 		return diags
@@ -2571,7 +2574,11 @@ func (c *ruleConditions) fromSFTPGo(ctx context.Context, conditions *client.Even
 			Month:      types.StringValue(schedule.Month),
 		})
 	}
-	c.IDPLoginEvent = getOptionalInt64(int64(conditions.IDPLoginEvent))
+	if trigger == 7 {
+		c.IDPLoginEvent = types.Int64Value(int64(conditions.IDPLoginEvent))
+	} else {
+		c.IDPLoginEvent = getOptionalInt64(int64(conditions.IDPLoginEvent))
+	}
 
 	c.Options = &ruleConditionOptions{
 		MinFileSize:         getOptionalInt64(conditions.Options.MinFileSize),
@@ -2692,7 +2699,7 @@ func (r *eventRuleResourceModel) fromSFTPGo(ctx context.Context, rule *client.Ev
 	}
 
 	var c ruleConditions
-	diags := c.fromSFTPGo(ctx, &rule.Conditions)
+	diags := c.fromSFTPGo(ctx, &rule.Conditions, rule.Trigger)
 	if diags.HasError() {
 		return diags
 	}
