@@ -61,6 +61,7 @@ Read-Only:
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--cryptconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--httpconfig))
+- `osconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--osconfig))
 - `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 - `s3config` (Attributes) (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--s3config))
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--sftpconfig))
@@ -90,6 +91,8 @@ Read-Only:
 Read-Only:
 
 - `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads.
+- `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads.
 
 
 <a id="nestedatt--groups--user_settings--filesystem--gcsconfig"></a>
@@ -118,6 +121,15 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `skip_tls_verify` (Boolean)
 - `username` (String)
+
+
+<a id="nestedatt--groups--user_settings--filesystem--osconfig"></a>
+### Nested Schema for `groups.user_settings.filesystem.sftpconfig`
+
+Read-Only:
+
+- `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads.
+- `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads.
 
 
 <a id="nestedatt--groups--user_settings--filesystem--s3config"></a>
@@ -249,6 +261,7 @@ Read-Only:
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--cryptconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--httpconfig))
+- `osconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--osconfig))
 - `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
 - `s3config` (Attributes) (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--s3config))
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--sftpconfig))
@@ -278,6 +291,8 @@ Read-Only:
 Read-Only:
 
 - `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads.
+- `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads.
 
 
 <a id="nestedatt--groups--virtual_folders--filesystem--gcsconfig"></a>
@@ -306,6 +321,15 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `skip_tls_verify` (Boolean)
 - `username` (String)
+
+
+<a id="nestedatt--groups--virtual_folders--filesystem--osconfig"></a>
+### Nested Schema for `groups.virtual_folders.filesystem.sftpconfig`
+
+Read-Only:
+
+- `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads.
+- `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads.
 
 
 <a id="nestedatt--groups--virtual_folders--filesystem--s3config"></a>

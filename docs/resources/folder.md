@@ -45,6 +45,7 @@ Optional:
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--filesystem--cryptconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--filesystem--httpconfig))
+- `osconfig` (Attributes) (see [below for nested schema](#nestedatt--filesystem--osconfig))
 - `s3config` (Attributes) (see [below for nested schema](#nestedatt--filesystem--s3config))
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--filesystem--sftpconfig))
 
@@ -73,6 +74,8 @@ Optional:
 Optional:
 
 - `passphrase` (String, Sensitive) Plain text passphrase. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads. Omit to disable buffering, that's fine in most use cases.
+- `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads. Omit to disable buffering, that's fine in most use cases.
 
 
 <a id="nestedatt--filesystem--gcsconfig"></a>
@@ -107,6 +110,15 @@ Optional:
 - `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `skip_tls_verify` (Boolean)
 - `username` (String)
+
+
+<a id="nestedatt--filesystem--osconfig"></a>
+### Nested Schema for `filesystem.osconfig`
+
+Optional:
+
+- `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads. Omit to disable buffering, that's fine in most use cases.
+- `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads. Omit to disable no buffering, that's fine in most use cases.
 
 
 <a id="nestedatt--filesystem--s3config"></a>

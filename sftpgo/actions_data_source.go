@@ -217,6 +217,10 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 										"body": schema.StringAttribute{
 											Computed: true,
 										},
+										"content_type": schema.Int64Attribute{
+											Computed:    true,
+											Description: "1 means text/html 0 or omitted means text/plain.",
+										},
 										"attachments": schema.ListAttribute{
 											ElementType: types.StringType,
 											Computed:    true,

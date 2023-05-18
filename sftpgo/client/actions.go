@@ -93,6 +93,7 @@ type EventActionEmailConfig struct {
 	Subject     string   `json:"subject,omitempty"`
 	Body        string   `json:"body,omitempty"`
 	Attachments []string `json:"attachments,omitempty"`
+	ContentType int      `json:"content_type,omitempty"`
 }
 
 // FolderRetention defines a folder retention configuration

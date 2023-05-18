@@ -160,6 +160,7 @@ func TestAccUsersDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.provider", fmt.Sprintf("%d", user.FsConfig.Provider)),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.httpconfig.endpoint", user.FsConfig.HTTPConfig.Endpoint),
 					resource.TestCheckResourceAttrSet("data.sftpgo_users.test", "users.0.filesystem.httpconfig.api_key"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_users.test", "users.0.filesystem.osconfig"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.virtual_folders.#", "1"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.virtual_folders.0.name", testFolder.Name),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.virtual_folders.0.quota_size",

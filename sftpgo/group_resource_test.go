@@ -189,6 +189,7 @@ func TestAccGroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.bandwidth_limits.0.upload_bandwidth", "256"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.bandwidth_limits.0.download_bandwidth", "64"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.provider", "0"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.osconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.s3config"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.gcsconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.cryptconfig"),
@@ -201,6 +202,56 @@ func TestAccGroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.quota_size", "0"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.quota_files", "0"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.filesystem.provider", "1"),
+				),
+			},
+			// Update and Read testing
+			{
+				Config: `
+				resource "sftpgo_group" "test" {
+				  name = "test group"
+				  user_settings = {
+					home_dir = "/tmp/home/local"
+					filters = {
+						two_factor_protocols = ["SSH"]
+					}
+					filesystem = {
+					  provider = 4
+					  cryptconfig = {
+						passphrase = "pwd"
+					    write_buffer_size = 5
+					  }
+					}
+				  }
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_group.test", "name", "test group"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "id", "test group"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "description"),
+					resource.TestCheckResourceAttrSet("sftpgo_group.test", "created_at"),
+					resource.TestCheckResourceAttrSet("sftpgo_group.test", "updated_at"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.home_dir", "/tmp/home/local"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.max_sessions"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.permissions"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.quota_size"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.quota_files"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.upload_bandwidth"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filters.file_patterns"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.two_factor_protocols.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.two_factor_protocols.0", "SSH"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filters.max_upload_file_size"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filters.check_password_disabled"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.bandwidth_limits.#", "0"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.provider", "4"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.cryptconfig.passphrase", "pwd"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.cryptconfig.write_buffer_size", "5"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.cryptconfig.read_buffer_size"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.osconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.s3config"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.gcsconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.httpconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.azblobconfig"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.#", "0"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

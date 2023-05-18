@@ -70,7 +70,7 @@ func TestAccFoldersDataSource(t *testing.T) {
 			{
 				Config: `data "sftpgo_folders" "test" {}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Verify number of admins returned
+					// Verify number of folders returned
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.#", "1"),
 					// Check the folder fields
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.name", testFolder.Name),

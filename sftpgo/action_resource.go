@@ -243,6 +243,13 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							"subject": schema.StringAttribute{
 								Required: true,
 							},
+							"content_type": schema.Int64Attribute{
+								Optional:    true,
+								Description: "Optional content type. 0 means text/plain, 1 means text/html. If omitted, text/plain is assumed.",
+								Validators: []validator.Int64{
+									int64validator.Between(0, 1),
+								},
+							},
 							"body": schema.StringAttribute{
 								Required: true,
 							},

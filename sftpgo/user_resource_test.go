@@ -130,6 +130,7 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.access_key", "key"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.access_secret", "secret payload"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.gcsconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.osconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "description"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "additional_info"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "groups.#", "1"),
@@ -226,6 +227,7 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./", "*"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./p2", "list,download"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.provider", "0"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.osconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.s3config"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.gcsconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "description"),
@@ -270,6 +272,10 @@ func TestAccUserResource(t *testing.T) {
 				  }
 				  filesystem = {
 					  provider = 0
+					  osconfig = {
+					    read_buffer_size = 3
+					    write_buffer_size = 5
+					  }
 				  }
 				  filters = {
 					denied_protocols = ["SSH", "HTTP"]
@@ -289,6 +295,9 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./", "list,download"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.provider", "0"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.osconfig.%", "2"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.osconfig.read_buffer_size", "3"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.osconfig.write_buffer_size", "5"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.s3config"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.gcsconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "description"),
@@ -301,6 +310,54 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_protocols.0", "SSH"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_protocols.1", "HTTP"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.#", "7"),
+				),
+			},
+			// Update and Read cryptfs user with buffering testing
+			{
+				Config: `
+				resource "sftpgo_user" "test" {
+				  username = "test user"
+				  status      = 1
+				  home_dir    = "/tmp/testuser"
+				  permissions = {
+					"/" = "list,download"
+				  }
+				  filesystem = {
+					  provider = 4
+					  cryptconfig = {
+						passphrase = "test pwd"
+					    read_buffer_size = 4
+					    write_buffer_size = 3
+					  }
+				  }
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.test", "username", "test user"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "id", "test user"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "status", "1"),
+					resource.TestCheckResourceAttrSet("sftpgo_user.test", "created_at"),
+					resource.TestCheckResourceAttrSet("sftpgo_user.test", "updated_at"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "password"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "home_dir", "/tmp/testuser"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "email"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./", "list,download"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.provider", "4"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.%", "3"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.passphrase", "test pwd"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.read_buffer_size", "4"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.write_buffer_size", "3"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.osconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.s3config"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.gcsconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "description"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "additional_info"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "groups"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "virtual_folders"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "role"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.is_anonymous"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_protocols.#", "0"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.#", "0"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

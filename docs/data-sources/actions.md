@@ -71,6 +71,7 @@ Read-Only:
 
 - `attachments` (List of String) Paths to attach. The total size is limited to 10 MB.
 - `body` (String)
+- `content_type` (Number) 1 means text/html 0 or omitted means text/plain.
 - `recipients` (List of String)
 - `subject` (String)
 

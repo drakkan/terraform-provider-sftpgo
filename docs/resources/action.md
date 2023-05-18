@@ -77,6 +77,7 @@ Required:
 Optional:
 
 - `attachments` (List of String) Paths to attach. The total size is limited to 10 MB.
+- `content_type` (Number) Optional content type. 0 means text/plain, 1 means text/html. If omitted, text/plain is assumed.
 
 
 <a id="nestedatt--options--fs_config"></a>

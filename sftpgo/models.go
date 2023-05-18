@@ -700,6 +700,11 @@ func (f *userFilters) fromSFTPGo(ctx context.Context, filters *sdk.UserFilters) 
 	return nil
 }
 
+type osFsConfig struct {
+	ReadBufferSize  types.Int64 `tfsdk:"read_buffer_size"`
+	WriteBufferSize types.Int64 `tfsdk:"write_buffer_size"`
+}
+
 type s3FsConfig struct {
 	Bucket              types.String `tfsdk:"bucket"`
 	KeyPrefix           types.String `tfsdk:"key_prefix"`
@@ -746,7 +751,9 @@ type azBlobFsConfig struct {
 }
 
 type cryptFsConfig struct {
-	Passphrase types.String `tfsdk:"passphrase"`
+	Passphrase      types.String `tfsdk:"passphrase"`
+	ReadBufferSize  types.Int64  `tfsdk:"read_buffer_size"`
+	WriteBufferSize types.Int64  `tfsdk:"write_buffer_size"`
 }
 
 type sftpFsConfig struct {
@@ -772,6 +779,7 @@ type httpFsConfig struct {
 
 type filesystem struct {
 	Provider     types.Int64     `tfsdk:"provider"`
+	OSConfig     *osFsConfig     `tfsdk:"osconfig"`
 	S3Config     *s3FsConfig     `tfsdk:"s3config"`
 	GCSConfig    *gcsFsConfig    `tfsdk:"gcsconfig"`
 	AzBlobConfig *azBlobFsConfig `tfsdk:"azblobconfig"`
@@ -781,6 +789,9 @@ type filesystem struct {
 }
 
 func (f *filesystem) ensureNotNull() {
+	if f.OSConfig == nil {
+		f.OSConfig = &osFsConfig{}
+	}
 	if f.S3Config == nil {
 		f.S3Config = &s3FsConfig{}
 	}
@@ -804,6 +815,12 @@ func (f *filesystem) ensureNotNull() {
 func (f *filesystem) getTFAttributes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"provider": types.Int64Type,
+		"osconfig": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"read_buffer_size":  types.Int64Type,
+				"write_buffer_size": types.Int64Type,
+			},
+		},
 		"s3config": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
 				"bucket":                 types.StringType,
@@ -854,7 +871,9 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 		},
 		"cryptconfig": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"passphrase": types.StringType,
+				"passphrase":        types.StringType,
+				"read_buffer_size":  types.Int64Type,
+				"write_buffer_size": types.Int64Type,
 			},
 		},
 		"sftpconfig": types.ObjectType{
@@ -889,6 +908,10 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 	f.ensureNotNull()
 	fs := sdk.Filesystem{
 		Provider: sdk.FilesystemProvider(f.Provider.ValueInt64()),
+		OSConfig: sdk.OSFsConfig{
+			ReadBufferSize:  int(f.OSConfig.ReadBufferSize.ValueInt64()),
+			WriteBufferSize: int(f.OSConfig.WriteBufferSize.ValueInt64()),
+		},
 		S3Config: sdk.S3FsConfig{
 			BaseS3FsConfig: sdk.BaseS3FsConfig{
 				Bucket:              f.S3Config.Bucket.ValueString(),
@@ -939,6 +962,10 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 		},
 		CryptConfig: sdk.CryptFsConfig{
 			Passphrase: getSFTPGoSecret(f.CryptConfig.Passphrase.ValueString()),
+			OSFsConfig: sdk.OSFsConfig{
+				ReadBufferSize:  int(f.CryptConfig.ReadBufferSize.ValueInt64()),
+				WriteBufferSize: int(f.CryptConfig.WriteBufferSize.ValueInt64()),
+			},
 		},
 		SFTPConfig: sdk.SFTPFsConfig{
 			BaseSFTPFsConfig: sdk.BaseSFTPFsConfig{
@@ -975,6 +1002,7 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 
 func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Diagnostics {
 	f.Provider = types.Int64Value(int64(fs.Provider))
+	f.OSConfig = nil
 	f.S3Config = nil
 	f.GCSConfig = nil
 	f.AzBlobConfig = nil
@@ -982,6 +1010,13 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 	f.SFTPConfig = nil
 	f.HTTPConfig = nil
 	switch fs.Provider {
+	case sdk.LocalFilesystemProvider:
+		if fs.OSConfig.ReadBufferSize > 0 || fs.OSConfig.WriteBufferSize > 0 {
+			f.OSConfig = &osFsConfig{
+				ReadBufferSize:  getOptionalInt64(int64(fs.OSConfig.ReadBufferSize)),
+				WriteBufferSize: getOptionalInt64(int64(fs.OSConfig.WriteBufferSize)),
+			}
+		}
 	case sdk.S3FilesystemProvider:
 		f.S3Config = &s3FsConfig{
 			Bucket:              getOptionalString(fs.S3Config.Bucket),
@@ -1029,7 +1064,9 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 		}
 	case sdk.CryptedFilesystemProvider:
 		f.CryptConfig = &cryptFsConfig{
-			Passphrase: getOptionalString(getSecretFromSFTPGo(fs.CryptConfig.Passphrase)),
+			Passphrase:      getOptionalString(getSecretFromSFTPGo(fs.CryptConfig.Passphrase)),
+			ReadBufferSize:  getOptionalInt64(int64(fs.CryptConfig.ReadBufferSize)),
+			WriteBufferSize: getOptionalInt64(int64(fs.CryptConfig.WriteBufferSize)),
 		}
 	case sdk.SFTPFilesystemProvider:
 		f.SFTPConfig = &sftpFsConfig{
@@ -1840,6 +1877,7 @@ type eventActionEmailConfig struct {
 	Subject     types.String `tfsdk:"subject"`
 	Body        types.String `tfsdk:"body"`
 	Attachments types.List   `tfsdk:"attachments"`
+	ContentType types.Int64  `tfsdk:"content_type"`
 }
 
 type folderRetention struct {
@@ -1976,8 +2014,9 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 				"recipients": types.ListType{
 					ElemType: types.StringType,
 				},
-				"subject": types.StringType,
-				"body":    types.StringType,
+				"subject":      types.StringType,
+				"content_type": types.Int64Type,
+				"body":         types.StringType,
 				"attachments": types.ListType{
 					ElemType: types.StringType,
 				},
@@ -2061,8 +2100,9 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			Timeout: int(o.CmdConfig.Timeout.ValueInt64()),
 		},
 		EmailConfig: client.EventActionEmailConfig{
-			Subject: o.EmailConfig.Subject.ValueString(),
-			Body:    o.EmailConfig.Body.ValueString(),
+			Subject:     o.EmailConfig.Subject.ValueString(),
+			Body:        o.EmailConfig.Body.ValueString(),
+			ContentType: int(o.EmailConfig.ContentType.ValueInt64()),
 		},
 		FsConfig: client.EventActionFilesystemConfig{
 			Type: int(o.FsConfig.Type.ValueInt64()),
@@ -2248,8 +2288,9 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 		}
 	case client.ActionTypeEmail:
 		o.EmailConfig = &eventActionEmailConfig{
-			Subject: types.StringValue(action.Options.EmailConfig.Subject),
-			Body:    types.StringValue(action.Options.EmailConfig.Body),
+			Subject:     types.StringValue(action.Options.EmailConfig.Subject),
+			Body:        types.StringValue(action.Options.EmailConfig.Body),
+			ContentType: getOptionalInt64(int64(action.Options.EmailConfig.ContentType)),
 		}
 		recipients, diags := types.ListValueFrom(ctx, types.StringType, action.Options.EmailConfig.Recipients)
 		if diags.HasError() {

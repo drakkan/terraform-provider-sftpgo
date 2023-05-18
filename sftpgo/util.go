@@ -43,6 +43,19 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 				Computed:    true,
 				Description: "Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP",
 			},
+			"osconfig": schema.SingleNestedAttribute{
+				Computed: true,
+				Attributes: map[string]schema.Attribute{
+					"read_buffer_size": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Optional read buffer size, as MB, to use for downloads.",
+					},
+					"write_buffer_size": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Optional write buffer size, as MB, to use for uploads.",
+					},
+				},
+			},
 			"s3config": schema.SingleNestedAttribute{
 				Computed: true,
 				Attributes: map[string]schema.Attribute{
@@ -199,6 +212,14 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
+					"read_buffer_size": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Optional read buffer size, as MB, to use for downloads.",
+					},
+					"write_buffer_size": schema.Int64Attribute{
+						Computed:    true,
+						Description: "Optional write buffer size, as MB, to use for uploads.",
+					},
 				},
 			},
 			"sftpconfig": schema.SingleNestedAttribute{
@@ -279,6 +300,25 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 				Description: "Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP",
 				Validators: []validator.Int64{
 					int64validator.Between(0, 6),
+				},
+			},
+			"osconfig": schema.SingleNestedAttribute{
+				Optional: true,
+				Attributes: map[string]schema.Attribute{
+					"read_buffer_size": schema.Int64Attribute{
+						Optional:    true,
+						Description: "Optional read buffer size, as MB, to use for downloads. Omit to disable buffering, that's fine in most use cases.",
+						Validators: []validator.Int64{
+							int64validator.Between(0, 10),
+						},
+					},
+					"write_buffer_size": schema.Int64Attribute{
+						Optional:    true,
+						Description: "Optional write buffer size, as MB, to use for uploads. Omit to disable no buffering, that's fine in most use cases.",
+						Validators: []validator.Int64{
+							int64validator.Between(0, 10),
+						},
+					},
 				},
 			},
 			"s3config": schema.SingleNestedAttribute{
@@ -443,6 +483,20 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Optional:    true,
 						Sensitive:   true,
 						Description: "Plain text passphrase. " + secretDescriptionGeneric,
+					},
+					"read_buffer_size": schema.Int64Attribute{
+						Optional:    true,
+						Description: "Optional read buffer size, as MB, to use for downloads. Omit to disable buffering, that's fine in most use cases.",
+						Validators: []validator.Int64{
+							int64validator.Between(0, 10),
+						},
+					},
+					"write_buffer_size": schema.Int64Attribute{
+						Optional:    true,
+						Description: "Optional write buffer size, as MB, to use for uploads. Omit to disable buffering, that's fine in most use cases.",
+						Validators: []validator.Int64{
+							int64validator.Between(0, 10),
+						},
 					},
 				},
 			},

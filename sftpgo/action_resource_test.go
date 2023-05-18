@@ -183,10 +183,54 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.0", "example1@example.com"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.1", "example2@example.com"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.subject", "test subject"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config.content_type"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.body", "test body"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.attachments.#", "2"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.attachments.0", "/path1"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.attachments.1", "/path2"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.pwd_expiration_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.idp_config"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 3
+						options = {
+							email_config = {
+								recipients = ["example3@example.com", "example4@example.com"]
+								subject = "test subject1"
+								content_type = 1
+								body = "<p>test body1</p>"
+								attachments = ["/path3","/path4"]
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "3"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "7"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.0", "example3@example.com"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.1", "example4@example.com"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.subject", "test subject1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.content_type", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.body", "<p>test body1</p>"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.attachments.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.attachments.0", "/path3"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.attachments.1", "/path4"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.pwd_expiration_config"),

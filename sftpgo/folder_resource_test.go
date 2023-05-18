@@ -89,9 +89,76 @@ func TestAccFolderResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("sftpgo_folder.test", "used_quota_files"),
 					resource.TestCheckResourceAttrSet("sftpgo_folder.test", "last_quota_update"),
 					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.provider", "0"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.osconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.s3config"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.gcsconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.cryptconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.httpconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.azblobconfig"),
+				),
+			},
+			// Update and Read testing
+			{
+				Config: `
+					resource "sftpgo_folder" "test" {
+					  name = "test folder"
+					  mapped_path    = "/tmp/folder"
+					  filesystem = {
+					    provider = 0
+						osconfig = {
+						  write_buffer_size = 5
+						}
+					  }
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "name", "test folder"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "id", "test folder"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "mapped_path", "/tmp/folder"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "description"),
+					resource.TestCheckResourceAttrSet("sftpgo_folder.test", "used_quota_size"),
+					resource.TestCheckResourceAttrSet("sftpgo_folder.test", "used_quota_files"),
+					resource.TestCheckResourceAttrSet("sftpgo_folder.test", "last_quota_update"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.provider", "0"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.osconfig.write_buffer_size", "5"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.osconfig.read_buffer_size"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.s3config"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.gcsconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.cryptconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.httpconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.azblobconfig"),
+				),
+			},
+			// Update and Read testing
+			{
+				Config: `
+					resource "sftpgo_folder" "test" {
+					  name = "test folder"
+					  mapped_path    = "/tmp/folder"
+					  filesystem = {
+					    provider = 4
+						cryptconfig = {
+							passphrase = "pwd"
+							read_buffer_size = 4
+						  }
+					  }
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "name", "test folder"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "id", "test folder"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "mapped_path", "/tmp/folder"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "description"),
+					resource.TestCheckResourceAttrSet("sftpgo_folder.test", "used_quota_size"),
+					resource.TestCheckResourceAttrSet("sftpgo_folder.test", "used_quota_files"),
+					resource.TestCheckResourceAttrSet("sftpgo_folder.test", "last_quota_update"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.provider", "4"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.osconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.s3config"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.gcsconfig"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.cryptconfig.passphrase", "pwd"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.cryptconfig.read_buffer_size", "4"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.cryptconfig.write_buffer_size"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.httpconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.azblobconfig"),
