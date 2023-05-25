@@ -710,12 +710,12 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 						"allowed_patterns": schema.ListAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
-							Description: "Files/directories with these, case insensitive, patterns are allowed.",
+							Description: "Files/directories with these, case insensitive, patterns are allowed. Allowed file patterns are evaluated before the denied ones.",
 						},
 						"denied_patterns": schema.ListAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
-							Description: "Files/directories with these, case insensitive, patterns are not allowed. Denied file patterns are evaluated before the allowed ones.",
+							Description: "Files/directories with these, case insensitive, patterns are not allowed.",
 						},
 						"deny_policy": schema.Int64Attribute{
 							Computed:    true,
@@ -730,7 +730,7 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 			},
 			"tls_username": schema.StringAttribute{
 				Computed:    true,
-				Description: `TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command.`,
+				Description: `TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command. For WebDAV, if no username is provided, the CN will be used as username. For WebDAV clients it must match the implicit or provided username.`,
 			},
 			"external_auth_disabled": schema.BoolAttribute{
 				Computed:    true,
@@ -898,12 +898,12 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 						"allowed_patterns": schema.ListAttribute{
 							ElementType: types.StringType,
 							Optional:    true,
-							Description: "Files/directories with these, case insensitive, patterns are allowed.",
+							Description: "Files/directories with these, case insensitive, patterns are allowed. Allowed file patterns are evaluated before the denied ones.",
 						},
 						"denied_patterns": schema.ListAttribute{
 							ElementType: types.StringType,
 							Optional:    true,
-							Description: "Files/directories with these, case insensitive, patterns are not allowed. Denied file patterns are evaluated before the allowed ones.",
+							Description: "Files/directories with these, case insensitive, patterns are not allowed.",
 						},
 						"deny_policy": schema.Int64Attribute{
 							Optional:    true,
@@ -918,9 +918,9 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 			},
 			"tls_username": schema.StringAttribute{
 				Optional:    true,
-				Description: `TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command.`,
+				Description: `TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command. For WebDAV, if no username is provided, the CN will be used as username. For WebDAV clients it must match the implicit or provided username.`,
 				Validators: []validator.String{
-					stringvalidator.OneOf("None", "CommonName"),
+					stringvalidator.OneOf("CommonName"),
 				},
 			},
 			"external_auth_disabled": schema.BoolAttribute{

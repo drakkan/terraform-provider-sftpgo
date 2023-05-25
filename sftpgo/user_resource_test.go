@@ -310,6 +310,7 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_protocols.0", "SSH"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_protocols.1", "HTTP"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.#", "7"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.tls_username"),
 				),
 			},
 			// Update and Read cryptfs user with buffering testing

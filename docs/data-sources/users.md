@@ -209,7 +209,7 @@ Read-Only:
 - `pre_login_disabled` (Boolean) If set, external pre-login hook will not be executed.
 - `require_password_change` (Boolean) If set, user must change their password from WebClient/REST API at next login.
 - `start_directory` (String) Alternate starting directory. If not set, the default is "/". This option is supported for SFTP/SCP, FTP and HTTP (WebClient/REST API) protocols. Relative paths will use this directory as base.
-- `tls_username` (String) TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command.
+- `tls_username` (String) TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command. For WebDAV, if no username is provided, the CN will be used as username. For WebDAV clients it must match the implicit or provided username.
 - `two_factor_protocols` (List of String) Defines protocols that require two factor authentication
 - `user_type` (String) Hint for authentication plugins.
 - `web_client` (List of String) Web Client/user REST API restrictions.
@@ -240,8 +240,8 @@ Read-Only:
 
 Read-Only:
 
-- `allowed_patterns` (List of String) Files/directories with these, case insensitive, patterns are allowed.
-- `denied_patterns` (List of String) Files/directories with these, case insensitive, patterns are not allowed. Denied file patterns are evaluated before the allowed ones.
+- `allowed_patterns` (List of String) Files/directories with these, case insensitive, patterns are allowed. Allowed file patterns are evaluated before the denied ones.
+- `denied_patterns` (List of String) Files/directories with these, case insensitive, patterns are not allowed.
 - `deny_policy` (Number) Set to 1 to hide denied files/directories in directory listing.
 - `path` (String) Virtual path, if no other specific filter is defined, the filter applies for sub directories too.
 
