@@ -90,6 +90,7 @@ type EventActionCommandConfig struct {
 // EventActionEmailConfig defines the configuration options for SMTP event actions
 type EventActionEmailConfig struct {
 	Recipients  []string `json:"recipients,omitempty"`
+	Bcc         []string `json:"bcc,omitempty"`
 	Subject     string   `json:"subject,omitempty"`
 	Body        string   `json:"body,omitempty"`
 	Attachments []string `json:"attachments,omitempty"`

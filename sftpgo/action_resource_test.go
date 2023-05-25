@@ -165,6 +165,7 @@ func TestAccActionResource(t *testing.T) {
 						options = {
 							email_config = {
 								recipients = ["example1@example.com", "example2@example.com"]
+								bcc = ["example3@example.com", "example4@example.com"]
 								subject = "test subject"
 								body = "test body"
 								attachments = ["/path1","/path2"]
@@ -182,6 +183,9 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.#", "2"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.0", "example1@example.com"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.1", "example2@example.com"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.bcc.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.bcc.0", "example3@example.com"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.bcc.1", "example4@example.com"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.subject", "test subject"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config.content_type"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.body", "test body"),
@@ -225,6 +229,7 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.#", "2"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.0", "example3@example.com"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.1", "example4@example.com"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.bcc.#", "0"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.subject", "test subject1"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.content_type", "1"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.body", "<p>test body1</p>"),

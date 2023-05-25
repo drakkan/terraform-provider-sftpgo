@@ -1874,6 +1874,7 @@ type eventActionCommandConfig struct {
 
 type eventActionEmailConfig struct {
 	Recipients  types.List   `tfsdk:"recipients"`
+	Bcc         types.List   `tfsdk:"bcc"`
 	Subject     types.String `tfsdk:"subject"`
 	Body        types.String `tfsdk:"body"`
 	Attachments types.List   `tfsdk:"attachments"`
@@ -2012,6 +2013,9 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 		"email_config": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
 				"recipients": types.ListType{
+					ElemType: types.StringType,
+				},
+				"bcc": types.ListType{
 					ElemType: types.StringType,
 				},
 				"subject":      types.StringType,
@@ -2167,6 +2171,12 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			return options, diags
 		}
 	}
+	if !o.EmailConfig.Bcc.IsNull() {
+		diags := o.EmailConfig.Bcc.ElementsAs(ctx, &options.EmailConfig.Bcc, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
 	if !o.EmailConfig.Attachments.IsNull() {
 		diags := o.EmailConfig.Attachments.ElementsAs(ctx, &options.EmailConfig.Attachments, false)
 		if diags.HasError() {
@@ -2297,6 +2307,11 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 			return diags
 		}
 		o.EmailConfig.Recipients = recipients
+		bcc, diags := types.ListValueFrom(ctx, types.StringType, action.Options.EmailConfig.Bcc)
+		if diags.HasError() {
+			return diags
+		}
+		o.EmailConfig.Bcc = bcc
 		attachments, diags := types.ListValueFrom(ctx, types.StringType, action.Options.EmailConfig.Attachments)
 		if diags.HasError() {
 			return diags

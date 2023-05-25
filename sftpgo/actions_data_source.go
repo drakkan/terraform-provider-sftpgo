@@ -211,6 +211,10 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											ElementType: types.StringType,
 											Computed:    true,
 										},
+										"bcc": schema.ListAttribute{
+											ElementType: types.StringType,
+											Computed:    true,
+										},
 										"subject": schema.StringAttribute{
 											Computed: true,
 										},

@@ -240,6 +240,13 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 									listvalidator.UniqueValues(),
 								},
 							},
+							"bcc": schema.ListAttribute{
+								ElementType: types.StringType,
+								Optional:    true,
+								Validators: []validator.List{
+									listvalidator.UniqueValues(),
+								},
+							},
 							"subject": schema.StringAttribute{
 								Required: true,
 							},
