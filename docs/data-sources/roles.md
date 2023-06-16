@@ -30,5 +30,3 @@ Read-Only:
 - `id` (String)
 - `name` (String) Unique name.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
-
-

@@ -782,31 +782,6 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 					},
 				},
 			},
-			"data_transfer_limits": schema.ListNestedAttribute{
-				Computed:    true,
-				Description: "Per-source data transfer limits.",
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"sources": schema.ListAttribute{
-							ElementType: types.StringType,
-							Computed:    true,
-							Description: `Source networks in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32". The limit applies if the defined networks contain the client IP.`,
-						},
-						"upload_data_transfer": schema.Int64Attribute{
-							Computed:    true,
-							Description: "Maximum data transfer allowed for uploads as MB. Not set means no limit.",
-						},
-						"download_data_transfer": schema.Int64Attribute{
-							Computed:    true,
-							Description: "Maximum data transfer allowed for downloads as MB. Not set means no limit.",
-						},
-						"total_data_transfer": schema.Int64Attribute{
-							Computed:    true,
-							Description: "Maximum total data transfer allowed as MB. You can set a total data transfer instead of the individual values for uploads and downloads.",
-						},
-					},
-				},
-			},
 			"external_auth_cache_time": schema.Int64Attribute{
 				Computed:    true,
 				Description: "Defines the cache time, in seconds, for users authenticated using an external auth hook. Not set means no cache.",
@@ -975,30 +950,6 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 						"download_bandwidth": schema.Int64Attribute{
 							Optional:    true,
 							Description: "Maximum download bandwidth as KB/s.",
-						},
-					},
-				},
-			},
-			"data_transfer_limits": schema.ListNestedAttribute{
-				Optional: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"sources": schema.ListAttribute{
-							ElementType: types.StringType,
-							Required:    true,
-							Description: `Source networks in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32". The limit applies if the defined networks contain the client IP.`,
-						},
-						"upload_data_transfer": schema.Int64Attribute{
-							Optional:    true,
-							Description: "Maximum data transfer allowed for uploads as MB. Not set means no limit.",
-						},
-						"download_data_transfer": schema.Int64Attribute{
-							Optional:    true,
-							Description: "Maximum data transfer allowed for downloads as MB. Not set means no limit.",
-						},
-						"total_data_transfer": schema.Int64Attribute{
-							Optional:    true,
-							Description: "Maximum total data transfer allowed as MB. You can set a total data transfer instead of the individual values for uploads and downloads.",
 						},
 					},
 				},

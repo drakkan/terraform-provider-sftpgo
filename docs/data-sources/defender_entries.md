@@ -32,5 +32,3 @@ Read-Only:
 - `mode` (Number) 1 = allow, 2 = deny.
 - `protocols` (Number) Defines the protocol the entry applies to. 0 means all the supported protocols, 1 SSH, 2 FTP, 4 WebDAV, 8 HTTP. Protocols can be combined, for example 3 means SSH and FTP.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
-
-

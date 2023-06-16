@@ -151,5 +151,3 @@ Read-Only:
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `username` (String)
-
-

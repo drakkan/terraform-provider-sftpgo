@@ -59,14 +59,7 @@ func TestAccUsersDataSource(t *testing.T) {
 			},
 			Filters: sdk.UserFilters{
 				BaseUserFilters: sdk.BaseUserFilters{
-					DeniedProtocols: []string{"SSH"},
-					DataTransferLimits: []sdk.DataTransferLimit{
-						{
-							Sources:              []string{"2001:db8:abcd:0012::0/64"},
-							UploadDataTransfer:   100,
-							DownloadDataTransfer: 200,
-						},
-					},
+					DeniedProtocols:  []string{"SSH"},
 					PasswordStrength: 75,
 				},
 				RequirePasswordChange: true,
@@ -148,12 +141,6 @@ func TestAccUsersDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.groups.0.type", "2"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.role", testRole.Name),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.denied_protocols.0", "SSH"),
-					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.data_transfer_limits.#", "1"),
-					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.data_transfer_limits.0.sources.0", user.Filters.DataTransferLimits[0].Sources[0]),
-					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.data_transfer_limits.0.upload_data_transfer",
-						fmt.Sprintf("%d", user.Filters.DataTransferLimits[0].UploadDataTransfer)),
-					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.data_transfer_limits.0.download_data_transfer",
-						fmt.Sprintf("%d", user.Filters.DataTransferLimits[0].DownloadDataTransfer)),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.password_strength",
 						fmt.Sprintf("%d", user.Filters.PasswordStrength)),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.require_password_change", "true"),

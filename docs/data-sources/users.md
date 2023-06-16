@@ -192,7 +192,6 @@ Read-Only:
 - `allowed_ip` (List of String) Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"
 - `bandwidth_limits` (Attributes List) Per-source bandwidth limits. (see [below for nested schema](#nestedatt--users--filters--bandwidth_limits))
 - `check_password_disabled` (Boolean) If set, check password hook will not be executed.
-- `data_transfer_limits` (Attributes List) Per-source data transfer limits. (see [below for nested schema](#nestedatt--users--filters--data_transfer_limits))
 - `default_shares_expiration` (Number) Default expiration for newly created shares as number of days. Not set means no default expiration.
 - `denied_ip` (List of String) Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.
 - `denied_login_methods` (List of String) Disabled login methods.
@@ -222,17 +221,6 @@ Read-Only:
 - `download_bandwidth` (Number) Maximum download bandwidth as KB/s.
 - `sources` (List of String) Source networks in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32". The limit applies if the defined networks contain the client IP.
 - `upload_bandwidth` (Number) Maximum upload bandwidth as KB/s.
-
-
-<a id="nestedatt--users--filters--data_transfer_limits"></a>
-### Nested Schema for `users.filters.data_transfer_limits`
-
-Read-Only:
-
-- `download_data_transfer` (Number) Maximum data transfer allowed for downloads as MB. Not set means no limit.
-- `sources` (List of String) Source networks in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32". The limit applies if the defined networks contain the client IP.
-- `total_data_transfer` (Number) Maximum total data transfer allowed as MB. You can set a total data transfer instead of the individual values for uploads and downloads.
-- `upload_data_transfer` (Number) Maximum data transfer allowed for uploads as MB. Not set means no limit.
 
 
 <a id="nestedatt--users--filters--file_patterns"></a>
@@ -389,5 +377,3 @@ Read-Only:
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `username` (String)
-
-

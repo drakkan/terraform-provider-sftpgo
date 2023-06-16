@@ -265,38 +265,30 @@ type bandwidthLimit struct {
 	DownloadBandwidth types.Int64 `tfsdk:"download_bandwidth"`
 }
 
-type dataTransferLimit struct {
-	Sources              types.List  `tfsdk:"sources"`
-	UploadDataTransfer   types.Int64 `tfsdk:"upload_data_transfer"`
-	DownloadDataTransfer types.Int64 `tfsdk:"download_data_transfer"`
-	TotalDataTransfer    types.Int64 `tfsdk:"total_data_transfer"`
-}
-
 type baseUserFilters struct {
-	AllowedIP               types.List          `tfsdk:"allowed_ip"`
-	DeniedIP                types.List          `tfsdk:"denied_ip"`
-	DeniedLoginMethods      types.List          `tfsdk:"denied_login_methods"`
-	DeniedProtocols         types.List          `tfsdk:"denied_protocols"`
-	FilePatterns            []patternsFilter    `tfsdk:"file_patterns"`
-	MaxUploadFileSize       types.Int64         `tfsdk:"max_upload_file_size"`
-	TLSUsername             types.String        `tfsdk:"tls_username"`
-	ExternalAuthDisabled    types.Bool          `tfsdk:"external_auth_disabled"`
-	PreLoginDisabled        types.Bool          `tfsdk:"pre_login_disabled"`
-	CheckPasswordDisabled   types.Bool          `tfsdk:"check_password_disabled"`
-	DisableFsChecks         types.Bool          `tfsdk:"disable_fs_checks"`
-	WebClient               types.List          `tfsdk:"web_client"`
-	AllowAPIKeyAuth         types.Bool          `tfsdk:"allow_api_key_auth"`
-	UserType                types.String        `tfsdk:"user_type"`
-	BandwidthLimits         []bandwidthLimit    `tfsdk:"bandwidth_limits"`
-	DataTransferLimits      []dataTransferLimit `tfsdk:"data_transfer_limits"`
-	ExternalAuthCacheTime   types.Int64         `tfsdk:"external_auth_cache_time"`
-	StartDirectory          types.String        `tfsdk:"start_directory"`
-	TwoFactorAuthProtocols  types.List          `tfsdk:"two_factor_protocols"`
-	FTPSecurity             types.Int64         `tfsdk:"ftp_security"`
-	IsAnonymous             types.Bool          `tfsdk:"is_anonymous"`
-	DefaultSharesExpiration types.Int64         `tfsdk:"default_shares_expiration"`
-	PasswordExpiration      types.Int64         `tfsdk:"password_expiration"`
-	PasswordStrength        types.Int64         `tfsdk:"password_strength"`
+	AllowedIP               types.List       `tfsdk:"allowed_ip"`
+	DeniedIP                types.List       `tfsdk:"denied_ip"`
+	DeniedLoginMethods      types.List       `tfsdk:"denied_login_methods"`
+	DeniedProtocols         types.List       `tfsdk:"denied_protocols"`
+	FilePatterns            []patternsFilter `tfsdk:"file_patterns"`
+	MaxUploadFileSize       types.Int64      `tfsdk:"max_upload_file_size"`
+	TLSUsername             types.String     `tfsdk:"tls_username"`
+	ExternalAuthDisabled    types.Bool       `tfsdk:"external_auth_disabled"`
+	PreLoginDisabled        types.Bool       `tfsdk:"pre_login_disabled"`
+	CheckPasswordDisabled   types.Bool       `tfsdk:"check_password_disabled"`
+	DisableFsChecks         types.Bool       `tfsdk:"disable_fs_checks"`
+	WebClient               types.List       `tfsdk:"web_client"`
+	AllowAPIKeyAuth         types.Bool       `tfsdk:"allow_api_key_auth"`
+	UserType                types.String     `tfsdk:"user_type"`
+	BandwidthLimits         []bandwidthLimit `tfsdk:"bandwidth_limits"`
+	ExternalAuthCacheTime   types.Int64      `tfsdk:"external_auth_cache_time"`
+	StartDirectory          types.String     `tfsdk:"start_directory"`
+	TwoFactorAuthProtocols  types.List       `tfsdk:"two_factor_protocols"`
+	FTPSecurity             types.Int64      `tfsdk:"ftp_security"`
+	IsAnonymous             types.Bool       `tfsdk:"is_anonymous"`
+	DefaultSharesExpiration types.Int64      `tfsdk:"default_shares_expiration"`
+	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
+	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
 }
 
 func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
@@ -346,18 +338,6 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 					},
 					"upload_bandwidth":   types.Int64Type,
 					"download_bandwidth": types.Int64Type,
-				},
-			},
-		},
-		"data_transfer_limits": types.ListType{
-			ElemType: types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"sources": types.ListType{
-						ElemType: types.StringType,
-					},
-					"upload_data_transfer":   types.Int64Type,
-					"download_data_transfer": types.Int64Type,
-					"total_data_transfer":    types.Int64Type,
 				},
 			},
 		},
@@ -425,20 +405,6 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (sdk.BaseUserFilters, di
 			}
 		}
 		filters.BandwidthLimits = append(filters.BandwidthLimits, limits)
-	}
-	for _, l := range f.DataTransferLimits {
-		limits := sdk.DataTransferLimit{
-			UploadDataTransfer:   l.UploadDataTransfer.ValueInt64(),
-			DownloadDataTransfer: l.DownloadDataTransfer.ValueInt64(),
-			TotalDataTransfer:    l.TotalDataTransfer.ValueInt64(),
-		}
-		if !l.Sources.IsNull() {
-			diags := l.Sources.ElementsAs(ctx, &limits.Sources, false)
-			if diags.HasError() {
-				return filters, diags
-			}
-		}
-		filters.DataTransferLimits = append(filters.DataTransferLimits, limits)
 	}
 	if !f.AllowedIP.IsNull() {
 		diags := f.AllowedIP.ElementsAs(ctx, &filters.AllowedIP, false)
@@ -547,20 +513,6 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 		})
 	}
 
-	f.DataTransferLimits = nil
-	for _, limit := range filters.DataTransferLimits {
-		sources, diags := types.ListValueFrom(ctx, types.StringType, limit.Sources)
-		if diags.HasError() {
-			return diags
-		}
-		f.DataTransferLimits = append(f.DataTransferLimits, dataTransferLimit{
-			Sources:              sources,
-			UploadDataTransfer:   getOptionalInt64(limit.UploadDataTransfer),
-			DownloadDataTransfer: getOptionalInt64(limit.DownloadDataTransfer),
-			TotalDataTransfer:    getOptionalInt64(limit.TotalDataTransfer),
-		})
-	}
-
 	f.ExternalAuthCacheTime = getOptionalInt64(filters.ExternalAuthCacheTime)
 	f.StartDirectory = getOptionalString(filters.StartDirectory)
 	twoFactorProtos, diags := types.ListValueFrom(ctx, types.StringType, filters.TwoFactorAuthProtocols)
@@ -579,31 +531,30 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 type userFilters struct {
 	// embedded structs are not supported
 	//baseUserFilters
-	AllowedIP               types.List          `tfsdk:"allowed_ip"`
-	DeniedIP                types.List          `tfsdk:"denied_ip"`
-	DeniedLoginMethods      types.List          `tfsdk:"denied_login_methods"`
-	DeniedProtocols         types.List          `tfsdk:"denied_protocols"`
-	FilePatterns            []patternsFilter    `tfsdk:"file_patterns"`
-	MaxUploadFileSize       types.Int64         `tfsdk:"max_upload_file_size"`
-	TLSUsername             types.String        `tfsdk:"tls_username"`
-	ExternalAuthDisabled    types.Bool          `tfsdk:"external_auth_disabled"`
-	PreLoginDisabled        types.Bool          `tfsdk:"pre_login_disabled"`
-	CheckPasswordDisabled   types.Bool          `tfsdk:"check_password_disabled"`
-	DisableFsChecks         types.Bool          `tfsdk:"disable_fs_checks"`
-	WebClient               types.List          `tfsdk:"web_client"`
-	AllowAPIKeyAuth         types.Bool          `tfsdk:"allow_api_key_auth"`
-	UserType                types.String        `tfsdk:"user_type"`
-	BandwidthLimits         []bandwidthLimit    `tfsdk:"bandwidth_limits"`
-	DataTransferLimits      []dataTransferLimit `tfsdk:"data_transfer_limits"`
-	ExternalAuthCacheTime   types.Int64         `tfsdk:"external_auth_cache_time"`
-	StartDirectory          types.String        `tfsdk:"start_directory"`
-	TwoFactorAuthProtocols  types.List          `tfsdk:"two_factor_protocols"`
-	FTPSecurity             types.Int64         `tfsdk:"ftp_security"`
-	IsAnonymous             types.Bool          `tfsdk:"is_anonymous"`
-	DefaultSharesExpiration types.Int64         `tfsdk:"default_shares_expiration"`
-	PasswordExpiration      types.Int64         `tfsdk:"password_expiration"`
-	PasswordStrength        types.Int64         `tfsdk:"password_strength"`
-	RequirePasswordChange   types.Bool          `tfsdk:"require_password_change"`
+	AllowedIP               types.List       `tfsdk:"allowed_ip"`
+	DeniedIP                types.List       `tfsdk:"denied_ip"`
+	DeniedLoginMethods      types.List       `tfsdk:"denied_login_methods"`
+	DeniedProtocols         types.List       `tfsdk:"denied_protocols"`
+	FilePatterns            []patternsFilter `tfsdk:"file_patterns"`
+	MaxUploadFileSize       types.Int64      `tfsdk:"max_upload_file_size"`
+	TLSUsername             types.String     `tfsdk:"tls_username"`
+	ExternalAuthDisabled    types.Bool       `tfsdk:"external_auth_disabled"`
+	PreLoginDisabled        types.Bool       `tfsdk:"pre_login_disabled"`
+	CheckPasswordDisabled   types.Bool       `tfsdk:"check_password_disabled"`
+	DisableFsChecks         types.Bool       `tfsdk:"disable_fs_checks"`
+	WebClient               types.List       `tfsdk:"web_client"`
+	AllowAPIKeyAuth         types.Bool       `tfsdk:"allow_api_key_auth"`
+	UserType                types.String     `tfsdk:"user_type"`
+	BandwidthLimits         []bandwidthLimit `tfsdk:"bandwidth_limits"`
+	ExternalAuthCacheTime   types.Int64      `tfsdk:"external_auth_cache_time"`
+	StartDirectory          types.String     `tfsdk:"start_directory"`
+	TwoFactorAuthProtocols  types.List       `tfsdk:"two_factor_protocols"`
+	FTPSecurity             types.Int64      `tfsdk:"ftp_security"`
+	IsAnonymous             types.Bool       `tfsdk:"is_anonymous"`
+	DefaultSharesExpiration types.Int64      `tfsdk:"default_shares_expiration"`
+	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
+	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
+	RequirePasswordChange   types.Bool       `tfsdk:"require_password_change"`
 }
 
 func (f *userFilters) getTFAttributes() map[string]attr.Type {
@@ -637,7 +588,6 @@ func (f *userFilters) getBaseFilters() baseUserFilters {
 		AllowAPIKeyAuth:         f.AllowAPIKeyAuth,
 		UserType:                f.UserType,
 		BandwidthLimits:         f.BandwidthLimits,
-		DataTransferLimits:      f.DataTransferLimits,
 		ExternalAuthCacheTime:   f.ExternalAuthCacheTime,
 		StartDirectory:          f.StartDirectory,
 		TwoFactorAuthProtocols:  f.TwoFactorAuthProtocols,
@@ -665,7 +615,6 @@ func (f *userFilters) fromBaseFilters(filters *baseUserFilters) {
 	f.AllowAPIKeyAuth = filters.AllowAPIKeyAuth
 	f.UserType = filters.UserType
 	f.BandwidthLimits = filters.BandwidthLimits
-	f.DataTransferLimits = filters.DataTransferLimits
 	f.ExternalAuthCacheTime = filters.ExternalAuthCacheTime
 	f.StartDirectory = filters.StartDirectory
 	f.TwoFactorAuthProtocols = filters.TwoFactorAuthProtocols

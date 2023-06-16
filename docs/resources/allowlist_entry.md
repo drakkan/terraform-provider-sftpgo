@@ -29,5 +29,3 @@ Allow list entry
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
 - `id` (String) Required to use the test framework. Matches the IP or network field.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
-
-

@@ -28,5 +28,3 @@ Role
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
 - `id` (String) Required to use the test framework. Matches the role name.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
-
-

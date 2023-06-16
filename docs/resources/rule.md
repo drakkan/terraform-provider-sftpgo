@@ -131,5 +131,3 @@ Required:
 - `day_of_week` (String)
 - `hour` (String)
 - `month` (String)
-
-

@@ -205,7 +205,6 @@ Optional:
 - `allowed_ip` (List of String) Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"
 - `bandwidth_limits` (Attributes List) (see [below for nested schema](#nestedatt--filters--bandwidth_limits))
 - `check_password_disabled` (Boolean) If set, check password hook will not be executed.
-- `data_transfer_limits` (Attributes List) (see [below for nested schema](#nestedatt--filters--data_transfer_limits))
 - `default_shares_expiration` (Number) Default expiration for newly created shares as number of days. Not set means no default expiration.
 - `denied_ip` (List of String) Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.
 - `denied_login_methods` (List of String) Disabled login methods. Valid values: "publickey", "password", "password-over-SSH", "keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "TLSCertificate", "TLSCertificate+password"
@@ -238,20 +237,6 @@ Optional:
 
 - `download_bandwidth` (Number) Maximum download bandwidth as KB/s.
 - `upload_bandwidth` (Number) Maximum upload bandwidth as KB/s.
-
-
-<a id="nestedatt--filters--data_transfer_limits"></a>
-### Nested Schema for `filters.data_transfer_limits`
-
-Required:
-
-- `sources` (List of String) Source networks in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32". The limit applies if the defined networks contain the client IP.
-
-Optional:
-
-- `download_data_transfer` (Number) Maximum data transfer allowed for downloads as MB. Not set means no limit.
-- `total_data_transfer` (Number) Maximum total data transfer allowed as MB. You can set a total data transfer instead of the individual values for uploads and downloads.
-- `upload_data_transfer` (Number) Maximum data transfer allowed for uploads as MB. Not set means no limit.
 
 
 <a id="nestedatt--filters--file_patterns"></a>
@@ -417,5 +402,3 @@ Read-Only:
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `username` (String)
-
-

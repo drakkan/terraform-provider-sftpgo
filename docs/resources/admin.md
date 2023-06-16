@@ -72,5 +72,3 @@ Optional:
 
 - `default_users_expiration` (Number) If set defines the default expiration for newly created users as number of days.
 - `hide_user_page_sections` (Number) If set allow to hide some sections from the user page in the WebAdmin. 1 = groups, 2 = filesystem, 4 = virtual folders, 8 = profile, 16 = ACL, 32 = Disk and bandwidth quota limits, 64 = Advanced. Settings can be combined.
-
-

@@ -204,13 +204,6 @@ func TestAccUserResource(t *testing.T) {
 					  tls_username = "CommonName"
 					  web_client = ["write-disabled"]
 					  user_type = "LDAPUser"
-					  data_transfer_limits = [
-						{
-							sources = ["2001:db8:abcd:0012::0/96"]
-							upload_data_transfer = 100
-							download_data_transfer = 200
-						}
-					  ]
 					  ftp_security = 1
 				  }
 				}`,
@@ -251,11 +244,6 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.0", "write-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.user_type", "LDAPUser"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.data_transfer_limits.#", "1"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.data_transfer_limits.0.sources.0", "2001:db8:abcd:0012::0/96"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.data_transfer_limits.0.upload_data_transfer", "100"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.data_transfer_limits.0.download_data_transfer", "200"),
-					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.data_transfer_limits.0.total_data_transfer"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.is_anonymous"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.ftp_security", "1"),
 				),
