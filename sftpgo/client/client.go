@@ -99,6 +99,9 @@ func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, e
 	} else if c.APIKey != "" {
 		req.Header.Set("X-SFTPGO-API-KEY", c.APIKey)
 	}
+	if req.Body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	res, err := c.HTTPClient.Do(req)
 	if err != nil {

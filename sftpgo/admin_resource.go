@@ -102,9 +102,9 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 					listvalidator.UniqueValues(),
 					listvalidator.ValueStringsAre(stringvalidator.OneOf("*", "add_users", "edit_users",
 						"del_users", "view_users", "view_conns", "close_conns", "view_status", "manage_admins",
-						"manage_groups", "manage_apikeys", "quota_scans", "manage_system", "manage_defender",
-						"view_defender", "retention_checks", "metadata_checks", "view_events", "manage_event_rules",
-						"manage_roles", "manage_ip_lists")),
+						"manage_folders", "manage_groups", "manage_apikeys", "quota_scans", "manage_system",
+						"manage_defender", "view_defender", "retention_checks", "metadata_checks", "view_events",
+						"manage_event_rules", "manage_roles", "manage_ip_lists")),
 				},
 			},
 			"description": schema.StringAttribute{

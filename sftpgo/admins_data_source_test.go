@@ -34,7 +34,7 @@ func TestAccAdminsDataSource(t *testing.T) {
 	admin := client.Admin{
 		Username:       "test_admin",
 		Password:       "test_password",
-		Permissions:    []string{"add_users", "edit_users", "view_status", "quota_scans"},
+		Permissions:    []string{"add_users", "edit_users", "view_status", "quota_scans", "manage_folders"},
 		Email:          "admin@sftpgo.com",
 		Description:    "Created from Terraform",
 		AdditionalInfo: "TF",
@@ -116,6 +116,7 @@ func TestAccAdminsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.permissions.1", admin.Permissions[1]),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.permissions.2", admin.Permissions[2]),
 					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.permissions.3", admin.Permissions[3]),
+					resource.TestCheckResourceAttr("data.sftpgo_admins.test", "admins.1.permissions.4", admin.Permissions[4]),
 					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.1.created_at"),
 					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.1.updated_at"),
 					resource.TestCheckResourceAttrSet("data.sftpgo_admins.test", "admins.1.last_login"),
