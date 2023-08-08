@@ -191,6 +191,7 @@ Read-Only:
 - `file_patterns` (Attributes List) Filters based on shell patterns. (see [below for nested schema](#nestedatt--groups--user_settings--filters--file_patterns))
 - `ftp_security` (Number) FTP security mode. Set to 1 to require TLS for both data and control connection.
 - `is_anonymous` (Boolean) If enabled the user can login with any password or no password at all. Anonymous users are supported for FTP and WebDAV protocols and permissions will be automatically set to "list" and "download" (read only)
+- `max_shares_expiration` (Number) Maximum allowed expiration, as a number of days, when a user creates or updates a share. Not set means that non-expiring shares are allowed.
 - `max_upload_file_size` (Number) Max size allowed for a single upload. Unset means no limit.
 - `password_expiration` (Number) The password expires after the defined number of days. Not set means no expiration
 - `password_strength` (Number) Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.

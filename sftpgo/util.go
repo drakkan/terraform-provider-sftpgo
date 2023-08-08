@@ -807,6 +807,10 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 				Computed:    true,
 				Description: "Default expiration for newly created shares as number of days. Not set means no default expiration.",
 			},
+			"max_shares_expiration": schema.Int64Attribute{
+				Computed:    true,
+				Description: "Maximum allowed expiration, as a number of days, when a user creates or updates a share. Not set means that non-expiring shares are allowed.",
+			},
 			"password_expiration": schema.Int64Attribute{
 				Computed:    true,
 				Description: "The password expires after the defined number of days. Not set means no expiration",
@@ -982,6 +986,10 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 			"default_shares_expiration": schema.Int64Attribute{
 				Optional:    true,
 				Description: "Default expiration for newly created shares as number of days. Not set means no default expiration.",
+			},
+			"max_shares_expiration": schema.Int64Attribute{
+				Optional:    true,
+				Description: "Maximum allowed expiration, as a number of days, when a user creates or updates a share. Not set means that non-expiring shares are allowed.",
 			},
 			"password_expiration": schema.Int64Attribute{
 				Optional:    true,

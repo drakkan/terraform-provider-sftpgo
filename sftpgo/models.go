@@ -287,6 +287,7 @@ type baseUserFilters struct {
 	FTPSecurity             types.Int64      `tfsdk:"ftp_security"`
 	IsAnonymous             types.Bool       `tfsdk:"is_anonymous"`
 	DefaultSharesExpiration types.Int64      `tfsdk:"default_shares_expiration"`
+	MaxSharesExpiration     types.Int64      `tfsdk:"max_shares_expiration"`
 	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
 	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
 }
@@ -349,6 +350,7 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 		"ftp_security":              types.Int64Type,
 		"is_anonymous":              types.BoolType,
 		"default_shares_expiration": types.Int64Type,
+		"max_shares_expiration":     types.Int64Type,
 		"password_expiration":       types.Int64Type,
 		"password_strength":         types.Int64Type,
 	}
@@ -371,6 +373,7 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (sdk.BaseUserFilters, di
 		FTPSecurity:             int(f.FTPSecurity.ValueInt64()),
 		IsAnonymous:             f.IsAnonymous.ValueBool(),
 		DefaultSharesExpiration: int(f.DefaultSharesExpiration.ValueInt64()),
+		MaxSharesExpiration:     int(f.MaxSharesExpiration.ValueInt64()),
 		PasswordExpiration:      int(f.PasswordExpiration.ValueInt64()),
 		PasswordStrength:        int(f.PasswordStrength.ValueInt64()),
 	}
@@ -523,6 +526,7 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 	f.FTPSecurity = getOptionalInt64(int64(filters.FTPSecurity))
 	f.IsAnonymous = getOptionalBool(filters.IsAnonymous)
 	f.DefaultSharesExpiration = getOptionalInt64(int64(filters.DefaultSharesExpiration))
+	f.MaxSharesExpiration = getOptionalInt64(int64(filters.MaxSharesExpiration))
 	f.PasswordExpiration = getOptionalInt64(int64(filters.PasswordExpiration))
 	f.PasswordStrength = getOptionalInt64(int64(filters.PasswordStrength))
 	return nil
@@ -552,6 +556,7 @@ type userFilters struct {
 	FTPSecurity             types.Int64      `tfsdk:"ftp_security"`
 	IsAnonymous             types.Bool       `tfsdk:"is_anonymous"`
 	DefaultSharesExpiration types.Int64      `tfsdk:"default_shares_expiration"`
+	MaxSharesExpiration     types.Int64      `tfsdk:"max_shares_expiration"`
 	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
 	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
 	RequirePasswordChange   types.Bool       `tfsdk:"require_password_change"`
@@ -594,6 +599,7 @@ func (f *userFilters) getBaseFilters() baseUserFilters {
 		FTPSecurity:             f.FTPSecurity,
 		IsAnonymous:             f.IsAnonymous,
 		DefaultSharesExpiration: f.DefaultSharesExpiration,
+		MaxSharesExpiration:     f.MaxSharesExpiration,
 		PasswordExpiration:      f.PasswordExpiration,
 		PasswordStrength:        f.PasswordStrength,
 	}
@@ -621,6 +627,7 @@ func (f *userFilters) fromBaseFilters(filters *baseUserFilters) {
 	f.FTPSecurity = filters.FTPSecurity
 	f.IsAnonymous = filters.IsAnonymous
 	f.DefaultSharesExpiration = filters.DefaultSharesExpiration
+	f.MaxSharesExpiration = filters.MaxSharesExpiration
 	f.PasswordExpiration = filters.PasswordExpiration
 	f.PasswordStrength = filters.PasswordStrength
 }

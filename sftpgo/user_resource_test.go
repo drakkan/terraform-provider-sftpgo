@@ -161,6 +161,7 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.file_patterns.2.allowed_patterns"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.external_auth_disabled", "true"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.pre_login_disabled"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.max_shares_expiration"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.bandwidth_limits.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.bandwidth_limits.0.sources.#", "2"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.bandwidth_limits.0.sources.0", "127.0.0.1/32"),
@@ -205,6 +206,7 @@ func TestAccUserResource(t *testing.T) {
 					  web_client = ["write-disabled"]
 					  user_type = "LDAPUser"
 					  ftp_security = 1
+					  max_shares_expiration = 10
 				  }
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -246,6 +248,7 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.user_type", "LDAPUser"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.is_anonymous"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.ftp_security", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.max_shares_expiration", "10"),
 				),
 			},
 			// Update and Read anonymous user testing
