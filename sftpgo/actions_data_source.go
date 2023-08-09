@@ -117,7 +117,7 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 										},
 										"method": schema.StringAttribute{
 											Computed:    true,
-											Description: "HTTP method: GET, POST, PUT.",
+											Description: "HTTP method: GET, POST, PUT, DELETE.",
 										},
 										"query_parameters": schema.ListNestedAttribute{
 											Computed:    true,

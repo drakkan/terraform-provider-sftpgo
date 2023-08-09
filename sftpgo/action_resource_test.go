@@ -96,6 +96,41 @@ func TestAccActionResource(t *testing.T) {
 						type = 1
 						options = {
 							http_config = {
+								endpoint = "http://127.0.0.1:8082/deletenotify"
+								username = "myuser"
+								password = "mypassword"
+								timeout = 10
+								method = "DELETE"
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "7"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.endpoint",
+						"http://127.0.0.1:8082/deletenotify"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.username", "myuser"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.password", "mypassword"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.timeout", "10"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.method", "DELETE"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.pwd_expiration_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.idp_config"),
+				),
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 1
+						options = {
+							http_config = {
 								endpoint = "https://127.0.0.1:8082/notify"
 								username = "myuser"
 								password = "mynewpassword"

@@ -139,7 +139,7 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								Required:    true,
 								Description: "HTTP method.",
 								Validators: []validator.String{
-									stringvalidator.OneOf(http.MethodGet, http.MethodPost, http.MethodPut),
+									stringvalidator.OneOf(http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete),
 								},
 							},
 							"query_parameters": schema.ListNestedAttribute{

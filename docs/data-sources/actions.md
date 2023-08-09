@@ -126,7 +126,7 @@ Read-Only:
 - `body` (String) Request body for POST/PUT.
 - `endpoint` (String) HTTP endpoint to invoke.
 - `headers` (Attributes List) Headers to add to the HTTP request. (see [below for nested schema](#nestedatt--actions--options--http_config--headers))
-- `method` (String) HTTP method: GET, POST, PUT.
+- `method` (String) HTTP method: GET, POST, PUT, DELETE.
 - `parts` (Attributes List) Multipart requests allow to combine one or more sets of data into a single body. For each part, you can set a file path or a body as text. Placeholders are supported in file path, body, header values. (see [below for nested schema](#nestedatt--actions--options--http_config--parts))
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `query_parameters` (Attributes List) Query parameters to add to the HTTP request. (see [below for nested schema](#nestedatt--actions--options--http_config--query_parameters))
