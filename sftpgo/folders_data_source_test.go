@@ -39,6 +39,7 @@ var (
 					AccessKey:        "my key",
 					Region:           "us-west-1",
 					DownloadPartSize: 100,
+					SkipTLSVerify:    true,
 				},
 				AccessSecret: kms.BaseSecret{
 					Status:  kms.SecretStatusPlain,
@@ -91,6 +92,8 @@ func TestAccFoldersDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.sftpgo_folders.test", "folders.0.filesystem.s3config.access_secret"),
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.s3config.download_part_size",
 						fmt.Sprintf("%d", testFolder.FsConfig.S3Config.DownloadPartSize)),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.s3config.skip_tls_verify",
+						"true"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.gcsconfig"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.azblobconfig"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.cryptconfig"),

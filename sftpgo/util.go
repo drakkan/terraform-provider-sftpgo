@@ -119,6 +119,10 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed:    true,
 						Description: `If enabled path-style addressing is used, i.e. http://s3.amazonaws.com/BUCKET/KEY`,
 					},
+					"skip_tls_verify": schema.BoolAttribute{
+						Computed:    true,
+						Description: `If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.`,
+					},
 				},
 			},
 			"gcsconfig": schema.SingleNestedAttribute{
@@ -385,6 +389,10 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"force_path_style": schema.BoolAttribute{
 						Optional:    true,
 						Description: `If set path-style addressing is used, i.e. http://s3.amazonaws.com/BUCKET/KEY`,
+					},
+					"skip_tls_verify": schema.BoolAttribute{
+						Optional:    true,
+						Description: `If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.`,
 					},
 				},
 			},

@@ -678,6 +678,7 @@ type s3FsConfig struct {
 	DownloadConcurrency types.Int64  `tfsdk:"download_concurrency"`
 	DownloadPartMaxTime types.Int64  `tfsdk:"download_part_max_time"`
 	ForcePathStyle      types.Bool   `tfsdk:"force_path_style"`
+	SkipTLSVerify       types.Bool   `tfsdk:"skip_tls_verify"`
 }
 
 type gcsFsConfig struct {
@@ -795,6 +796,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"download_concurrency":   types.Int64Type,
 				"download_part_max_time": types.Int64Type,
 				"force_path_style":       types.BoolType,
+				"skip_tls_verify":        types.BoolType,
 			},
 		},
 		"gcsconfig": types.ObjectType{
@@ -885,6 +887,7 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 				DownloadConcurrency: int(f.S3Config.DownloadConcurrency.ValueInt64()),
 				DownloadPartMaxTime: int(f.S3Config.DownloadPartMaxTime.ValueInt64()),
 				ForcePathStyle:      f.S3Config.ForcePathStyle.ValueBool(),
+				SkipTLSVerify:       f.S3Config.SkipTLSVerify.ValueBool(),
 			},
 			AccessSecret: getSFTPGoSecret(f.S3Config.AccessSecret.ValueString()),
 		},
@@ -991,6 +994,7 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 			DownloadConcurrency: getOptionalInt64(int64(fs.S3Config.DownloadConcurrency)),
 			DownloadPartMaxTime: getOptionalInt64(int64(fs.S3Config.DownloadPartMaxTime)),
 			ForcePathStyle:      getOptionalBool(fs.S3Config.ForcePathStyle),
+			SkipTLSVerify:       getOptionalBool(fs.S3Config.SkipTLSVerify),
 		}
 	case sdk.GCSFilesystemProvider:
 		f.GCSConfig = &gcsFsConfig{
