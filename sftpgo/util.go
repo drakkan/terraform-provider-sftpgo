@@ -514,6 +514,9 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"endpoint": schema.StringAttribute{
 						Required:    true,
 						Description: "SFTP endpoint as host:port. Port is always required.",
+						Validators: []validator.String{
+							sftpEndPointValidator{},
+						},
 					},
 					"username": schema.StringAttribute{
 						Required: true,
