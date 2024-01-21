@@ -203,6 +203,24 @@ func TestAccUserResource(t *testing.T) {
 					  pre_login_disabled = true
 					  denied_login_methods = ["publickey", "password-over-SSH"]
 					  tls_username = "CommonName"
+					  tls_certs = [
+						<<-EOT
+						-----BEGIN CERTIFICATE-----
+						MIICHTCCAaKgAwIBAgIUHnqw7QnB1Bj9oUsNpdb+ZkFPOxMwCgYIKoZIzj0EAwIw
+						RTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGElu
+						dGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yMDAyMDQwOTUzMDRaFw0zMDAyMDEw
+						OTUzMDRaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYD
+						VQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwdjAQBgcqhkjOPQIBBgUrgQQA
+						IgNiAARCjRMqJ85rzMC998X5z761nJ+xL3bkmGVqWvrJ51t5OxV0v25NsOgR82CA
+						NXUgvhVYs7vNFN+jxtb2aj6Xg+/2G/BNxkaFspIVCzgWkxiz7XE4lgUwX44FCXZM
+						3+JeUbKjUzBRMB0GA1UdDgQWBBRhLw+/o3+Z02MI/d4tmaMui9W16jAfBgNVHSME
+						GDAWgBRhLw+/o3+Z02MI/d4tmaMui9W16jAPBgNVHRMBAf8EBTADAQH/MAoGCCqG
+						SM49BAMCA2kAMGYCMQDqLt2lm8mE+tGgtjDmtFgdOcI72HSbRQ74D5rYTzgST1rY
+						/8wTi5xl8TiFUyLMUsICMQC5ViVxdXbhuG7gX6yEqSkMKZICHpO8hqFwOD/uaFVI
+						dV4vKmHUzwK/eIx+8Ay3neE=
+						-----END CERTIFICATE-----
+						EOT
+					  ]
 					  web_client = ["write-disabled"]
 					  user_type = "LDAPUser"
 					  ftp_security = 1
@@ -243,6 +261,7 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.0", "publickey"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.1", "password-over-SSH"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.tls_username", "CommonName"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.tls_certs.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.0", "write-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.user_type", "LDAPUser"),

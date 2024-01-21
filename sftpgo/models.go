@@ -542,6 +542,7 @@ type userFilters struct {
 	FilePatterns            []patternsFilter `tfsdk:"file_patterns"`
 	MaxUploadFileSize       types.Int64      `tfsdk:"max_upload_file_size"`
 	TLSUsername             types.String     `tfsdk:"tls_username"`
+	TLSCerts                types.List       `tfsdk:"tls_certs"`
 	ExternalAuthDisabled    types.Bool       `tfsdk:"external_auth_disabled"`
 	PreLoginDisabled        types.Bool       `tfsdk:"pre_login_disabled"`
 	CheckPasswordDisabled   types.Bool       `tfsdk:"check_password_disabled"`
@@ -568,6 +569,9 @@ func (f *userFilters) getTFAttributes() map[string]attr.Type {
 
 	filters := map[string]attr.Type{
 		"require_password_change": types.BoolType,
+		"tls_certs": types.ListType{
+			ElemType: types.StringType,
+		},
 	}
 
 	for k, v := range filters {
@@ -641,6 +645,12 @@ func (f *userFilters) toSFTPGo(ctx context.Context) (sdk.UserFilters, diag.Diagn
 	}
 	filters.BaseUserFilters = base
 	filters.RequirePasswordChange = f.RequirePasswordChange.ValueBool()
+	if !f.TLSCerts.IsNull() {
+		diags := f.TLSCerts.ElementsAs(ctx, &filters.TLSCerts, false)
+		if diags.HasError() {
+			return filters, diags
+		}
+	}
 
 	return filters, nil
 }
@@ -653,6 +663,12 @@ func (f *userFilters) fromSFTPGo(ctx context.Context, filters *sdk.UserFilters) 
 	}
 	f.fromBaseFilters(&base)
 	f.RequirePasswordChange = getOptionalBool(filters.RequirePasswordChange)
+	tlsCerts, diags := types.ListValueFrom(ctx, types.StringType, filters.TLSCerts)
+	if diags.HasError() {
+		return diags
+	}
+	f.TLSCerts = tlsCerts
+
 	return nil
 }
 

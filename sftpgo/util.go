@@ -839,6 +839,11 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 		Computed:    true,
 		Description: "If set, user must change their password from WebClient/REST API at next login.",
 	}
+	result.Attributes["tls_certs"] = schema.ListAttribute{
+		ElementType: types.StringType,
+		Computed:    true,
+		Description: "TLS certificates for mutual authentication. If provided will be checked before TLS username.",
+	}
 	return result
 }
 
@@ -1019,7 +1024,14 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 		Optional:    true,
 		Description: "If set, user must change their password from WebClient/REST API at next login.",
 	}
-
+	result.Attributes["tls_certs"] = schema.ListAttribute{
+		ElementType: types.StringType,
+		Optional:    true,
+		Description: "TLS certificates for mutual authentication. If provided will be checked before TLS username.",
+		Validators: []validator.List{
+			listvalidator.UniqueValues(),
+		},
+	}
 	return result
 }
 
