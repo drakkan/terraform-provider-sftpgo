@@ -28,5 +28,9 @@ func getClient() (*client.Client, error) {
 	host := os.Getenv("SFTPGO_HOST")
 	user := os.Getenv("SFTPGO_USERNAME")
 	pwd := os.Getenv("SFTPGO_PASSWORD")
-	return client.NewClient(&host, &user, &pwd, nil)
+
+	headers := map[string]string{
+		"FOO": "BAR",
+	}
+	return client.NewClient(&host, &user, &pwd, nil, headers)
 }
