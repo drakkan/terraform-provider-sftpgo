@@ -1208,7 +1208,7 @@ type roleResourceModel struct {
 	UpdatedAt   types.Int64  `tfsdk:"updated_at"`
 }
 
-func (r *roleResourceModel) toSFTPGo(ctx context.Context) (*client.Role, diag.Diagnostics) {
+func (r *roleResourceModel) toSFTPGo(_ context.Context) (*client.Role, diag.Diagnostics) {
 	role := &client.Role{
 		Name:        r.Name.ValueString(),
 		Description: r.Description.ValueString(),
@@ -1219,7 +1219,7 @@ func (r *roleResourceModel) toSFTPGo(ctx context.Context) (*client.Role, diag.Di
 	return role, nil
 }
 
-func (r *roleResourceModel) fromSFTPGo(ctx context.Context, role *client.Role) diag.Diagnostics {
+func (r *roleResourceModel) fromSFTPGo(_ context.Context, role *client.Role) diag.Diagnostics {
 	r.Name = types.StringValue(role.Name)
 	r.ID = r.Name
 	r.Description = getOptionalString(role.Description)
@@ -1468,14 +1468,14 @@ func (*adminPreferences) getTFAttributes() map[string]attr.Type {
 	}
 }
 
-func (p *adminPreferences) toSFTPGo(ctx context.Context) (client.AdminPreferences, diag.Diagnostics) {
+func (p *adminPreferences) toSFTPGo(_ context.Context) (client.AdminPreferences, diag.Diagnostics) {
 	return client.AdminPreferences{
 		HideUserPageSections:   int(p.HideUserPageSections.ValueInt64()),
 		DefaultUsersExpiration: int(p.DefaultUsersExpiration.ValueInt64()),
 	}, nil
 }
 
-func (p *adminPreferences) fromSFTPGo(ctx context.Context, preferences *client.AdminPreferences) diag.Diagnostics {
+func (p *adminPreferences) fromSFTPGo(_ context.Context, preferences *client.AdminPreferences) diag.Diagnostics {
 	p.HideUserPageSections = getOptionalInt64(int64(preferences.HideUserPageSections))
 	p.DefaultUsersExpiration = getOptionalInt64(int64(preferences.DefaultUsersExpiration))
 	return nil
@@ -1536,14 +1536,14 @@ func (o *adminGroupMappingOptions) getTFAttributes() map[string]attr.Type {
 	}
 }
 
-func (o *adminGroupMappingOptions) toSFTPGo(ctx context.Context) (client.AdminGroupMappingOptions, diag.Diagnostics) {
+func (o *adminGroupMappingOptions) toSFTPGo(_ context.Context) (client.AdminGroupMappingOptions, diag.Diagnostics) {
 	options := client.AdminGroupMappingOptions{
 		AddToUsersAs: int(o.AddToUsersAs.ValueInt64()),
 	}
 	return options, nil
 }
 
-func (o *adminGroupMappingOptions) fromSFTPGo(ctx context.Context, options *client.AdminGroupMappingOptions) diag.Diagnostics {
+func (o *adminGroupMappingOptions) fromSFTPGo(_ context.Context, options *client.AdminGroupMappingOptions) diag.Diagnostics {
 	o.AddToUsersAs = getOptionalInt64(int64(options.AddToUsersAs))
 	return nil
 }
@@ -1735,7 +1735,7 @@ type defenderEntryResourceModel struct {
 	UpdatedAt   types.Int64  `tfsdk:"updated_at"`
 }
 
-func (e *defenderEntryResourceModel) toSFTPGo(ctx context.Context) (*client.IPListEntry, diag.Diagnostics) {
+func (e *defenderEntryResourceModel) toSFTPGo(_ context.Context) (*client.IPListEntry, diag.Diagnostics) {
 	entry := &client.IPListEntry{
 		IPOrNet:     e.IPOrNet.ValueString(),
 		Description: e.Description.ValueString(),
@@ -1746,7 +1746,7 @@ func (e *defenderEntryResourceModel) toSFTPGo(ctx context.Context) (*client.IPLi
 	return entry, nil
 }
 
-func (e *defenderEntryResourceModel) fromSFTPGo(ctx context.Context, entry *client.IPListEntry) diag.Diagnostics {
+func (e *defenderEntryResourceModel) fromSFTPGo(_ context.Context, entry *client.IPListEntry) diag.Diagnostics {
 	e.IPOrNet = types.StringValue(entry.IPOrNet)
 	e.ID = e.IPOrNet
 	e.Description = getOptionalString(entry.Description)
@@ -1766,7 +1766,7 @@ type allowListEntryResourceModel struct {
 	UpdatedAt   types.Int64  `tfsdk:"updated_at"`
 }
 
-func (e *allowListEntryResourceModel) toSFTPGo(ctx context.Context) (*client.IPListEntry, diag.Diagnostics) {
+func (e *allowListEntryResourceModel) toSFTPGo(_ context.Context) (*client.IPListEntry, diag.Diagnostics) {
 	entry := &client.IPListEntry{
 		IPOrNet:     e.IPOrNet.ValueString(),
 		Description: e.Description.ValueString(),
@@ -1777,7 +1777,7 @@ func (e *allowListEntryResourceModel) toSFTPGo(ctx context.Context) (*client.IPL
 	return entry, nil
 }
 
-func (e *allowListEntryResourceModel) fromSFTPGo(ctx context.Context, entry *client.IPListEntry) diag.Diagnostics {
+func (e *allowListEntryResourceModel) fromSFTPGo(_ context.Context, entry *client.IPListEntry) diag.Diagnostics {
 	e.IPOrNet = types.StringValue(entry.IPOrNet)
 	e.ID = e.IPOrNet
 	e.Description = getOptionalString(entry.Description)
@@ -1796,7 +1796,7 @@ type rlSafeListEntryResourceModel struct {
 	UpdatedAt   types.Int64  `tfsdk:"updated_at"`
 }
 
-func (e *rlSafeListEntryResourceModel) toSFTPGo(ctx context.Context) (*client.IPListEntry, diag.Diagnostics) {
+func (e *rlSafeListEntryResourceModel) toSFTPGo(_ context.Context) (*client.IPListEntry, diag.Diagnostics) {
 	entry := &client.IPListEntry{
 		IPOrNet:     e.IPOrNet.ValueString(),
 		Description: e.Description.ValueString(),
@@ -1807,7 +1807,7 @@ func (e *rlSafeListEntryResourceModel) toSFTPGo(ctx context.Context) (*client.IP
 	return entry, nil
 }
 
-func (e *rlSafeListEntryResourceModel) fromSFTPGo(ctx context.Context, entry *client.IPListEntry) diag.Diagnostics {
+func (e *rlSafeListEntryResourceModel) fromSFTPGo(_ context.Context, entry *client.IPListEntry) diag.Diagnostics {
 	e.IPOrNet = types.StringValue(entry.IPOrNet)
 	e.ID = e.IPOrNet
 	e.Description = getOptionalString(entry.Description)
