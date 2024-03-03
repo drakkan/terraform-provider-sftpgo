@@ -119,6 +119,14 @@ func (d *adminsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 									Computed:    true,
 									Description: "If set, API Key authentication is allowed.",
 								},
+								"require_password_change": schema.BoolAttribute{
+									Computed:    true,
+									Description: "If set, two factor authentication is required.",
+								},
+								"require_two_factor": schema.BoolAttribute{
+									Computed:    true,
+									Description: "If set, API Key authentication is allowed.",
+								},
 							},
 						},
 						"preferences": schema.SingleNestedAttribute{

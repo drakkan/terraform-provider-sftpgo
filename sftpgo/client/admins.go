@@ -51,8 +51,12 @@ type AdminFilters struct {
 	// for example "192.0.2.0/24" or "2001:db8::/32"
 	AllowList []string `json:"allow_list,omitempty"`
 	// API key auth allows to impersonate this administrator with an API key
-	AllowAPIKeyAuth bool             `json:"allow_api_key_auth,omitempty"`
-	Preferences     AdminPreferences `json:"preferences"`
+	AllowAPIKeyAuth bool `json:"allow_api_key_auth,omitempty"`
+	// A password change is required at the next login
+	RequirePasswordChange bool `json:"require_password_change,omitempty"`
+	// Require two factor authentication
+	RequireTwoFactor bool             `json:"require_two_factor"`
+	Preferences      AdminPreferences `json:"preferences"`
 }
 
 // AdminGroupMappingOptions defines the options for admin/group mapping

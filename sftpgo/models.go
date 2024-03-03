@@ -1482,8 +1482,10 @@ func (p *adminPreferences) fromSFTPGo(ctx context.Context, preferences *client.A
 }
 
 type adminFilters struct {
-	AllowList       types.List `tfsdk:"allow_list"`
-	AllowAPIKeyAuth types.Bool `tfsdk:"allow_api_key_auth"`
+	AllowList             types.List `tfsdk:"allow_list"`
+	AllowAPIKeyAuth       types.Bool `tfsdk:"allow_api_key_auth"`
+	RequireTwoFactor      types.Bool `tfsdk:"require_two_factor"`
+	RequirePasswordChange types.Bool `tfsdk:"require_password_change"`
 }
 
 func (f *adminFilters) getTFAttributes() map[string]attr.Type {
@@ -1491,13 +1493,17 @@ func (f *adminFilters) getTFAttributes() map[string]attr.Type {
 		"allow_list": types.ListType{
 			ElemType: types.StringType,
 		},
-		"allow_api_key_auth": types.BoolType,
+		"allow_api_key_auth":      types.BoolType,
+		"require_two_factor":      types.BoolType,
+		"require_password_change": types.BoolType,
 	}
 }
 
 func (f *adminFilters) toSFTPGo(ctx context.Context) (client.AdminFilters, diag.Diagnostics) {
 	filters := client.AdminFilters{
-		AllowAPIKeyAuth: f.AllowAPIKeyAuth.ValueBool(),
+		AllowAPIKeyAuth:       f.AllowAPIKeyAuth.ValueBool(),
+		RequireTwoFactor:      f.RequireTwoFactor.ValueBool(),
+		RequirePasswordChange: f.RequirePasswordChange.ValueBool(),
 	}
 	if !f.AllowList.IsNull() {
 		diags := f.AllowList.ElementsAs(ctx, &filters.AllowList, false)
@@ -1515,6 +1521,8 @@ func (f *adminFilters) fromSFTPGo(ctx context.Context, filters *client.AdminFilt
 	}
 	f.AllowList = allowList
 	f.AllowAPIKeyAuth = getOptionalBool(filters.AllowAPIKeyAuth)
+	f.RequireTwoFactor = getOptionalBool(filters.RequireTwoFactor)
+	f.RequirePasswordChange = getOptionalBool(filters.RequirePasswordChange)
 	return nil
 }
 

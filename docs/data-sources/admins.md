@@ -48,6 +48,8 @@ Read-Only:
 
 - `allow_api_key_auth` (Boolean) If set, API Key authentication is allowed.
 - `allow_list` (List of String) Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"
+- `require_password_change` (Boolean) If set, two factor authentication is required.
+- `require_two_factor` (Boolean) If set, API Key authentication is allowed.
 
 
 <a id="nestedatt--admins--groups"></a>

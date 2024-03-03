@@ -104,7 +104,7 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 						"del_users", "view_users", "view_conns", "close_conns", "view_status", "manage_admins",
 						"manage_folders", "manage_groups", "manage_apikeys", "quota_scans", "manage_system",
 						"manage_defender", "view_defender", "retention_checks", "metadata_checks", "view_events",
-						"manage_event_rules", "manage_roles", "manage_ip_lists")),
+						"manage_event_rules", "manage_roles", "manage_ip_lists", "disable_mfa")),
 				},
 			},
 			"description": schema.StringAttribute{
@@ -145,6 +145,14 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 						Description: `Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"`,
 					},
 					"allow_api_key_auth": schema.BoolAttribute{
+						Optional:    true,
+						Description: "If set, API Key authentication is allowed.",
+					},
+					"require_password_change": schema.BoolAttribute{
+						Optional:    true,
+						Description: "If set, two factor authentication is required.",
+					},
+					"require_two_factor": schema.BoolAttribute{
 						Optional:    true,
 						Description: "If set, API Key authentication is allowed.",
 					},

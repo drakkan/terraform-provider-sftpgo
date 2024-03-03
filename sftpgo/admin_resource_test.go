@@ -55,7 +55,7 @@ func TestAccAdminResource(t *testing.T) {
 					  status = 1
 					  password = "pwd"
 					  email = "admin@sftpgo.com"
-					  permissions = ["add_users", "edit_users","del_users"]
+					  permissions = ["add_users", "edit_users","del_users","disable_mfa"]
  					  filters = {
     					allow_list = ["192.168.1.0/24"]
   					  }
@@ -70,12 +70,15 @@ func TestAccAdminResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "password", "pwd"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "status", "1"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "email", "admin@sftpgo.com"),
-					resource.TestCheckResourceAttr("sftpgo_admin.test", "permissions.#", "3"),
+					resource.TestCheckResourceAttr("sftpgo_admin.test", "permissions.#", "4"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "permissions.0", "add_users"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "permissions.1", "edit_users"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "permissions.2", "del_users"),
-					resource.TestCheckResourceAttr("sftpgo_admin.test", "filters.%", "2"),
+					resource.TestCheckResourceAttr("sftpgo_admin.test", "permissions.3", "disable_mfa"),
+					resource.TestCheckResourceAttr("sftpgo_admin.test", "filters.%", "4"),
 					resource.TestCheckNoResourceAttr("sftpgo_admin.test", "filters.allow_api_key_auth"),
+					resource.TestCheckNoResourceAttr("sftpgo_admin.test", "filters.require_two_factor"),
+					resource.TestCheckNoResourceAttr("sftpgo_admin.test", "filters.require_password_change"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "filters.allow_list.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "filters.allow_list.0", "192.168.1.0/24"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "preferences.%", "2"),
@@ -104,6 +107,8 @@ func TestAccAdminResource(t *testing.T) {
 						permissions = ["*"]
 						filters = {
 						  allow_api_key_auth = true
+						  require_two_factor = true
+						  require_password_change = true
 						}
 						preferences = {
 						  default_users_expiration = 15
@@ -124,8 +129,10 @@ func TestAccAdminResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_admin.test", "email"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "permissions.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "permissions.0", "*"),
-					resource.TestCheckResourceAttr("sftpgo_admin.test", "filters.%", "2"),
+					resource.TestCheckResourceAttr("sftpgo_admin.test", "filters.%", "4"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "filters.allow_api_key_auth", "true"),
+					resource.TestCheckResourceAttr("sftpgo_admin.test", "filters.require_two_factor", "true"),
+					resource.TestCheckResourceAttr("sftpgo_admin.test", "filters.require_password_change", "true"),
 					resource.TestCheckNoResourceAttr("sftpgo_admin.test", "filters.allow_list"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "preferences.%", "2"),
 					resource.TestCheckResourceAttr("sftpgo_admin.test", "preferences.default_users_expiration", "15"),
