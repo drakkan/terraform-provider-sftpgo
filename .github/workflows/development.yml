@@ -12,7 +12,7 @@ jobs:
 
     services:
       sftpgo:
-        image: drakkan/sftpgo:edge-alpine-slim
+        image: ghcr.io/drakkan/sftpgo:edge-alpine-slim
         env:
           SFTPGO_DATA_PROVIDER__CREATE_DEFAULT_ADMIN: 1
           SFTPGO_DEFAULT_ADMIN_USERNAME: admin
