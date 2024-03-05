@@ -35,10 +35,11 @@ const (
 	ActionTypeTransferQuotaReset
 	ActionTypeDataRetentionCheck
 	ActionTypeFilesystem
-	ActionTypeMetadataCheck
+	actionTypeReserved
 	ActionTypePasswordExpirationCheck
 	ActionTypeUserExpirationCheck
 	ActionTypeIDPAccountCheck
+	ActionTypeUserInactivityCheck
 )
 
 // Supported filesystem actions
@@ -153,6 +154,14 @@ type EventActionPasswordExpiration struct {
 	Threshold int `json:"threshold,omitempty"`
 }
 
+// EventActionUserInactivity defines the configuration for user inactivity checks.
+type EventActionUserInactivity struct {
+	// DisableThreshold defines inactivity in days, since the last login before disabling the account
+	DisableThreshold int `json:"disable_threshold,omitempty"`
+	// DeleteThreshold defines inactivity in days, since the last login before deleting the account
+	DeleteThreshold int `json:"delete_threshold,omitempty"`
+}
+
 // EventActionIDPAccountCheck defines the check to execute after a successful IDP login
 type EventActionIDPAccountCheck struct {
 	// 0 create/update, 1 create the account if it doesn't exist
@@ -163,13 +172,14 @@ type EventActionIDPAccountCheck struct {
 
 // EventActionOptions defines the supported configuration options for event actions
 type EventActionOptions struct {
-	HTTPConfig          EventActionHTTPConfig          `json:"http_config"`
-	CmdConfig           EventActionCommandConfig       `json:"cmd_config"`
-	EmailConfig         EventActionEmailConfig         `json:"email_config"`
-	RetentionConfig     EventActionDataRetentionConfig `json:"retention_config"`
-	FsConfig            EventActionFilesystemConfig    `json:"fs_config"`
-	PwdExpirationConfig EventActionPasswordExpiration  `json:"pwd_expiration_config"`
-	IDPConfig           EventActionIDPAccountCheck     `json:"idp_config"`
+	HTTPConfig           EventActionHTTPConfig          `json:"http_config"`
+	CmdConfig            EventActionCommandConfig       `json:"cmd_config"`
+	EmailConfig          EventActionEmailConfig         `json:"email_config"`
+	RetentionConfig      EventActionDataRetentionConfig `json:"retention_config"`
+	FsConfig             EventActionFilesystemConfig    `json:"fs_config"`
+	PwdExpirationConfig  EventActionPasswordExpiration  `json:"pwd_expiration_config"`
+	UserInactivityConfig EventActionUserInactivity      `json:"user_inactivity_config"`
+	IDPConfig            EventActionIDPAccountCheck     `json:"idp_config"`
 }
 
 // BaseEventAction defines the common fields for an event action

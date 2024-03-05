@@ -1895,6 +1895,11 @@ type eventActionPasswordExpiration struct {
 	Threshold types.Int64 `tfsdk:"threshold"`
 }
 
+type eventActionUserInactivity struct {
+	DisableThreshold types.Int64 `tfsdk:"disable_threshold"`
+	DeleteThreshold  types.Int64 `tfsdk:"delete_threshold"`
+}
+
 type eventActionIDPAccountCheck struct {
 	Mode          types.Int64  `tfsdk:"mode"`
 	TemplateUser  types.String `tfsdk:"template_user"`
@@ -1902,13 +1907,14 @@ type eventActionIDPAccountCheck struct {
 }
 
 type eventActionOptions struct {
-	HTTPConfig          *eventActionHTTPConfig          `tfsdk:"http_config"`
-	CmdConfig           *eventActionCommandConfig       `tfsdk:"cmd_config"`
-	EmailConfig         *eventActionEmailConfig         `tfsdk:"email_config"`
-	RetentionConfig     *eventActionDataRetentionConfig `tfsdk:"retention_config"`
-	FsConfig            *eventActionFilesystemConfig    `tfsdk:"fs_config"`
-	PwdExpirationConfig *eventActionPasswordExpiration  `tfsdk:"pwd_expiration_config"`
-	IDPConfig           *eventActionIDPAccountCheck     `tfsdk:"idp_config"`
+	HTTPConfig           *eventActionHTTPConfig          `tfsdk:"http_config"`
+	CmdConfig            *eventActionCommandConfig       `tfsdk:"cmd_config"`
+	EmailConfig          *eventActionEmailConfig         `tfsdk:"email_config"`
+	RetentionConfig      *eventActionDataRetentionConfig `tfsdk:"retention_config"`
+	FsConfig             *eventActionFilesystemConfig    `tfsdk:"fs_config"`
+	PwdExpirationConfig  *eventActionPasswordExpiration  `tfsdk:"pwd_expiration_config"`
+	UserInactivityConfig *eventActionUserInactivity      `tfsdk:"user_inactivity_config"`
+	IDPConfig            *eventActionIDPAccountCheck     `tfsdk:"idp_config"`
 }
 
 func (o *eventActionOptions) ensureNotNull() {
@@ -1932,6 +1938,9 @@ func (o *eventActionOptions) ensureNotNull() {
 	}
 	if o.PwdExpirationConfig == nil {
 		o.PwdExpirationConfig = &eventActionPasswordExpiration{}
+	}
+	if o.UserInactivityConfig == nil {
+		o.UserInactivityConfig = &eventActionUserInactivity{}
 	}
 	if o.IDPConfig == nil {
 		o.IDPConfig = &eventActionIDPAccountCheck{}
@@ -2061,6 +2070,12 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 				"threshold": types.Int64Type,
 			},
 		},
+		"user_inactivity_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"disable_threshold": types.Int64Type,
+				"delete_threshold":  types.Int64Type,
+			},
+		},
 		"idp_config": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
 				"mode":           types.Int64Type,
@@ -2100,6 +2115,10 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 		},
 		PwdExpirationConfig: client.EventActionPasswordExpiration{
 			Threshold: int(o.PwdExpirationConfig.Threshold.ValueInt64()),
+		},
+		UserInactivityConfig: client.EventActionUserInactivity{
+			DisableThreshold: int(o.UserInactivityConfig.DisableThreshold.ValueInt64()),
+			DeleteThreshold:  int(o.UserInactivityConfig.DeleteThreshold.ValueInt64()),
 		},
 		IDPConfig: client.EventActionIDPAccountCheck{
 			Mode:          int(o.IDPConfig.Mode.ValueInt64()),
@@ -2224,6 +2243,7 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 	o.RetentionConfig = nil
 	o.FsConfig = nil
 	o.PwdExpirationConfig = nil
+	o.UserInactivityConfig = nil
 	o.IDPConfig = nil
 
 	switch action.Type {
@@ -2365,6 +2385,11 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 	case client.ActionTypePasswordExpirationCheck:
 		o.PwdExpirationConfig = &eventActionPasswordExpiration{
 			Threshold: types.Int64Value(int64(action.Options.PwdExpirationConfig.Threshold)),
+		}
+	case client.ActionTypeUserInactivityCheck:
+		o.UserInactivityConfig = &eventActionUserInactivity{
+			DisableThreshold: getOptionalInt64(int64(action.Options.UserInactivityConfig.DisableThreshold)),
+			DeleteThreshold:  getOptionalInt64(int64(action.Options.UserInactivityConfig.DeleteThreshold)),
 		}
 	case client.ActionTypeIDPAccountCheck:
 		o.IDPConfig = &eventActionIDPAccountCheck{

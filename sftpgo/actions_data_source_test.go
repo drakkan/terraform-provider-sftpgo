@@ -71,7 +71,7 @@ func TestAccActionsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.id", action.Name),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.description", action.Description),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.type", fmt.Sprintf("%d", action.Type)),
-					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.options.%", "7"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.options.%", "8"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.http_config"),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.options.cmd_config.cmd",
 						action.Options.CmdConfig.Cmd),
@@ -91,6 +91,7 @@ func TestAccActionsDataSource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.retention_config"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.fs_config"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.pwd_expiration_config"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.user_inactivity_config"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.idp_config"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "id", placeholderID),

@@ -87,11 +87,11 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			},
 			"type": schema.Int64Attribute{
 				Required:    true,
-				Description: "Action type. 1 = HTTP, 2 = Command, 3 = Email, 4 = Backup, 5 = User quota reset, 6 = Folder quota reset, 7 = Transfer quota reset, 8 = Data retention check, 9 = Filesystem, 11 = Password expiration check, 12 = User expiration check, 13 = Identity Provider account check.",
+				Description: "Action type. 1 = HTTP, 2 = Command, 3 = Email, 4 = Backup, 5 = User quota reset, 6 = Folder quota reset, 7 = Transfer quota reset, 8 = Data retention check, 9 = Filesystem, 11 = Password expiration check, 12 = User expiration check, 13 = Identity Provider account check, 14 = User inactivity check.",
 				Validators: []validator.Int64{
 					int64validator.Any(
 						int64validator.Between(1, 9),
-						int64validator.Between(11, 13),
+						int64validator.Between(11, 14),
 					),
 				},
 			},
@@ -398,6 +398,26 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								Description: `An email notification will be generated for users whose password expires in a number of days less than or equal to this threshold.`,
 								Validators: []validator.Int64{
 									int64validator.AtLeast(1),
+								},
+							},
+						},
+					},
+					"user_inactivity_config": schema.SingleNestedAttribute{
+						Optional:    true,
+						Description: "User inactivity check configurations.",
+						Attributes: map[string]schema.Attribute{
+							"disable_threshold": schema.Int64Attribute{
+								Optional:    true,
+								Description: `Inactivity in days, since the last login before disabling the account.`,
+								Validators: []validator.Int64{
+									int64validator.AtLeast(0),
+								},
+							},
+							"delete_threshold": schema.Int64Attribute{
+								Optional:    true,
+								Description: `Inactivity in days, since the last login before deleting the account.`,
+								Validators: []validator.Int64{
+									int64validator.AtLeast(0),
 								},
 							},
 						},
