@@ -61,6 +61,13 @@ func TestAccUsersDataSource(t *testing.T) {
 				BaseUserFilters: sdk.BaseUserFilters{
 					DeniedProtocols:  []string{"SSH"},
 					PasswordStrength: 75,
+					AccessTime: []sdk.TimePeriod{
+						{
+							DayOfWeek: 1,
+							From:      "12:03",
+							To:        "14:05",
+						},
+					},
 				},
 				RequirePasswordChange: true,
 			},
@@ -143,6 +150,10 @@ func TestAccUsersDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.denied_protocols.0", "SSH"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.password_strength",
 						fmt.Sprintf("%d", user.Filters.PasswordStrength)),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.access_time.#", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.access_time.0.day_of_week", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.access_time.0.from", "12:03"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.access_time.0.to", "14:05"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.require_password_change", "true"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.provider", fmt.Sprintf("%d", user.FsConfig.Provider)),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.httpconfig.endpoint", user.FsConfig.HTTPConfig.Endpoint),

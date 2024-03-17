@@ -291,6 +291,13 @@ func TestAccUserResource(t *testing.T) {
 					denied_protocols = ["SSH", "HTTP"]
 					denied_login_methods = ["publickey", "password-over-SSH", "keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "TLSCertificate", "TLSCertificate+password"]
 					is_anonymous = true
+					access_time = [
+						{
+							day_of_week = 2
+							from = "10:00"
+							to = "18:00"
+						}
+					]
 				  }
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -321,6 +328,10 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_protocols.1", "HTTP"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.#", "7"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.tls_username"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.access_time.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.access_time.0.day_of_week", "2"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.access_time.0.from", "10:00"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.access_time.0.to", "18:00"),
 				),
 			},
 			// Update and Read cryptfs user with buffering testing

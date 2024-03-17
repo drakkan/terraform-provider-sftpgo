@@ -18,7 +18,7 @@ Event action
 ### Required
 
 - `name` (String) Unique name.
-- `type` (Number) Action type. 1 = HTTP, 2 = Command, 3 = Email, 4 = Backup, 5 = User quota reset, 6 = Folder quota reset, 7 = Transfer quota reset, 8 = Data retention check, 9 = Filesystem, 11 = Password expiration check, 12 = User expiration check, 13 = Identity Provider account check.
+- `type` (Number) Action type. 1 = HTTP, 2 = Command, 3 = Email, 4 = Backup, 5 = User quota reset, 6 = Folder quota reset, 7 = Transfer quota reset, 8 = Data retention check, 9 = Filesystem, 11 = Password expiration check, 12 = User expiration check, 13 = Identity Provider account check, 14 = User inactivity check.
 
 ### Optional
 
@@ -41,6 +41,7 @@ Optional:
 - `idp_config` (Attributes) Identity Provider account check action configurations. (see [below for nested schema](#nestedatt--options--idp_config))
 - `pwd_expiration_config` (Attributes) Password expiration action configurations. (see [below for nested schema](#nestedatt--options--pwd_expiration_config))
 - `retention_config` (Attributes) Data retention action configurations. (see [below for nested schema](#nestedatt--options--retention_config))
+- `user_inactivity_config` (Attributes) User inactivity check configurations. (see [below for nested schema](#nestedatt--options--user_inactivity_config))
 
 <a id="nestedatt--options--cmd_config"></a>
 ### Nested Schema for `options.cmd_config`
@@ -226,3 +227,13 @@ Optional:
 
 - `delete_empty_dirs` (Boolean) If enabled, empty directories will be deleted.
 - `ignore_user_permissions` (Boolean) Defines whether to delete files even if the user does not have the "delete" permission, by default files will be skipped if the user does not have the "delete" permission.
+
+
+
+<a id="nestedatt--options--user_inactivity_config"></a>
+### Nested Schema for `options.user_inactivity_config`
+
+Optional:
+
+- `delete_threshold` (Number) Inactivity in days, since the last login before deleting the account.
+- `disable_threshold` (Number) Inactivity in days, since the last login before disabling the account.

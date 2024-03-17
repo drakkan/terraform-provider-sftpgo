@@ -265,6 +265,12 @@ type bandwidthLimit struct {
 	DownloadBandwidth types.Int64 `tfsdk:"download_bandwidth"`
 }
 
+type timePeriod struct {
+	DayOfWeek types.Int64  `tfsdk:"day_of_week"`
+	From      types.String `tfsdk:"from"`
+	To        types.String `tfsdk:"to"`
+}
+
 type baseUserFilters struct {
 	AllowedIP               types.List       `tfsdk:"allowed_ip"`
 	DeniedIP                types.List       `tfsdk:"denied_ip"`
@@ -290,6 +296,7 @@ type baseUserFilters struct {
 	MaxSharesExpiration     types.Int64      `tfsdk:"max_shares_expiration"`
 	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
 	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
+	AccessTime              []timePeriod     `tfsdk:"access_time"`
 }
 
 func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
@@ -353,6 +360,15 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 		"max_shares_expiration":     types.Int64Type,
 		"password_expiration":       types.Int64Type,
 		"password_strength":         types.Int64Type,
+		"access_time": types.ListType{
+			ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"day_of_week": types.Int64Type,
+					"from":        types.StringType,
+					"to":          types.StringType,
+				},
+			},
+		},
 	}
 }
 
@@ -408,6 +424,14 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (sdk.BaseUserFilters, di
 			}
 		}
 		filters.BandwidthLimits = append(filters.BandwidthLimits, limits)
+	}
+	for _, p := range f.AccessTime {
+		period := sdk.TimePeriod{
+			DayOfWeek: int(p.DayOfWeek.ValueInt64()),
+			From:      p.From.ValueString(),
+			To:        p.To.ValueString(),
+		}
+		filters.AccessTime = append(filters.AccessTime, period)
 	}
 	if !f.AllowedIP.IsNull() {
 		diags := f.AllowedIP.ElementsAs(ctx, &filters.AllowedIP, false)
@@ -515,6 +539,14 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 			DownloadBandwidth: getOptionalInt64(limit.DownloadBandwidth),
 		})
 	}
+	f.AccessTime = nil
+	for _, period := range filters.AccessTime {
+		f.AccessTime = append(f.AccessTime, timePeriod{
+			DayOfWeek: types.Int64Value(int64(period.DayOfWeek)),
+			From:      types.StringValue(period.From),
+			To:        types.StringValue(period.To),
+		})
+	}
 
 	f.ExternalAuthCacheTime = getOptionalInt64(filters.ExternalAuthCacheTime)
 	f.StartDirectory = getOptionalString(filters.StartDirectory)
@@ -561,6 +593,7 @@ type userFilters struct {
 	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
 	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
 	RequirePasswordChange   types.Bool       `tfsdk:"require_password_change"`
+	AccessTime              []timePeriod     `tfsdk:"access_time"`
 }
 
 func (f *userFilters) getTFAttributes() map[string]attr.Type {
@@ -606,6 +639,7 @@ func (f *userFilters) getBaseFilters() baseUserFilters {
 		MaxSharesExpiration:     f.MaxSharesExpiration,
 		PasswordExpiration:      f.PasswordExpiration,
 		PasswordStrength:        f.PasswordStrength,
+		AccessTime:              f.AccessTime,
 	}
 }
 
@@ -634,6 +668,7 @@ func (f *userFilters) fromBaseFilters(filters *baseUserFilters) {
 	f.MaxSharesExpiration = filters.MaxSharesExpiration
 	f.PasswordExpiration = filters.PasswordExpiration
 	f.PasswordStrength = filters.PasswordStrength
+	f.AccessTime = filters.AccessTime
 }
 
 func (f *userFilters) toSFTPGo(ctx context.Context) (sdk.UserFilters, diag.Diagnostics) {

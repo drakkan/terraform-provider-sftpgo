@@ -213,6 +213,18 @@ func TestAccGroupResource(t *testing.T) {
 					home_dir = "/tmp/home/local"
 					filters = {
 						two_factor_protocols = ["SSH"]
+						access_time = [
+							{
+								day_of_week = 3
+								from = "10:00"
+								to = "12:00"
+							},
+							{
+								day_of_week = 3
+								from = "14:00"
+								to = "18:00"
+							}
+						]
 					}
 					filesystem = {
 					  provider = 4
@@ -240,6 +252,13 @@ func TestAccGroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.two_factor_protocols.0", "SSH"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filters.max_upload_file_size"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filters.check_password_disabled"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.access_time.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.access_time.0.day_of_week", "3"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.access_time.0.from", "10:00"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.access_time.0.to", "12:00"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.access_time.1.day_of_week", "3"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.access_time.1.from", "14:00"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.access_time.1.to", "18:00"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.bandwidth_limits.#", "0"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.provider", "4"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.cryptconfig.passphrase", "pwd"),

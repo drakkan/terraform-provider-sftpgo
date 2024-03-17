@@ -830,6 +830,26 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 				Computed:    true,
 				Description: "Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.",
 			},
+			"access_time": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "Time periods in which access is allowed",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"day_of_week": schema.Int64Attribute{
+							Computed:    true,
+							Description: "Day of week, 0 Sunday, 6 Saturday",
+						},
+						"from": schema.StringAttribute{
+							Computed:    true,
+							Description: "Start time in HH:MM format",
+						},
+						"to": schema.StringAttribute{
+							Computed:    true,
+							Description: "End time in HH:MM format",
+						},
+					},
+				},
+			},
 		},
 	}
 	if onlyBase {
@@ -1014,6 +1034,29 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 			"password_strength": schema.Int64Attribute{
 				Optional:    true,
 				Description: "Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.",
+			},
+			"access_time": schema.ListNestedAttribute{
+				Optional:    true,
+				Description: "Time periods in which access is allowed",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"day_of_week": schema.Int64Attribute{
+							Required:    true,
+							Description: "Day of week, 0 Sunday, 6 Saturday",
+							Validators: []validator.Int64{
+								int64validator.Between(0, 6),
+							},
+						},
+						"from": schema.StringAttribute{
+							Required:    true,
+							Description: "Start time in HH:MM format",
+						},
+						"to": schema.StringAttribute{
+							Required:    true,
+							Description: "End time in HH:MM format",
+						},
+					},
+				},
 			},
 		},
 	}
