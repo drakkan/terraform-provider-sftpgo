@@ -1,6 +1,6 @@
 module github.com/drakkan/terraform-provider-sftpgo
 
-go 1.22
+go 1.21
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.18.0

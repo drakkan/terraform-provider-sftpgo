@@ -1,4 +1,9 @@
+.PHONY: dependencies generate build install test testacc docs
+
 default: install
+
+dependencies:
+	go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
 generate:
 	go generate ./...
@@ -14,3 +19,6 @@ test:
 
 testacc:
 	TF_ACC=1 go test -v -count=1 -parallel=4 -timeout 10m -v ./...
+
+docs:
+	tfplugindocs generate --provider-name sftpgo

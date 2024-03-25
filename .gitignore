@@ -1,1 +1,9 @@
+# Binary
 terraform-provider-sftpgo*
+
+# OS generated files
+.DS_Store
+
+# JetBrains IDEs files
+.idea/
+*.iws
