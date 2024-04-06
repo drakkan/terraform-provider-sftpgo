@@ -110,10 +110,6 @@ type FolderRetention struct {
 	// DeleteEmptyDirs defines if empty directories will be deleted.
 	// The user need the delete permission
 	DeleteEmptyDirs bool `json:"delete_empty_dirs,omitempty"`
-	// IgnoreUserPermissions defines whether to delete files even if the user does not have the delete permission.
-	// The default is "false" which means that files will be skipped if the user does not have the permission
-	// to delete them. This applies to sub directories too.
-	IgnoreUserPermissions bool `json:"ignore_user_permissions,omitempty"`
 }
 
 // EventActionDataRetentionConfig defines the configuration for a data retention check

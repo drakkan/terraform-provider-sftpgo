@@ -304,7 +304,6 @@ func TestAccActionResource(t *testing.T) {
 									{
 										path = "/dir2",
 										retention = 15,
-										ignore_user_permissions = true
 									}
 								]
 							}
@@ -323,11 +322,9 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.0.path", "/dir1"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.0.retention", "10"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.0.delete_empty_dirs", "true"),
-					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config.folders.0.ignore_user_permissions"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.1.path", "/dir2"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.1.retention", "15"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config.folders.1.delete_empty_dirs"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.1.ignore_user_permissions", "true"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.pwd_expiration_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.user_inactivity_config"),

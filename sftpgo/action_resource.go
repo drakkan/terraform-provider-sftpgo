@@ -297,10 +297,6 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 											Optional:    true,
 											Description: "If enabled, empty directories will be deleted.",
 										},
-										"ignore_user_permissions": schema.BoolAttribute{
-											Optional:    true,
-											Description: `Defines whether to delete files even if the user does not have the "delete" permission, by default files will be skipped if the user does not have the "delete" permission.`,
-										},
 									},
 								},
 							},

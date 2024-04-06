@@ -1901,10 +1901,9 @@ type eventActionEmailConfig struct {
 }
 
 type folderRetention struct {
-	Path                  types.String `tfsdk:"path"`
-	Retention             types.Int64  `tfsdk:"retention"`
-	DeleteEmptyDirs       types.Bool   `tfsdk:"delete_empty_dirs"`
-	IgnoreUserPermissions types.Bool   `tfsdk:"ignore_user_permissions"`
+	Path            types.String `tfsdk:"path"`
+	Retention       types.Int64  `tfsdk:"retention"`
+	DeleteEmptyDirs types.Bool   `tfsdk:"delete_empty_dirs"`
 }
 
 type eventActionDataRetentionConfig struct {
@@ -2059,10 +2058,9 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 				"folders": types.ListType{
 					ElemType: types.ObjectType{
 						AttrTypes: map[string]attr.Type{
-							"path":                    types.StringType,
-							"retention":               types.Int64Type,
-							"delete_empty_dirs":       types.BoolType,
-							"ignore_user_permissions": types.BoolType,
+							"path":              types.StringType,
+							"retention":         types.Int64Type,
+							"delete_empty_dirs": types.BoolType,
 						},
 					},
 				},
@@ -2224,10 +2222,9 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 
 	for _, folder := range o.RetentionConfig.Folders {
 		options.RetentionConfig.Folders = append(options.RetentionConfig.Folders, client.FolderRetention{
-			Path:                  folder.Path.ValueString(),
-			Retention:             int(folder.Retention.ValueInt64()),
-			DeleteEmptyDirs:       folder.DeleteEmptyDirs.ValueBool(),
-			IgnoreUserPermissions: folder.IgnoreUserPermissions.ValueBool(),
+			Path:            folder.Path.ValueString(),
+			Retention:       int(folder.Retention.ValueInt64()),
+			DeleteEmptyDirs: folder.DeleteEmptyDirs.ValueBool(),
 		})
 	}
 
@@ -2360,10 +2357,9 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 		o.RetentionConfig = &eventActionDataRetentionConfig{}
 		for _, f := range action.Options.RetentionConfig.Folders {
 			o.RetentionConfig.Folders = append(o.RetentionConfig.Folders, folderRetention{
-				Path:                  types.StringValue(f.Path),
-				Retention:             types.Int64Value(int64(f.Retention)),
-				DeleteEmptyDirs:       getOptionalBool(f.DeleteEmptyDirs),
-				IgnoreUserPermissions: getOptionalBool(f.IgnoreUserPermissions),
+				Path:            types.StringValue(f.Path),
+				Retention:       types.Int64Value(int64(f.Retention)),
+				DeleteEmptyDirs: getOptionalBool(f.DeleteEmptyDirs),
 			})
 		}
 	case client.ActionTypeFilesystem:

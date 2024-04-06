@@ -205,7 +205,6 @@ Read-Only:
 Read-Only:
 
 - `delete_empty_dirs` (Boolean) If enabled, empty directories will be deleted.
-- `ignore_user_permissions` (Boolean) Defines whether to delete files even if the user does not have the "delete" permission, by default files will be skipped if the user does not have the "delete" permission.
 - `path` (String) Path for which to apply the retention rules.
 - `retention` (Number) Retention as hours. 0 as retention means excluding the specified path.
 

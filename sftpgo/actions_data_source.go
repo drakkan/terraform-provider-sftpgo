@@ -253,10 +253,6 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 														Computed:    true,
 														Description: "If enabled, empty directories will be deleted.",
 													},
-													"ignore_user_permissions": schema.BoolAttribute{
-														Computed:    true,
-														Description: `Defines whether to delete files even if the user does not have the "delete" permission, by default files will be skipped if the user does not have the "delete" permission.`,
-													},
 												},
 											},
 										},

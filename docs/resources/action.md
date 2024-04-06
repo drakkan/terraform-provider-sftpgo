@@ -226,7 +226,6 @@ Required:
 Optional:
 
 - `delete_empty_dirs` (Boolean) If enabled, empty directories will be deleted.
-- `ignore_user_permissions` (Boolean) Defines whether to delete files even if the user does not have the "delete" permission, by default files will be skipped if the user does not have the "delete" permission.
 
 
 
