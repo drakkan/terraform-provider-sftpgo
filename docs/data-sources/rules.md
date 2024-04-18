@@ -73,7 +73,7 @@ Read-Only:
 - `role_names` (Attributes List) Shell-like pattern filters for role names. For example "role*"" will match role names starting with "role". (see [below for nested schema](#nestedatt--rules--conditions--options--role_names))
 
 <a id="nestedatt--rules--conditions--options--fs_paths"></a>
-### Nested Schema for `rules.conditions.options.role_names`
+### Nested Schema for `rules.conditions.options.fs_paths`
 
 Read-Only:
 
@@ -82,7 +82,7 @@ Read-Only:
 
 
 <a id="nestedatt--rules--conditions--options--group_names"></a>
-### Nested Schema for `rules.conditions.options.role_names`
+### Nested Schema for `rules.conditions.options.group_names`
 
 Read-Only:
 
@@ -91,7 +91,7 @@ Read-Only:
 
 
 <a id="nestedatt--rules--conditions--options--names"></a>
-### Nested Schema for `rules.conditions.options.role_names`
+### Nested Schema for `rules.conditions.options.names`
 
 Read-Only:
 

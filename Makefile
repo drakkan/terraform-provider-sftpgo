@@ -1,7 +1,7 @@
 default: install
 
 generate:
-	go generate ./...
+	tfplugindocs generate --provider-name sftpgo
 
 build:
 	go build -trimpath -ldflags "-s -w -X github.com/drakkan/terraform-provider-sftpgo/sftpgo.version=dev -X github.com/drakkan/terraform-provider-sftpgo/sftpgo.commit=`git describe --always --abbrev=8 --dirty`" -o terraform-provider-sftpgo

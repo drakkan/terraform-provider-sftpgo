@@ -67,7 +67,7 @@ Read-Only:
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--sftpconfig))
 
 <a id="nestedatt--groups--user_settings--filesystem--azblobconfig"></a>
-### Nested Schema for `groups.user_settings.filesystem.sftpconfig`
+### Nested Schema for `groups.user_settings.filesystem.azblobconfig`
 
 Read-Only:
 
@@ -86,7 +86,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--user_settings--filesystem--cryptconfig"></a>
-### Nested Schema for `groups.user_settings.filesystem.sftpconfig`
+### Nested Schema for `groups.user_settings.filesystem.cryptconfig`
 
 Read-Only:
 
@@ -96,7 +96,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--user_settings--filesystem--gcsconfig"></a>
-### Nested Schema for `groups.user_settings.filesystem.sftpconfig`
+### Nested Schema for `groups.user_settings.filesystem.gcsconfig`
 
 Read-Only:
 
@@ -111,7 +111,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--user_settings--filesystem--httpconfig"></a>
-### Nested Schema for `groups.user_settings.filesystem.sftpconfig`
+### Nested Schema for `groups.user_settings.filesystem.httpconfig`
 
 Read-Only:
 
@@ -124,7 +124,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--user_settings--filesystem--osconfig"></a>
-### Nested Schema for `groups.user_settings.filesystem.sftpconfig`
+### Nested Schema for `groups.user_settings.filesystem.osconfig`
 
 Read-Only:
 
@@ -133,7 +133,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--user_settings--filesystem--s3config"></a>
-### Nested Schema for `groups.user_settings.filesystem.sftpconfig`
+### Nested Schema for `groups.user_settings.filesystem.s3config`
 
 Read-Only:
 
@@ -205,7 +205,7 @@ Read-Only:
 - `web_client` (List of String) Web Client/user REST API restrictions.
 
 <a id="nestedatt--groups--user_settings--filters--access_time"></a>
-### Nested Schema for `groups.user_settings.filters.web_client`
+### Nested Schema for `groups.user_settings.filters.access_time`
 
 Read-Only:
 
@@ -215,7 +215,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--user_settings--filters--bandwidth_limits"></a>
-### Nested Schema for `groups.user_settings.filters.web_client`
+### Nested Schema for `groups.user_settings.filters.bandwidth_limits`
 
 Read-Only:
 
@@ -225,7 +225,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--user_settings--filters--file_patterns"></a>
-### Nested Schema for `groups.user_settings.filters.web_client`
+### Nested Schema for `groups.user_settings.filters.file_patterns`
 
 Read-Only:
 
@@ -268,7 +268,7 @@ Read-Only:
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--sftpconfig))
 
 <a id="nestedatt--groups--virtual_folders--filesystem--azblobconfig"></a>
-### Nested Schema for `groups.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `groups.virtual_folders.filesystem.azblobconfig`
 
 Read-Only:
 
@@ -287,7 +287,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--virtual_folders--filesystem--cryptconfig"></a>
-### Nested Schema for `groups.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `groups.virtual_folders.filesystem.cryptconfig`
 
 Read-Only:
 
@@ -297,7 +297,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--virtual_folders--filesystem--gcsconfig"></a>
-### Nested Schema for `groups.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `groups.virtual_folders.filesystem.gcsconfig`
 
 Read-Only:
 
@@ -312,7 +312,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--virtual_folders--filesystem--httpconfig"></a>
-### Nested Schema for `groups.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `groups.virtual_folders.filesystem.httpconfig`
 
 Read-Only:
 
@@ -325,7 +325,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--virtual_folders--filesystem--osconfig"></a>
-### Nested Schema for `groups.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `groups.virtual_folders.filesystem.osconfig`
 
 Read-Only:
 
@@ -334,7 +334,7 @@ Read-Only:
 
 
 <a id="nestedatt--groups--virtual_folders--filesystem--s3config"></a>
-### Nested Schema for `groups.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `groups.virtual_folders.filesystem.s3config`
 
 Read-Only:
 

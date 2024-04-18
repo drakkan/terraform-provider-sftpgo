@@ -289,7 +289,7 @@ Read-Only:
 - `sftpconfig` (Attributes) (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem--sftpconfig))
 
 <a id="nestedatt--users--virtual_folders--filesystem--azblobconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.azblobconfig`
 
 Read-Only:
 
@@ -308,7 +308,7 @@ Read-Only:
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--cryptconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.cryptconfig`
 
 Read-Only:
 
@@ -318,7 +318,7 @@ Read-Only:
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--gcsconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.gcsconfig`
 
 Read-Only:
 
@@ -333,7 +333,7 @@ Read-Only:
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--httpconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.httpconfig`
 
 Read-Only:
 
@@ -346,7 +346,7 @@ Read-Only:
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--osconfig"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.osconfig`
 
 Read-Only:
 
@@ -355,7 +355,7 @@ Read-Only:
 
 
 <a id="nestedatt--users--virtual_folders--filesystem--s3config"></a>
-### Nested Schema for `users.virtual_folders.filesystem.sftpconfig`
+### Nested Schema for `users.virtual_folders.filesystem.s3config`
 
 Read-Only:
 

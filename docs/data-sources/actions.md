@@ -56,7 +56,7 @@ Read-Only:
 - `timeout` (Number) Time limit for the command in seconds.
 
 <a id="nestedatt--actions--options--cmd_config--env_vars"></a>
-### Nested Schema for `actions.options.cmd_config.timeout`
+### Nested Schema for `actions.options.cmd_config.env_vars`
 
 Read-Only:
 
@@ -92,7 +92,7 @@ Read-Only:
 - `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy.
 
 <a id="nestedatt--actions--options--fs_config--compress"></a>
-### Nested Schema for `actions.options.fs_config.type`
+### Nested Schema for `actions.options.fs_config.compress`
 
 Read-Only:
 
@@ -101,7 +101,7 @@ Read-Only:
 
 
 <a id="nestedatt--actions--options--fs_config--copy"></a>
-### Nested Schema for `actions.options.fs_config.type`
+### Nested Schema for `actions.options.fs_config.copy`
 
 Read-Only:
 
@@ -110,7 +110,7 @@ Read-Only:
 
 
 <a id="nestedatt--actions--options--fs_config--renames"></a>
-### Nested Schema for `actions.options.fs_config.type`
+### Nested Schema for `actions.options.fs_config.renames`
 
 Read-Only:
 
@@ -136,7 +136,7 @@ Read-Only:
 - `username` (String)
 
 <a id="nestedatt--actions--options--http_config--headers"></a>
-### Nested Schema for `actions.options.http_config.username`
+### Nested Schema for `actions.options.http_config.headers`
 
 Read-Only:
 
@@ -145,7 +145,7 @@ Read-Only:
 
 
 <a id="nestedatt--actions--options--http_config--parts"></a>
-### Nested Schema for `actions.options.http_config.username`
+### Nested Schema for `actions.options.http_config.parts`
 
 Read-Only:
 
@@ -165,7 +165,7 @@ Read-Only:
 
 
 <a id="nestedatt--actions--options--http_config--query_parameters"></a>
-### Nested Schema for `actions.options.http_config.username`
+### Nested Schema for `actions.options.http_config.query_parameters`
 
 Read-Only:
 
