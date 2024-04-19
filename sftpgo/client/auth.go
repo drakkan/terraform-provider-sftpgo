@@ -20,13 +20,17 @@ import (
 	"net/http"
 )
 
+const (
+	authEndpoint = "/api/v2/token"
+)
+
 // SignInAdmin returns a new access token for the admin with the specified credentials.
 func (c *Client) SignInAdmin() (*AuthResponse, error) {
 	if c.Auth.Username == "" || c.Auth.Password == "" {
 		return nil, fmt.Errorf("define username and password")
 	}
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/token", c.HostURL), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s%s", c.HostURL, authEndpoint), nil)
 	if err != nil {
 		return nil, err
 	}

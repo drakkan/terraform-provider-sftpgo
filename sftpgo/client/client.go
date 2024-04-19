@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/sftpgo/sdk"
@@ -28,12 +29,35 @@ const HostURL string = "http://localhost:8080"
 
 // Client defines the SFTPGo API client
 type Client struct {
-	HostURL     string
-	HTTPClient  *http.Client
-	AccessToken string
-	APIKey      string
-	Auth        AuthStruct
-	Headers     []KeyValue
+	HostURL      string
+	HTTPClient   *http.Client
+	APIKey       string
+	Auth         AuthStruct
+	Headers      []KeyValue
+	mu           sync.RWMutex
+	authResponse *AuthResponse
+}
+
+func (c *Client) setAuthResponse(ar *AuthResponse) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	c.authResponse = ar
+}
+
+func (c *Client) getAccessToken() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	if c.authResponse == nil {
+		return ""
+	}
+
+	if c.authResponse.ExpiresAt.Before(time.Now().Add(-2 * time.Minute)) {
+		return ""
+	}
+
+	return c.authResponse.AccessToken
 }
 
 // AuthStruct defines th SFTPGo API auth
@@ -60,7 +84,7 @@ type backupData struct {
 // NewClient return an SFTPGo API client
 func NewClient(host, username, password, apiKey *string, headers []KeyValue) (*Client, error) {
 	c := Client{
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		HTTPClient: &http.Client{Timeout: 20 * time.Second},
 		// Default SFTPGo URL
 		HostURL: HostURL,
 		Headers: headers,
@@ -85,21 +109,38 @@ func NewClient(host, username, password, apiKey *string, headers []KeyValue) (*C
 		Password: *password,
 	}
 
-	ar, err := c.SignInAdmin()
-	if err != nil {
-		return nil, err
-	}
-
-	c.AccessToken = ar.AccessToken
-
 	return &c, nil
 }
 
-func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, error) {
-	if c.AccessToken != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.AccessToken))
-	} else if c.APIKey != "" {
+func (c *Client) setAuthHeader(req *http.Request) error {
+	if req.URL.Path == authEndpoint {
+		// Authentication request, stop here.
+		return nil
+	}
+	if c.APIKey != "" {
 		req.Header.Set("X-SFTPGO-API-KEY", c.APIKey)
+		return nil
+	}
+
+	accessToken := c.getAccessToken()
+	if accessToken == "" {
+		ar, err := c.SignInAdmin()
+		if err != nil {
+			return err
+		}
+		c.setAuthResponse(ar)
+
+		accessToken = ar.AccessToken
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+
+	return nil
+}
+
+func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, error) {
+	if err := c.setAuthHeader(req); err != nil {
+		return nil, err
 	}
 
 	for _, h := range c.Headers {
