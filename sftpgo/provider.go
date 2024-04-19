@@ -16,7 +16,9 @@ package sftpgo
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -49,6 +51,7 @@ type sftpgoProviderModel struct {
 	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
 	APIKey   types.String `tfsdk:"api_key"`
+	Headers  []keyValue   `tfsdk:"headers"`
 }
 
 // sftpgoProvider is the provider implementation.
@@ -81,6 +84,22 @@ func (p *sftpgoProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Optional:    true,
 				Sensitive:   true,
 				Description: "SFTPGo API key. May also be provided via SFTPGO_API_KEY environment variable. You must provide an API key or username and password. If both an API key and username and password are provided, the API key will be used.",
+			},
+			"headers": schema.ListNestedAttribute{
+				Optional:    true,
+				Description: `Headers to add to the HTTP request.`,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"key": schema.StringAttribute{
+							Required:    true,
+							Description: "The header name. May also be provided via SFTPGO_HEADERS__0__KEY, SFTPGO_HEADERS__1__KEY, ... SFTPGO_HEADERS__9__KEY environment variables.",
+						},
+						"value": schema.StringAttribute{
+							Required:    true,
+							Description: "The header value. May also be provided via SFTPGO_HEADERS__0__VALUE, SFTPGO_HEADERS__1__VALUE, ... SFTPGO_HEADERS__9__VALUE environment variables.",
+						},
+					},
+				},
 			},
 		},
 	}
@@ -149,6 +168,7 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	username := os.Getenv("SFTPGO_USERNAME")
 	password := os.Getenv("SFTPGO_PASSWORD")
 	apiKey := os.Getenv("SFTPGO_API_KEY")
+	headers := getHeadersFromEnv()
 
 	if !config.Host.IsNull() {
 		host = config.Host.ValueString()
@@ -164,6 +184,16 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	if !config.APIKey.IsNull() {
 		apiKey = config.APIKey.ValueString()
+	}
+
+	if len(config.Headers) > 0 {
+		headers = nil
+		for _, h := range config.Headers {
+			headers = append(headers, client.KeyValue{
+				Key:   h.Key.ValueString(),
+				Value: h.Value.ValueString(),
+			})
+		}
 	}
 
 	// If any of the expected configurations are missing, return
@@ -209,13 +239,15 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	ctx = tflog.SetField(ctx, "SFTPGo_username", config.Username)
 	ctx = tflog.SetField(ctx, "SFTPGo_password", config.Password)
 	ctx = tflog.SetField(ctx, "SFTPGo_api_key", config.APIKey)
+	ctx = tflog.SetField(ctx, "SFTPGo_headers", config.Headers)
 	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "SFTPGo_password")
 	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "SFTPGo_api_key")
+	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "SFTPGo_headers")
 
 	tflog.Debug(ctx, "Creating SFTPGo client")
 
 	// Create a new SFTPGo client using the configuration values
-	client, err := client.NewClient(&host, &username, &password, &apiKey)
+	client, err := client.NewClient(&host, &username, &password, &apiKey, headers)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create SFTPGo API Client",
@@ -264,4 +296,20 @@ func (p *sftpgoProvider) Resources(_ context.Context) []func() resource.Resource
 		NewActionResource,
 		NewRuleResource,
 	}
+}
+
+func getHeadersFromEnv() []client.KeyValue {
+	var headers []client.KeyValue
+
+	for idx := 0; idx < 10; idx++ {
+		key := strings.TrimSpace(os.Getenv(fmt.Sprintf("SFTPGO_HEADERS__%d__KEY", idx)))
+		value := strings.TrimSpace(os.Getenv(fmt.Sprintf("SFTPGO_HEADERS__%d__VALUE", idx)))
+		if key != "" && value != "" {
+			headers = append(headers, client.KeyValue{
+				Key:   key,
+				Value: value,
+			})
+		}
+	}
+	return headers
 }

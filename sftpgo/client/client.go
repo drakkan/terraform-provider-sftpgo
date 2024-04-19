@@ -33,6 +33,7 @@ type Client struct {
 	AccessToken string
 	APIKey      string
 	Auth        AuthStruct
+	Headers     []KeyValue
 }
 
 // AuthStruct defines th SFTPGo API auth
@@ -57,11 +58,12 @@ type backupData struct {
 }
 
 // NewClient return an SFTPGo API client
-func NewClient(host, username, password, apiKey *string) (*Client, error) {
+func NewClient(host, username, password, apiKey *string, headers []KeyValue) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		// Default SFTPGo URL
 		HostURL: HostURL,
+		Headers: headers,
 	}
 
 	if host != nil {
@@ -99,6 +101,11 @@ func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, e
 	} else if c.APIKey != "" {
 		req.Header.Set("X-SFTPGO-API-KEY", c.APIKey)
 	}
+
+	for _, h := range c.Headers {
+		req.Header.Set(h.Key, h.Value)
+	}
+
 	if req.Body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}

@@ -27,6 +27,15 @@ provider "sftpgo" {
 ### Optional
 
 - `api_key` (String, Sensitive) SFTPGo API key. May also be provided via SFTPGO_API_KEY environment variable. You must provide an API key or username and password. If both an API key and username and password are provided, the API key will be used.
+- `headers` (Attributes List) Headers to add to the HTTP request. (see [below for nested schema](#nestedatt--headers))
 - `host` (String) URI for SFTPGo API. May also be provided via SFTPGO_HOST environment variable.
 - `password` (String, Sensitive) Password for SFTPGo API. May also be provided via SFTPGO_PASSWORD environment variable.
 - `username` (String) Username for SFTPGo API. May also be provided via SFTPGO_USERNAME environment variable.
+
+<a id="nestedatt--headers"></a>
+### Nested Schema for `headers`
+
+Required:
+
+- `key` (String) The header name. May also be provided via SFTPGO_HEADERS__0__KEY, SFTPGO_HEADERS__1__KEY, ... SFTPGO_HEADERS__9__KEY environment variables.
+- `value` (String) The header value. May also be provided via SFTPGO_HEADERS__0__VALUE, SFTPGO_HEADERS__1__VALUE, ... SFTPGO_HEADERS__9__VALUE environment variables.
