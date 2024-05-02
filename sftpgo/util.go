@@ -80,6 +80,10 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed:    true,
 						Description: "IAM Role ARN to assume.",
 					},
+					"session_token": schema.StringAttribute{
+						Computed:    true,
+						Description: "Optional Session token that is a part of temporary security credentials provisioned by AWS STS.",
+					},
 					"endpoint": schema.StringAttribute{
 						Computed:    true,
 						Description: "The endpoint is generally required for S3 compatible backends.",
@@ -349,6 +353,10 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"role_arn": schema.StringAttribute{
 						Optional:    true,
 						Description: "Optional IAM Role ARN to assume.",
+					},
+					"session_token": schema.StringAttribute{
+						Optional:    true,
+						Description: "Optional Session token that is a part of temporary security credentials provisioned by AWS STS.",
 					},
 					"endpoint": schema.StringAttribute{
 						Optional:    true,

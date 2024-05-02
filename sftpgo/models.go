@@ -719,6 +719,7 @@ type s3FsConfig struct {
 	AccessKey           types.String `tfsdk:"access_key"`
 	AccessSecret        types.String `tfsdk:"access_secret"`
 	RoleARN             types.String `tfsdk:"role_arn"`
+	SessionToken        types.String `tfsdk:"session_token"`
 	Endpoint            types.String `tfsdk:"endpoint"`
 	StorageClass        types.String `tfsdk:"storage_class"`
 	ACL                 types.String `tfsdk:"acl"`
@@ -837,6 +838,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"access_key":             types.StringType,
 				"access_secret":          types.StringType,
 				"role_arn":               types.StringType,
+				"session_token":          types.StringType,
 				"endpoint":               types.StringType,
 				"storage_class":          types.StringType,
 				"acl":                    types.StringType,
@@ -928,6 +930,7 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 				Region:              f.S3Config.Region.ValueString(),
 				AccessKey:           f.S3Config.AccessKey.ValueString(),
 				RoleARN:             f.S3Config.RoleARN.ValueString(),
+				SessionToken:        f.S3Config.SessionToken.ValueString(),
 				Endpoint:            f.S3Config.Endpoint.ValueString(),
 				StorageClass:        f.S3Config.StorageClass.ValueString(),
 				ACL:                 f.S3Config.ACL.ValueString(),
@@ -1035,6 +1038,7 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 			AccessKey:           getOptionalString(fs.S3Config.AccessKey),
 			AccessSecret:        getOptionalString(getSecretFromSFTPGo(fs.S3Config.AccessSecret)),
 			RoleARN:             getOptionalString(fs.S3Config.RoleARN),
+			SessionToken:        getOptionalString(fs.S3Config.SessionToken),
 			Endpoint:            getOptionalString(fs.S3Config.Endpoint),
 			StorageClass:        getOptionalString(fs.S3Config.StorageClass),
 			ACL:                 getOptionalString(fs.S3Config.ACL),
