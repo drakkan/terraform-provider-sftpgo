@@ -229,7 +229,7 @@ Optional:
 - `tls_username` (String) TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command. For WebDAV, if no username is provided, the CN will be used as username. For WebDAV clients it must match the implicit or provided username.
 - `two_factor_protocols` (List of String) Defines protocols that require two factor authentication. Valid values: SSH, FTP, HTTP
 - `user_type` (String) Hint for authentication plugins. Valid values: LDAPUser, OSUser
-- `web_client` (List of String) Web Client/user REST API restrictions. Valid values: write-disabled, password-change-disabled, password-reset-disabled, publickey-change-disabled, mfa-disabled, api-key-auth-change-disabled, info-change-disabled, shares-disabled, shares-without-password-disabled
+- `web_client` (List of String) Web Client/user REST API restrictions. Valid values: write-disabled, password-change-disabled, password-reset-disabled, publickey-change-disabled, tls-cert-change-disabled, mfa-disabled, api-key-auth-change-disabled, info-change-disabled, shares-disabled, shares-without-password-disabled
 
 <a id="nestedatt--filters--access_time"></a>
 ### Nested Schema for `filters.access_time`
