@@ -2593,7 +2593,7 @@ func (c *ruleConditions) toSFTPGo(ctx context.Context) (client.EventRuleConditio
 		}
 	}
 	if !c.ProviderEvents.IsNull() {
-		diags := c.FsEvents.ElementsAs(ctx, &conditions.ProviderEvents, false)
+		diags := c.ProviderEvents.ElementsAs(ctx, &conditions.ProviderEvents, false)
 		if diags.HasError() {
 			return conditions, diags
 		}
