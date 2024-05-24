@@ -225,6 +225,61 @@ func TestAccRuleResource(t *testing.T) {
 			{
 				Config: `
 					resource "sftpgo_rule" "test" {
+  					  name = "test rule"
+					  status = 1
+					  description = "test provider event"
+					  trigger = 2
+					  conditions = {
+						provider_events = ["add"]
+						options = {
+						  provider_objects = ["user"]
+						}
+					  }
+					  actions = [
+						{
+							name = "action1"
+						}
+					  ]
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "name", "test rule"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "id", "test rule"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "status", "1"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "description", "test provider event"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "trigger", "2"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "conditions.%", "5"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "conditions.provider_events.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "conditions.provider_events.0", "add"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.fs_events"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.schedules"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.idp_login_event"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "conditions.options.%", "9"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.names"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "conditions.options.provider_objects.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "conditions.options.provider_objects.0", "user"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.group_names.0.inverse_match"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.group_names"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.role_names"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.fs_paths"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.protocols"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.min_size"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.max_size"),
+					resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.concurrent_execution"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "actions.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "actions.0.name", "action1"),
+					resource.TestCheckResourceAttrSet("sftpgo_rule.test", "created_at"),
+					resource.TestCheckResourceAttrSet("sftpgo_rule.test", "updated_at"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_rule.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_rule" "test" {
 						name = "test rule"
 					  	status = 0
 					  	trigger = 7
