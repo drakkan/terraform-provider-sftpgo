@@ -58,6 +58,35 @@ func TestAccActionResource(t *testing.T) {
 			{
 				Config: `
 					resource "sftpgo_action" "test" {
+					  name = "test action"
+					  description = "test rotate log file"
+					  type = 15
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "description", "test rotate log file"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "15"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.pwd_expiration_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.user_inactivity_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.idp_config"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true, // import verify will fail if we set any secret because it will be encrypted
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
 						name = "test action"
 						type = 1
 						options = {
