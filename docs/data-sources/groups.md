@@ -167,6 +167,7 @@ Read-Only:
 - `endpoint` (String) SFTP endpoint as host:port.
 - `equality_check_mode` (Number)
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
+- `key_passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
@@ -369,6 +370,7 @@ Read-Only:
 - `endpoint` (String) SFTP endpoint as host:port.
 - `equality_check_mode` (Number)
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
+- `key_passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".

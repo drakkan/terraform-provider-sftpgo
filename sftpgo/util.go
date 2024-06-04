@@ -248,6 +248,10 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
+					"key_passphrase": schema.StringAttribute{
+						Computed:    true,
+						Description: computedSecretDescription,
+					},
 					"fingerprints": schema.ListAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
@@ -538,6 +542,11 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Optional:    true,
 						Sensitive:   true,
 						Description: "Plain text private key. " + secretDescriptionGeneric,
+					},
+					"key_passphrase": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text passphrase for the private key. " + secretDescriptionGeneric,
 					},
 					"fingerprints": schema.ListAttribute{
 						ElementType: types.StringType,
@@ -1109,6 +1118,7 @@ func preserveFsConfigPlanFields(ctx context.Context, fsPlan, fsState filesystem)
 		if fsPlan.SFTPConfig != nil {
 			fsState.SFTPConfig.Password = fsPlan.SFTPConfig.Password
 			fsState.SFTPConfig.PrivateKey = fsPlan.SFTPConfig.PrivateKey
+			fsState.SFTPConfig.KeyPassphrase = fsPlan.SFTPConfig.KeyPassphrase
 		}
 	case sdk.HTTPFilesystemProvider:
 		if fsPlan.HTTPConfig != nil {

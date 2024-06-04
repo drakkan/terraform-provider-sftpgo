@@ -185,6 +185,7 @@ Optional:
 - `disable_concurrent_reads` (Boolean) Concurrent reads are safe to use and disabling them will degrade performance so they are enabled by default. Some servers automatically delete files once they are downloaded. Using concurrent reads is problematic with such servers.
 - `equality_check_mode` (Number) Defines how to check if this config points to the same server as another config. By default both the endpoint and the username must match. 1 means that only the endpoint must match. If different configs point to the same server the renaming between the fs configs is allowed.
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server. If not set any host key will be accepted: this is a security risk.
+- `key_passphrase` (String, Sensitive) Plain text passphrase for the private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `private_key` (String, Sensitive) Plain text private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 
@@ -397,6 +398,7 @@ Read-Only:
 - `endpoint` (String) SFTP endpoint as host:port.
 - `equality_check_mode` (Number)
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
+- `key_passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".

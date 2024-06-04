@@ -770,6 +770,7 @@ type sftpFsConfig struct {
 	Username                types.String `tfsdk:"username"`
 	Password                types.String `tfsdk:"password"`
 	PrivateKey              types.String `tfsdk:"private_key"`
+	KeyPassphrase           types.String `tfsdk:"key_passphrase"`
 	Fingerprints            types.List   `tfsdk:"fingerprints"`
 	Prefix                  types.String `tfsdk:"prefix"`
 	DisableCouncurrentReads types.Bool   `tfsdk:"disable_concurrent_reads"`
@@ -889,10 +890,11 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 		},
 		"sftpconfig": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"endpoint":    types.StringType,
-				"username":    types.StringType,
-				"password":    types.StringType,
-				"private_key": types.StringType,
+				"endpoint":       types.StringType,
+				"username":       types.StringType,
+				"password":       types.StringType,
+				"private_key":    types.StringType,
+				"key_passphrase": types.StringType,
 				"fingerprints": types.ListType{
 					ElemType: types.StringType,
 				},
@@ -989,8 +991,9 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 				BufferSize:              f.SFTPConfig.BufferSize.ValueInt64(),
 				EqualityCheckMode:       int(f.SFTPConfig.EqualityCheckMode.ValueInt64()),
 			},
-			Password:   getSFTPGoSecret(f.SFTPConfig.Password.ValueString()),
-			PrivateKey: getSFTPGoSecret(f.SFTPConfig.PrivateKey.ValueString()),
+			Password:      getSFTPGoSecret(f.SFTPConfig.Password.ValueString()),
+			PrivateKey:    getSFTPGoSecret(f.SFTPConfig.PrivateKey.ValueString()),
+			KeyPassphrase: getSFTPGoSecret(f.SFTPConfig.KeyPassphrase.ValueString()),
 		},
 		HTTPConfig: sdk.HTTPFsConfig{
 			BaseHTTPFsConfig: sdk.BaseHTTPFsConfig{
@@ -1089,6 +1092,7 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 			Username:                getOptionalString(fs.SFTPConfig.Username),
 			Password:                getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.Password)),
 			PrivateKey:              getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.PrivateKey)),
+			KeyPassphrase:           getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.KeyPassphrase)),
 			Prefix:                  getOptionalString(fs.SFTPConfig.Prefix),
 			DisableCouncurrentReads: getOptionalBool(fs.SFTPConfig.DisableCouncurrentReads),
 			BufferSize:              getOptionalInt64(fs.SFTPConfig.BufferSize),
