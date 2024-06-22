@@ -29,7 +29,7 @@ type User struct {
 	sdk.User
 	// we remote the omitempty attribute from the password
 	// otherwise setting an empty password will preserve the current one
-	// on updated
+	// on update
 	Password string `json:"password"`
 }
 
