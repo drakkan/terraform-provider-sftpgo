@@ -197,7 +197,7 @@ func (c *Client) GetActions() ([]BaseEventAction, error) {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +223,7 @@ func (c *Client) CreateAction(action BaseEventAction) (*BaseEventAction, error) 
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusCreated)
+	body, err := c.doRequestWithAuth(req, http.StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +240,7 @@ func (c *Client) GetAction(name string) (*BaseEventAction, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +262,7 @@ func (c *Client) UpdateAction(action BaseEventAction) error {
 		return err
 	}
 
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }
 
@@ -272,6 +272,6 @@ func (c *Client) DeleteAction(name string) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }

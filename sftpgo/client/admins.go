@@ -107,7 +107,7 @@ func (c *Client) GetAdmins() ([]Admin, error) {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (c *Client) CreateAdmin(admin Admin) (*Admin, error) {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusCreated)
+	body, err := c.doRequestWithAuth(req, http.StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (c *Client) GetAdmin(username string) (*Admin, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (c *Client) UpdateAdmin(admin Admin) error {
 		return err
 	}
 
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }
 
@@ -181,6 +181,6 @@ func (c *Client) DeleteAdmin(username string) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }

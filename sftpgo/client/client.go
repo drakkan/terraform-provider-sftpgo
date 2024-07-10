@@ -113,10 +113,6 @@ func NewClient(host, username, password, apiKey *string, headers []KeyValue) (*C
 }
 
 func (c *Client) setAuthHeader(req *http.Request) error {
-	if req.URL.Path == authEndpoint {
-		// Authentication request, stop here.
-		return nil
-	}
 	if c.APIKey != "" {
 		req.Header.Set("X-SFTPGO-API-KEY", c.APIKey)
 		return nil
@@ -124,7 +120,7 @@ func (c *Client) setAuthHeader(req *http.Request) error {
 
 	accessToken := c.getAccessToken()
 	if accessToken == "" {
-		ar, err := c.SignInAdmin()
+		ar, err := c.signInAdmin()
 		if err != nil {
 			return err
 		}
@@ -138,11 +134,14 @@ func (c *Client) setAuthHeader(req *http.Request) error {
 	return nil
 }
 
-func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, error) {
+func (c *Client) doRequestWithAuth(req *http.Request, expectedStatusCode int) ([]byte, error) {
 	if err := c.setAuthHeader(req); err != nil {
 		return nil, err
 	}
+	return c.doRequest(req, expectedStatusCode)
+}
 
+func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, error) {
 	for _, h := range c.Headers {
 		req.Header.Set(h.Key, h.Value)
 	}

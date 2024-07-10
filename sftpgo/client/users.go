@@ -40,7 +40,7 @@ func (c *Client) GetUsers() ([]User, error) {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (c *Client) CreateUser(user User) (*User, error) {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusCreated)
+	body, err := c.doRequestWithAuth(req, http.StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (c *Client) GetUser(username string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (c *Client) UpdateUser(user User) error {
 		return err
 	}
 
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }
 
@@ -115,6 +115,6 @@ func (c *Client) DeleteUser(username string) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }

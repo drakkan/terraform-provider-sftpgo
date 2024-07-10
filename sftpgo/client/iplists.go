@@ -55,7 +55,7 @@ func (c *Client) GetIPListEntries(listType int) ([]IPListEntry, error) {
 			return nil, err
 		}
 
-		body, err := c.doRequest(req, http.StatusOK)
+		body, err := c.doRequestWithAuth(req, http.StatusOK)
 		if err != nil {
 			return nil, err
 		}
@@ -86,7 +86,7 @@ func (c *Client) CreateIPListEntry(entry IPListEntry) (*IPListEntry, error) {
 		return nil, err
 	}
 
-	_, err = c.doRequest(req, http.StatusCreated)
+	_, err = c.doRequestWithAuth(req, http.StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (c *Client) GetIPListEntry(listType int, ipOrNet string) (*IPListEntry, err
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func (c *Client) UpdateIPListEntry(entry IPListEntry) error {
 		return err
 	}
 
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }
 
@@ -133,6 +133,6 @@ func (c *Client) DeleteIPListEntry(listType int, ipOrNet string) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }

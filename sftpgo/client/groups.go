@@ -31,7 +31,7 @@ func (c *Client) GetGroups() ([]sdk.Group, error) {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (c *Client) CreateGroup(group sdk.Group) (*sdk.Group, error) {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusCreated)
+	body, err := c.doRequestWithAuth(req, http.StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (c *Client) GetGroup(name string) (*sdk.Group, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (c *Client) UpdateGroup(group sdk.Group) error {
 		return err
 	}
 
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }
 
@@ -105,6 +105,6 @@ func (c *Client) DeleteGroup(name string) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }

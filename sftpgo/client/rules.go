@@ -112,7 +112,7 @@ func (c *Client) GetRules() ([]EventRule, error) {
 			return nil, err
 		}
 
-		body, err := c.doRequest(req, http.StatusOK)
+		body, err := c.doRequestWithAuth(req, http.StatusOK)
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +142,7 @@ func (c *Client) CreateRule(rule EventRule) (*EventRule, error) {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusCreated)
+	body, err := c.doRequestWithAuth(req, http.StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func (c *Client) GetRule(name string) (*EventRule, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (c *Client) UpdateRule(rule EventRule) error {
 		return err
 	}
 
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }
 
@@ -190,6 +190,6 @@ func (c *Client) DeleteRule(name string) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }

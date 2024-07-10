@@ -31,7 +31,7 @@ func (c *Client) GetFolders() ([]sdk.BaseVirtualFolder, error) {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (c *Client) CreateFolder(folder sdk.BaseVirtualFolder) (*sdk.BaseVirtualFol
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusCreated)
+	body, err := c.doRequestWithAuth(req, http.StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (c *Client) GetFolder(name string) (*sdk.BaseVirtualFolder, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (c *Client) UpdateFolder(folder sdk.BaseVirtualFolder) error {
 		return err
 	}
 
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }
 
@@ -105,6 +105,6 @@ func (c *Client) DeleteFolder(name string) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }

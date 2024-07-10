@@ -24,8 +24,8 @@ const (
 	authEndpoint = "/api/v2/token"
 )
 
-// SignInAdmin returns a new access token for the admin with the specified credentials.
-func (c *Client) SignInAdmin() (*AuthResponse, error) {
+// signInAdmin returns a new access token for the admin with the specified credentials.
+func (c *Client) signInAdmin() (*AuthResponse, error) {
 	if c.Auth.Username == "" || c.Auth.Password == "" {
 		return nil, fmt.Errorf("define username and password")
 	}

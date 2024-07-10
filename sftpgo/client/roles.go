@@ -45,7 +45,7 @@ func (c *Client) GetRoles() ([]Role, error) {
 			return nil, err
 		}
 
-		body, err := c.doRequest(req, http.StatusOK)
+		body, err := c.doRequestWithAuth(req, http.StatusOK)
 		if err != nil {
 			return nil, err
 		}
@@ -75,7 +75,7 @@ func (c *Client) CreateRole(role Role) (*Role, error) {
 		return nil, err
 	}
 
-	body, err := c.doRequest(req, http.StatusCreated)
+	body, err := c.doRequestWithAuth(req, http.StatusCreated)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (c *Client) GetRole(name string) (*Role, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := c.doRequest(req, http.StatusOK)
+	body, err := c.doRequestWithAuth(req, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (c *Client) UpdateRole(role Role) error {
 		return err
 	}
 
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }
 
@@ -123,6 +123,6 @@ func (c *Client) DeleteRole(name string) error {
 	if err != nil {
 		return err
 	}
-	_, err = c.doRequest(req, http.StatusOK)
+	_, err = c.doRequestWithAuth(req, http.StatusOK)
 	return err
 }
