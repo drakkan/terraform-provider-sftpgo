@@ -400,8 +400,26 @@ func (*userResource) ImportState(ctx context.Context, req resource.ImportStateRe
 }
 
 func (*userResource) preservePlanFields(ctx context.Context, plan, state *userResourceModel) diag.Diagnostics {
+	// Preserve password if set in plan
 	if !plan.Password.IsNull() {
 		state.Password = plan.Password
+	}
+
+	// Preserve zero values for numeric fields
+	if !plan.MaxSessions.IsNull() {
+		state.MaxSessions = plan.MaxSessions
+	}
+	if !plan.UploadBandwidth.IsNull() {
+		state.UploadBandwidth = plan.UploadBandwidth
+	}
+	if !plan.QuotaFiles.IsNull() {
+		state.QuotaFiles = plan.QuotaFiles
+	}
+	if !plan.QuotaSize.IsNull() {
+		state.QuotaSize = plan.QuotaSize
+	}
+	if !plan.DownloadBandwidth.IsNull() {
+		state.DownloadBandwidth = plan.DownloadBandwidth
 	}
 
 	if plan.FsConfig.IsNull() {
