@@ -324,6 +324,10 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 										"value": schema.StringAttribute{
 											Required: true,
 										},
+										"update_modtime": schema.BoolAttribute{
+											Optional:    true,
+											Description: "Update modification time. This setting is not recursive and only applies to storage providers that support changing modification times.",
+										},
 									},
 								},
 							},

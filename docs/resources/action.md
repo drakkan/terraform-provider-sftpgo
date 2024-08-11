@@ -124,6 +124,10 @@ Required:
 - `key` (String)
 - `value` (String)
 
+Optional:
+
+- `update_modtime` (Boolean) Update modification time. This setting is not recursive and only applies to storage providers that support changing modification times.
+
 
 
 <a id="nestedatt--options--http_config"></a>

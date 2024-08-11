@@ -377,6 +377,7 @@ func TestAccActionResource(t *testing.T) {
 									{
 										key = "/source1"
 										value = "/target1"
+										update_modtime = true
 									},
 									{
 										key = "/source2"
@@ -401,8 +402,10 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.renames.#", "2"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.renames.0.key", "/source1"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.renames.0.value", "/target1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.renames.0.update_modtime", "true"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.renames.1.key", "/source2"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.renames.1.value", "/target2"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.renames.1.update_modtime"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.mkdirs"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.deletes"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.exist"),

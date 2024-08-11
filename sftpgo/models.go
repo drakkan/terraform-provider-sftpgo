@@ -1872,6 +1872,12 @@ func (*keyValue) getTFAttributes() map[string]attr.Type {
 	}
 }
 
+type renameConfig struct {
+	Key           types.String `tfsdk:"key"`
+	Value         types.String `tfsdk:"value"`
+	UpdateModTime types.Bool   `tfsdk:"update_modtime"`
+}
+
 type httpPart struct {
 	Name     types.String `tfsdk:"name"`
 	Filepath types.String `tfsdk:"filepath"`
@@ -1925,7 +1931,7 @@ type eventActionFsCompress struct {
 
 type eventActionFilesystemConfig struct {
 	Type     types.Int64            `tfsdk:"type"`
-	Renames  []keyValue             `tfsdk:"renames"`
+	Renames  []renameConfig         `tfsdk:"renames"`
 	MkDirs   types.List             `tfsdk:"mkdirs"`
 	Deletes  types.List             `tfsdk:"deletes"`
 	Exist    types.List             `tfsdk:"exist"`
@@ -2079,7 +2085,11 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 				"type": types.Int64Type,
 				"renames": types.ListType{
 					ElemType: types.ObjectType{
-						AttrTypes: kv.getTFAttributes(),
+						AttrTypes: map[string]attr.Type{
+							"key":            types.StringType,
+							"value":          types.StringType,
+							"update_modtime": types.BoolType,
+						},
 					},
 				},
 				"mkdirs": types.ListType{
@@ -2236,10 +2246,13 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 		})
 	}
 
-	for _, v := range o.FsConfig.Renames {
-		options.FsConfig.Renames = append(options.FsConfig.Renames, client.KeyValue{
-			Key:   v.Key.ValueString(),
-			Value: v.Value.ValueString(),
+	for _, c := range o.FsConfig.Renames {
+		options.FsConfig.Renames = append(options.FsConfig.Renames, client.RenameConfig{
+			KeyValue: client.KeyValue{
+				Key:   c.Key.ValueString(),
+				Value: c.Value.ValueString(),
+			},
+			UpdateModTime: c.UpdateModTime.ValueBool(),
 		})
 	}
 	for _, v := range o.FsConfig.Copy {
@@ -2380,10 +2393,11 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 
 		switch action.Options.FsConfig.Type {
 		case client.FilesystemActionRename:
-			for _, v := range action.Options.FsConfig.Renames {
-				o.FsConfig.Renames = append(o.FsConfig.Renames, keyValue{
-					Key:   types.StringValue(v.Key),
-					Value: types.StringValue(v.Value),
+			for _, c := range action.Options.FsConfig.Renames {
+				o.FsConfig.Renames = append(o.FsConfig.Renames, renameConfig{
+					Key:           types.StringValue(c.Key),
+					Value:         types.StringValue(c.Value),
+					UpdateModTime: getOptionalBool(c.UpdateModTime),
 				})
 			}
 		case client.FilesystemActionDelete:

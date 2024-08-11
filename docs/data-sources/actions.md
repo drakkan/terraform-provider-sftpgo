@@ -112,6 +112,10 @@ Read-Only:
 <a id="nestedatt--actions--options--fs_config--renames"></a>
 ### Nested Schema for `actions.options.fs_config.renames`
 
+Optional:
+
+- `update_modtime` (Boolean) Update modification time. This setting is not recursive and only applies to storage providers that support changing modification times.
+
 Read-Only:
 
 - `key` (String)

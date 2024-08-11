@@ -125,12 +125,21 @@ type EventActionFsCompress struct {
 	Paths []string `json:"paths,omitempty"`
 }
 
+// RenameConfig defines the configuration for a filesystem rename
+type RenameConfig struct {
+	// key is the source and target the value
+	KeyValue
+	// This setting only applies to storage providers that support
+	// changing modification times.
+	UpdateModTime bool `json:"update_modtime,omitempty"`
+}
+
 // EventActionFilesystemConfig defines the configuration for filesystem actions
 type EventActionFilesystemConfig struct {
 	// Filesystem actions, see the above enum
 	Type int `json:"type,omitempty"`
 	// files/dirs to rename, key is the source and target the value
-	Renames []KeyValue `json:"renames,omitempty"`
+	Renames []RenameConfig `json:"renames,omitempty"`
 	// directories to create
 	MkDirs []string `json:"mkdirs,omitempty"`
 	// files/dirs to delete
