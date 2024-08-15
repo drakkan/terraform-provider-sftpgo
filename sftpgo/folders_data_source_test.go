@@ -45,6 +45,10 @@ var (
 					Status:  kms.SecretStatusPlain,
 					Payload: "s3secret",
 				},
+				SSECustomerKey: kms.BaseSecret{
+					Status:  kms.SecretStatusPlain,
+					Payload: "secretk3y",
+				},
 			},
 		},
 	}
@@ -90,6 +94,7 @@ func TestAccFoldersDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.s3config.access_key",
 						testFolder.FsConfig.S3Config.AccessKey),
 					resource.TestCheckResourceAttrSet("data.sftpgo_folders.test", "folders.0.filesystem.s3config.access_secret"),
+					resource.TestCheckResourceAttrSet("data.sftpgo_folders.test", "folders.0.filesystem.s3config.sse_customer_key"),
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.s3config.download_part_size",
 						fmt.Sprintf("%d", testFolder.FsConfig.S3Config.DownloadPartSize)),
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.s3config.skip_tls_verify",

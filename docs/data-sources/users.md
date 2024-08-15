@@ -162,6 +162,7 @@ Read-Only:
 - `role_arn` (String) IAM Role ARN to assume.
 - `session_token` (String) Optional Session token that is a part of temporary security credentials provisioned by AWS STS.
 - `skip_tls_verify` (Boolean) If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.
+- `sse_customer_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `storage_class` (String)
 - `upload_concurrency` (Number) How many parts are uploaded in parallel. Not set means the default (5).
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.
@@ -375,6 +376,7 @@ Read-Only:
 - `role_arn` (String) IAM Role ARN to assume.
 - `session_token` (String) Optional Session token that is a part of temporary security credentials provisioned by AWS STS.
 - `skip_tls_verify` (Boolean) If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.
+- `sse_customer_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `storage_class` (String)
 - `upload_concurrency` (Number) How many parts are uploaded in parallel. Not set means the default (5).
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.

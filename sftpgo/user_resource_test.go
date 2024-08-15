@@ -130,6 +130,7 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.region", "us-west-1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.access_key", "key"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.access_secret", "secret payload"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.s3config.sse_customer_key"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.session_token", "abc"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.gcsconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.osconfig"),

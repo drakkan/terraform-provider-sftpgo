@@ -72,6 +72,10 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
+					"sse_customer_key": schema.StringAttribute{
+						Computed:    true,
+						Description: computedSecretDescription,
+					},
 					"key_prefix": schema.StringAttribute{
 						Computed:    true,
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with this prefix.`,
@@ -349,6 +353,11 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Optional:    true,
 						Sensitive:   true,
 						Description: "Plain text access secret. " + secretDescriptionGeneric,
+					},
+					"sse_customer_key": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text Server-Side encryption key. " + secretDescriptionGeneric,
 					},
 					"key_prefix": schema.StringAttribute{
 						Optional:    true,
@@ -1100,6 +1109,7 @@ func preserveFsConfigPlanFields(ctx context.Context, fsPlan, fsState filesystem)
 	case sdk.S3FilesystemProvider:
 		if fsPlan.S3Config != nil {
 			fsState.S3Config.AccessSecret = fsPlan.S3Config.AccessSecret
+			fsState.S3Config.SSECustomerKey = fsPlan.S3Config.SSECustomerKey
 		}
 	case sdk.GCSFilesystemProvider:
 		if fsPlan.GCSConfig != nil {

@@ -139,6 +139,7 @@ func TestAccGroupsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.s3config.bucket",
 						testFolder.FsConfig.S3Config.Bucket),
 					resource.TestCheckResourceAttrSet("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.s3config.access_secret"),
+					resource.TestCheckResourceAttrSet("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.s3config.sse_customer_key"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.gcsconfig"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "id", placeholderID),
