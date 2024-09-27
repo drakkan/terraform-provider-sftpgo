@@ -155,11 +155,11 @@ Read-Only:
 
 - `body` (String)
 - `filepath` (String) Path to the file to be sent as an attachment.
-- `headers` (Attributes List) (see [below for nested schema](#nestedatt--actions--options--http_config--username--headers))
+- `headers` (Attributes List) (see [below for nested schema](#nestedatt--actions--options--http_config--parts--headers))
 - `name` (String)
 
-<a id="nestedatt--actions--options--http_config--username--headers"></a>
-### Nested Schema for `actions.options.http_config.username.headers`
+<a id="nestedatt--actions--options--http_config--parts--headers"></a>
+### Nested Schema for `actions.options.http_config.parts.headers`
 
 Read-Only:
 

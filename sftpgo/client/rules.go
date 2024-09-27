@@ -50,6 +50,7 @@ type ConditionOptions struct {
 	ProviderObjects []string           `json:"provider_objects,omitempty"`
 	MinFileSize     int64              `json:"min_size,omitempty"`
 	MaxFileSize     int64              `json:"max_size,omitempty"`
+	EventStatuses   []int              `json:"event_statuses,omitempty"`
 	// allow to execute scheduled tasks concurrently from multiple instances
 	ConcurrentExecution bool `json:"concurrent_execution,omitempty"`
 }

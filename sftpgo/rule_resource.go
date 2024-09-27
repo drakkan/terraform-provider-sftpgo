@@ -17,6 +17,7 @@ package sftpgo
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -253,6 +254,15 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 								Description: `Maximum file size as bytes.`,
 								Validators: []validator.Int64{
 									int64validator.AtLeast(0),
+								},
+							},
+							"event_statuses": schema.ListAttribute{
+								ElementType: types.Int32Type,
+								Optional:    true,
+								Description: `The filesystem event rules will be triggered only for actions with the specified status. Empty means any status. Suported values: 1 (OK), 2 (Failed), 3 (Failed for a quota exceeded error).`,
+								Validators: []validator.List{
+									listvalidator.UniqueValues(),
+									listvalidator.ValueInt32sAre(int32validator.OneOf(1, 2, 3)),
 								},
 							},
 							"concurrent_execution": schema.BoolAttribute{

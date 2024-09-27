@@ -88,7 +88,7 @@ func TestAccRulesDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.provider_events.1", "update"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.schedules"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.idp_login_event"),
-					resource.TestCheckResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.%", "9"),
+					resource.TestCheckResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.%", "10"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.names"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.group_names"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.role_names"),

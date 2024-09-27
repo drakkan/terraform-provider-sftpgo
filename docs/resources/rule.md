@@ -64,6 +64,7 @@ Optional:
 Optional:
 
 - `concurrent_execution` (Boolean) If enabled, allow to execute scheduled tasks concurrently from multiple SFTPGo instances.
+- `event_statuses` (List of Number) The filesystem event rules will be triggered only for actions with the specified status. Empty means any status. Suported values: 1 (OK), 2 (Failed), 3 (Failed for a quota exceeded error).
 - `fs_paths` (Attributes List) Shell-like pattern filters for filesystem events. For example "/adir/*.txt"" will match paths in the "/adir" directory ending with ".txt". Double asterisk is supported, for example "/**/*.txt" will match any file ending with ".txt". "/mydir/**" will match any entry in "/mydir". (see [below for nested schema](#nestedatt--conditions--options--fs_paths))
 - `group_names` (Attributes List) Shell-like pattern filters for group names. For example "group*"" will match group names starting with "group". (see [below for nested schema](#nestedatt--conditions--options--group_names))
 - `max_size` (Number) Maximum file size as bytes.

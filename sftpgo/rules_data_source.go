@@ -202,6 +202,11 @@ func (d *rulesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 											Computed:    true,
 											Description: `Maximum file size as bytes.`,
 										},
+										"event_statuses": schema.ListAttribute{
+											ElementType: types.Int32Type,
+											Computed:    true,
+											Description: `The filesystem event rules will be triggered only for actions with the specified status. Empty means any status. Suported values: 1 (OK), 2 (Failed), 3 (Failed for a quota exceeded error).`,
+										},
 										"concurrent_execution": schema.BoolAttribute{
 											Computed:    true,
 											Description: `If enabled, allow to execute scheduled tasks concurrently from multiple SFTPGo instances.`,

@@ -2536,6 +2536,7 @@ type ruleConditionOptions struct {
 	ProviderObjects     types.List             `tfsdk:"provider_objects"`
 	MinFileSize         types.Int64            `tfsdk:"min_size"`
 	MaxFileSize         types.Int64            `tfsdk:"max_size"`
+	EventStatuses       types.List             `tfsdk:"event_statuses"`
 	ConcurrentExecution types.Bool             `tfsdk:"concurrent_execution"`
 }
 
@@ -2596,8 +2597,11 @@ func (*ruleConditions) getTFAttributes() map[string]attr.Type {
 				"provider_objects": types.ListType{
 					ElemType: types.StringType,
 				},
-				"min_size":             types.Int64Type,
-				"max_size":             types.Int64Type,
+				"min_size": types.Int64Type,
+				"max_size": types.Int64Type,
+				"event_statuses": types.ListType{
+					ElemType: types.Int32Type,
+				},
 				"concurrent_execution": types.BoolType,
 			},
 		},
@@ -2666,6 +2670,12 @@ func (c *ruleConditions) toSFTPGo(ctx context.Context) (client.EventRuleConditio
 		}
 		if !c.Options.ProviderObjects.IsNull() {
 			diags := c.Options.ProviderObjects.ElementsAs(ctx, &conditions.Options.ProviderObjects, false)
+			if diags.HasError() {
+				return conditions, diags
+			}
+		}
+		if !c.Options.EventStatuses.IsNull() {
+			diags := c.Options.EventStatuses.ElementsAs(ctx, &conditions.Options.EventStatuses, false)
 			if diags.HasError() {
 				return conditions, diags
 			}
@@ -2741,6 +2751,11 @@ func (c *ruleConditions) fromSFTPGo(ctx context.Context, conditions *client.Even
 		return diags
 	}
 	c.Options.ProviderObjects = providerObjects
+	eventStatuses, diags := types.ListValueFrom(ctx, types.Int32Type, conditions.Options.EventStatuses)
+	if diags.HasError() {
+		return diags
+	}
+	c.Options.EventStatuses = eventStatuses
 
 	return nil
 }
