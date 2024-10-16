@@ -890,6 +890,11 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 		Computed:    true,
 		Description: "TLS certificates for mutual authentication. If provided will be checked before TLS username.",
 	}
+	result.Attributes["additional_emails"] = schema.ListAttribute{
+		ElementType: types.StringType,
+		Computed:    true,
+		Description: "Additional email addresses.",
+	}
 	return result
 }
 
@@ -1097,6 +1102,14 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 		ElementType: types.StringType,
 		Optional:    true,
 		Description: "TLS certificates for mutual authentication. If provided will be checked before TLS username.",
+		Validators: []validator.List{
+			listvalidator.UniqueValues(),
+		},
+	}
+	result.Attributes["additional_emails"] = schema.ListAttribute{
+		ElementType: types.StringType,
+		Optional:    true,
+		Description: "Additional email addresses.",
 		Validators: []validator.List{
 			listvalidator.UniqueValues(),
 		},

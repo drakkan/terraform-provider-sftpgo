@@ -193,6 +193,7 @@ Read-Only:
 Read-Only:
 
 - `access_time` (Attributes List) Time periods in which access is allowed (see [below for nested schema](#nestedatt--users--filters--access_time))
+- `additional_emails` (List of String) Additional email addresses.
 - `allow_api_key_auth` (Boolean) If set, API Key authentication is allowed.
 - `allowed_ip` (List of String) Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"
 - `bandwidth_limits` (Attributes List) Per-source bandwidth limits. (see [below for nested schema](#nestedatt--users--filters--bandwidth_limits))

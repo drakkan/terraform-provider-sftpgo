@@ -594,6 +594,7 @@ type userFilters struct {
 	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
 	RequirePasswordChange   types.Bool       `tfsdk:"require_password_change"`
 	AccessTime              []timePeriod     `tfsdk:"access_time"`
+	AdditionalEmails        types.List       `tfsdk:"additional_emails"`
 }
 
 func (f *userFilters) getTFAttributes() map[string]attr.Type {
@@ -603,6 +604,9 @@ func (f *userFilters) getTFAttributes() map[string]attr.Type {
 	filters := map[string]attr.Type{
 		"require_password_change": types.BoolType,
 		"tls_certs": types.ListType{
+			ElemType: types.StringType,
+		},
+		"additional_emails": types.ListType{
 			ElemType: types.StringType,
 		},
 	}
@@ -686,6 +690,12 @@ func (f *userFilters) toSFTPGo(ctx context.Context) (sdk.UserFilters, diag.Diagn
 			return filters, diags
 		}
 	}
+	if !f.AdditionalEmails.IsNull() {
+		diags := f.AdditionalEmails.ElementsAs(ctx, &filters.AdditionalEmails, false)
+		if diags.HasError() {
+			return filters, diags
+		}
+	}
 
 	return filters, nil
 }
@@ -703,6 +713,12 @@ func (f *userFilters) fromSFTPGo(ctx context.Context, filters *sdk.UserFilters) 
 		return diags
 	}
 	f.TLSCerts = tlsCerts
+
+	additionalEmails, diags := types.ListValueFrom(ctx, types.StringType, filters.AdditionalEmails)
+	if diags.HasError() {
+		return diags
+	}
+	f.AdditionalEmails = additionalEmails
 
 	return nil
 }

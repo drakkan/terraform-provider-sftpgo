@@ -228,6 +228,7 @@ func TestAccUserResource(t *testing.T) {
 					  user_type = "LDAPUser"
 					  ftp_security = 1
 					  max_shares_expiration = 10
+					  additional_emails = ["example@example.com", "example1@example.com"]
 				  }
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -265,6 +266,7 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.1", "password-over-SSH"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.tls_username", "CommonName"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.tls_certs.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.additional_emails.#", "2"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.0", "write-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.user_type", "LDAPUser"),
