@@ -17,6 +17,7 @@ jobs:
           SFTPGO_DATA_PROVIDER__CREATE_DEFAULT_ADMIN: 1
           SFTPGO_DEFAULT_ADMIN_USERNAME: admin
           SFTPGO_DEFAULT_ADMIN_PASSWORD: password
+          SFTPGO_COMMON__EVENT_MANAGER__ENABLED_COMMANDS: /bin/true
         options: >-
           --health-cmd "/usr/local/bin/sftpgo ping -c /etc/sftpgo"
           --health-interval 10s
