@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
@@ -107,6 +108,120 @@ func TestAccFoldersDataSource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.cryptconfig"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.sftpconfig"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.httpconfig"),
+					// Verify placeholder id attribute
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "id", placeholderID),
+				),
+			},
+		},
+	})
+}
+
+func TestAccEnterpriseFoldersDataSource(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+	folder1 := client.BaseVirtualFolder{
+		BaseVirtualFolder: sdk.BaseVirtualFolder{
+			Name:        "folder1",
+			MappedPath:  filepath.Join(os.TempDir(), "folder1"),
+			Description: "desc",
+		},
+		FsConfig: client.Filesystem{
+			Provider: sdk.SFTPFilesystemProvider,
+			SFTPConfig: client.SFTPFsConfig{
+				BaseSFTPFsConfig: client.BaseSFTPFsConfig{
+					Endpoint:    "127.0.0.1:22",
+					Username:    "sftpuser",
+					Socks5Proxy: "127.0.0.1:10080",
+				},
+				Password: kms.BaseSecret{
+					Status:  kms.SecretStatusPlain,
+					Payload: "sftps3secret",
+				},
+			},
+		},
+	}
+
+	folder2 := client.BaseVirtualFolder{
+		BaseVirtualFolder: sdk.BaseVirtualFolder{
+			Name:       "folder2",
+			MappedPath: filepath.Join(os.TempDir(), "folder2"),
+		},
+		FsConfig: client.Filesystem{
+			Provider: sdk.GCSFilesystemProvider,
+			GCSConfig: client.GCSFsConfig{
+				BaseGCSFsConfig: client.BaseGCSFsConfig{
+					Bucket:                "bucket",
+					AutomaticCredentials:  1,
+					HierarchicalNamespace: 1,
+					UploadPartSize:        10,
+					UploadPartMaxTime:     60,
+				},
+			},
+		},
+	}
+
+	_, err = c.CreateFolder(folder1)
+	require.NoError(t, err)
+	_, err = c.CreateFolder(folder2)
+	require.NoError(t, err)
+
+	defer func() {
+		err = c.DeleteFolder(folder1.Name)
+		require.NoError(t, err)
+		err = c.DeleteFolder(folder2.Name)
+		require.NoError(t, err)
+	}()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Read testing
+			{
+				Config: `data "sftpgo_folders" "test" {}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify number of folders returned
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.#", "2"),
+					// Check the folder fields
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.name", folder1.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.id", folder1.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.mapped_path", folder1.MappedPath),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.description", folder1.Description),
+					resource.TestCheckResourceAttrSet("data.sftpgo_folders.test", "folders.0.used_quota_size"),
+					resource.TestCheckResourceAttrSet("data.sftpgo_folders.test", "folders.0.used_quota_files"),
+					resource.TestCheckResourceAttrSet("data.sftpgo_folders.test", "folders.0.last_quota_update"),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.provider",
+						strconv.Itoa(int(folder1.FsConfig.Provider))),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.sftpconfig.endpoint",
+						folder1.FsConfig.SFTPConfig.Endpoint),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.sftpconfig.username",
+						folder1.FsConfig.SFTPConfig.Username),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.sftpconfig.socks5_proxy",
+						folder1.FsConfig.SFTPConfig.Socks5Proxy),
+					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.sftpconfig.socks5_username"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.sftpconfig.socks5_password"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.gcsconfig"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.azblobconfig"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.cryptconfig"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.s3config"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_folders.test", "folders.0.filesystem.httpconfig"),
+
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.name", folder2.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.id", folder2.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.mapped_path", folder2.MappedPath),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.provider",
+						strconv.Itoa(int(folder2.FsConfig.Provider))),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.gcsconfig.bucket",
+						folder2.FsConfig.GCSConfig.Bucket),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.gcsconfig.automatic_credentials", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.gcsconfig.hns", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.gcsconfig.upload_part_size", "10"),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.gcsconfig.upload_part_max_time", "60"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "id", placeholderID),
 				),
