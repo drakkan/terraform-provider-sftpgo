@@ -4,6 +4,7 @@
 #  hooks:
 #    # this is just an example and not a requirement for provider building/publishing
 #    - go mod tidy
+version: 2
 builds:
 - env:
     # goreleaser does not work with CGO, it could also complicate
@@ -57,4 +58,4 @@ release:
   # If you want to manually examine the release before its live, uncomment this line:
   # draft: true
 changelog:
-  skip: true
+  disable: true
