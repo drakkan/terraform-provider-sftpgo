@@ -18,13 +18,16 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -52,6 +55,7 @@ type sftpgoProviderModel struct {
 	Password types.String `tfsdk:"password"`
 	APIKey   types.String `tfsdk:"api_key"`
 	Headers  []keyValue   `tfsdk:"headers"`
+	Edition  types.Int64  `tfsdk:"edition"`
 }
 
 // sftpgoProvider is the provider implementation.
@@ -99,6 +103,13 @@ func (p *sftpgoProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 							Description: "The header value. May also be provided via SFTPGO_HEADERS__0__VALUE, SFTPGO_HEADERS__1__VALUE, ... SFTPGO_HEADERS__9__VALUE environment variables.",
 						},
 					},
+				},
+			},
+			"edition": schema.Int64Attribute{
+				Optional:    true,
+				Description: "SFTPGo edition. 0 = Open Source, 1 = Enterprise",
+				Validators: []validator.Int64{
+					int64validator.Between(0, 1),
 				},
 			},
 		},
@@ -157,6 +168,15 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		)
 	}
 
+	if config.Edition.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("edition"),
+			"Unknown SFTPGo edition",
+			"The provider cannot create the SFTPGo API client as there is an unknown configuration value for the SFTPGo edition. "+
+				"Either target apply the source of the value first, set the value statically in the configuration, or use the SFTPGO_EDITION environment variable.",
+		)
+	}
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -169,6 +189,7 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	password := os.Getenv("SFTPGO_PASSWORD")
 	apiKey := os.Getenv("SFTPGO_API_KEY")
 	headers := getHeadersFromEnv()
+	edition := getIntFromEnv("SFTPGO_EDITION", 0)
 
 	if !config.Host.IsNull() {
 		host = config.Host.ValueString()
@@ -184,6 +205,10 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	if !config.APIKey.IsNull() {
 		apiKey = config.APIKey.ValueString()
+	}
+
+	if !config.Edition.IsNull() {
+		edition = config.Edition.ValueInt64()
 	}
 
 	if len(config.Headers) > 0 {
@@ -235,11 +260,12 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	ctx = tflog.SetField(ctx, "SFTPGo_host", config.Host)
-	ctx = tflog.SetField(ctx, "SFTPGo_username", config.Username)
-	ctx = tflog.SetField(ctx, "SFTPGo_password", config.Password)
-	ctx = tflog.SetField(ctx, "SFTPGo_api_key", config.APIKey)
-	ctx = tflog.SetField(ctx, "SFTPGo_headers", config.Headers)
+	ctx = tflog.SetField(ctx, "SFTPGo_host", host)
+	ctx = tflog.SetField(ctx, "SFTPGo_username", username)
+	ctx = tflog.SetField(ctx, "SFTPGo_password", password)
+	ctx = tflog.SetField(ctx, "SFTPGo_api_key", apiKey)
+	ctx = tflog.SetField(ctx, "SFTPGo_headers", headers)
+	ctx = tflog.SetField(ctx, "SFTPGo edition", edition)
 	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "SFTPGo_password")
 	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "SFTPGo_api_key")
 	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "SFTPGo_headers")
@@ -247,7 +273,7 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	tflog.Debug(ctx, "Creating SFTPGo client")
 
 	// Create a new SFTPGo client using the configuration values
-	client, err := client.NewClient(&host, &username, &password, &apiKey, headers)
+	client, err := client.NewClient(host, username, password, apiKey, headers, edition)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create SFTPGo API Client",
@@ -296,6 +322,14 @@ func (p *sftpgoProvider) Resources(_ context.Context) []func() resource.Resource
 		NewActionResource,
 		NewRuleResource,
 	}
+}
+
+func getIntFromEnv(name string, defaultValue int64) int64 {
+	val, err := strconv.ParseInt(os.Getenv(name), 10, 64)
+	if err != nil {
+		return defaultValue
+	}
+	return val
 }
 
 func getHeadersFromEnv() []client.KeyValue {

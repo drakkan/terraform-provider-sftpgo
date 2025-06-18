@@ -20,18 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-
-	"github.com/sftpgo/sdk"
 )
-
-// User defines a SFTPGo user
-type User struct {
-	sdk.User
-	// we remote the omitempty attribute from the password
-	// otherwise setting an empty password will preserve the current one
-	// on update
-	Password string `json:"password"`
-}
 
 // GetUsers - Returns list of users
 func (c *Client) GetUsers() ([]User, error) {

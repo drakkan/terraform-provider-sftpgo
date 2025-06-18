@@ -20,6 +20,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/sftpgo/sdk"
 	"github.com/sftpgo/sdk/kms"
@@ -27,11 +28,13 @@ import (
 )
 
 var (
-	testFolder = sdk.BaseVirtualFolder{
-		Name:        "tfolder",
-		MappedPath:  filepath.Join(os.TempDir(), "tfolder"),
-		Description: "desc",
-		FsConfig: sdk.Filesystem{
+	testFolder = client.BaseVirtualFolder{
+		BaseVirtualFolder: sdk.BaseVirtualFolder{
+			Name:        "tfolder",
+			MappedPath:  filepath.Join(os.TempDir(), "tfolder"),
+			Description: "desc",
+		},
+		FsConfig: client.Filesystem{
 			Provider: 1,
 			S3Config: sdk.S3FsConfig{
 				BaseS3FsConfig: sdk.BaseS3FsConfig{

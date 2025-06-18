@@ -297,6 +297,7 @@ type baseUserFilters struct {
 	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
 	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
 	AccessTime              []timePeriod     `tfsdk:"access_time"`
+	EnforceSecureAlgorithms types.Bool       `tfsdk:"enforce_secure_algorithms"`
 }
 
 func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
@@ -369,11 +370,12 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 				},
 			},
 		},
+		"enforce_secure_algorithms": types.BoolType,
 	}
 }
 
-func (f *baseUserFilters) toSFTPGo(ctx context.Context) (sdk.BaseUserFilters, diag.Diagnostics) {
-	filters := sdk.BaseUserFilters{
+func (f *baseUserFilters) toSFTPGo(ctx context.Context) (client.BaseUserFilters, diag.Diagnostics) {
+	filters := client.BaseUserFilters{
 		MaxUploadFileSize: f.MaxUploadFileSize.ValueInt64(),
 		TLSUsername:       sdk.TLSUsername(f.TLSUsername.ValueString()),
 		Hooks: sdk.HooksFilter{
@@ -392,6 +394,7 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (sdk.BaseUserFilters, di
 		MaxSharesExpiration:     int(f.MaxSharesExpiration.ValueInt64()),
 		PasswordExpiration:      int(f.PasswordExpiration.ValueInt64()),
 		PasswordStrength:        int(f.PasswordStrength.ValueInt64()),
+		EnforceSecureAlgorithms: f.EnforceSecureAlgorithms.ValueBool(),
 	}
 	for _, p := range f.FilePatterns {
 		patterns := sdk.PatternsFilter{
@@ -473,7 +476,7 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (sdk.BaseUserFilters, di
 	return filters, nil
 }
 
-func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserFilters) diag.Diagnostics {
+func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *client.BaseUserFilters) diag.Diagnostics {
 	allowedIP, diags := types.ListValueFrom(ctx, types.StringType, filters.AllowedIP)
 	if diags.HasError() {
 		return diags
@@ -547,7 +550,7 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *sdk.BaseUserF
 			To:        types.StringValue(period.To),
 		})
 	}
-
+	f.EnforceSecureAlgorithms = getOptionalBool(filters.EnforceSecureAlgorithms)
 	f.ExternalAuthCacheTime = getOptionalInt64(filters.ExternalAuthCacheTime)
 	f.StartDirectory = getOptionalString(filters.StartDirectory)
 	twoFactorProtos, diags := types.ListValueFrom(ctx, types.StringType, filters.TwoFactorAuthProtocols)
@@ -594,6 +597,7 @@ type userFilters struct {
 	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
 	RequirePasswordChange   types.Bool       `tfsdk:"require_password_change"`
 	AccessTime              []timePeriod     `tfsdk:"access_time"`
+	EnforceSecureAlgorithms types.Bool       `tfsdk:"enforce_secure_algorithms"`
 	AdditionalEmails        types.List       `tfsdk:"additional_emails"`
 }
 
@@ -644,6 +648,7 @@ func (f *userFilters) getBaseFilters() baseUserFilters {
 		PasswordExpiration:      f.PasswordExpiration,
 		PasswordStrength:        f.PasswordStrength,
 		AccessTime:              f.AccessTime,
+		EnforceSecureAlgorithms: f.EnforceSecureAlgorithms,
 	}
 }
 
@@ -673,10 +678,11 @@ func (f *userFilters) fromBaseFilters(filters *baseUserFilters) {
 	f.PasswordExpiration = filters.PasswordExpiration
 	f.PasswordStrength = filters.PasswordStrength
 	f.AccessTime = filters.AccessTime
+	f.EnforceSecureAlgorithms = filters.EnforceSecureAlgorithms
 }
 
-func (f *userFilters) toSFTPGo(ctx context.Context) (sdk.UserFilters, diag.Diagnostics) {
-	var filters sdk.UserFilters
+func (f *userFilters) toSFTPGo(ctx context.Context) (client.UserFilters, diag.Diagnostics) {
+	var filters client.UserFilters
 	baseFilters := f.getBaseFilters()
 	base, diags := baseFilters.toSFTPGo(ctx)
 	if diags.HasError() {
@@ -700,7 +706,7 @@ func (f *userFilters) toSFTPGo(ctx context.Context) (sdk.UserFilters, diag.Diagn
 	return filters, nil
 }
 
-func (f *userFilters) fromSFTPGo(ctx context.Context, filters *sdk.UserFilters) diag.Diagnostics {
+func (f *userFilters) fromSFTPGo(ctx context.Context, filters *client.UserFilters) diag.Diagnostics {
 	var base baseUserFilters
 	diags := base.fromSFTPGo(ctx, &filters.BaseUserFilters)
 	if diags.HasError() {
@@ -751,14 +757,15 @@ type s3FsConfig struct {
 }
 
 type gcsFsConfig struct {
-	Bucket               types.String `tfsdk:"bucket"`
-	KeyPrefix            types.String `tfsdk:"key_prefix"`
-	Credentials          types.String `tfsdk:"credentials"`
-	AutomaticCredentials types.Int64  `tfsdk:"automatic_credentials"`
-	StorageClass         types.String `tfsdk:"storage_class"`
-	ACL                  types.String `tfsdk:"acl"`
-	UploadPartSize       types.Int64  `tfsdk:"upload_part_size"`
-	UploadPartMaxTime    types.Int64  `tfsdk:"upload_part_max_time"`
+	Bucket                types.String `tfsdk:"bucket"`
+	KeyPrefix             types.String `tfsdk:"key_prefix"`
+	Credentials           types.String `tfsdk:"credentials"`
+	AutomaticCredentials  types.Int64  `tfsdk:"automatic_credentials"`
+	HierarchicalNamespace types.Int64  `tfsdk:"hns"`
+	StorageClass          types.String `tfsdk:"storage_class"`
+	ACL                   types.String `tfsdk:"acl"`
+	UploadPartSize        types.Int64  `tfsdk:"upload_part_size"`
+	UploadPartMaxTime     types.Int64  `tfsdk:"upload_part_max_time"`
 }
 
 type azBlobFsConfig struct {
@@ -793,6 +800,9 @@ type sftpFsConfig struct {
 	DisableCouncurrentReads types.Bool   `tfsdk:"disable_concurrent_reads"`
 	BufferSize              types.Int64  `tfsdk:"buffer_size"`
 	EqualityCheckMode       types.Int64  `tfsdk:"equality_check_mode"`
+	Socks5Proxy             types.String `tfsdk:"socks5_proxy"`
+	Socks5Username          types.String `tfsdk:"socks5_username"`
+	Socks5Password          types.String `tfsdk:"socks5_password"`
 }
 
 type httpFsConfig struct {
@@ -877,6 +887,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"key_prefix":            types.StringType,
 				"credentials":           types.StringType,
 				"automatic_credentials": types.Int64Type,
+				"hns":                   types.Int64Type,
 				"storage_class":         types.StringType,
 				"acl":                   types.StringType,
 				"upload_part_size":      types.Int64Type,
@@ -920,6 +931,9 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"disable_concurrent_reads": types.BoolType,
 				"buffer_size":              types.Int64Type,
 				"equality_check_mode":      types.Int64Type,
+				"socks5_proxy":             types.StringType,
+				"socks5_username":          types.StringType,
+				"socks5_password":          types.StringType,
 			},
 		},
 		"httpconfig": types.ObjectType{
@@ -935,9 +949,9 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 	}
 }
 
-func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnostics) {
+func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diagnostics) {
 	f.ensureNotNull()
-	fs := sdk.Filesystem{
+	fs := client.Filesystem{
 		Provider: sdk.FilesystemProvider(f.Provider.ValueInt64()),
 		OSConfig: sdk.OSFsConfig{
 			ReadBufferSize:  int(f.OSConfig.ReadBufferSize.ValueInt64()),
@@ -966,15 +980,16 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 			AccessSecret:   getSFTPGoSecret(f.S3Config.AccessSecret.ValueString()),
 			SSECustomerKey: getSFTPGoSecret(f.S3Config.SSECustomerKey.ValueString()),
 		},
-		GCSConfig: sdk.GCSFsConfig{
-			BaseGCSFsConfig: sdk.BaseGCSFsConfig{
-				Bucket:               f.GCSConfig.Bucket.ValueString(),
-				KeyPrefix:            f.GCSConfig.KeyPrefix.ValueString(),
-				AutomaticCredentials: int(f.GCSConfig.AutomaticCredentials.ValueInt64()),
-				StorageClass:         f.GCSConfig.StorageClass.ValueString(),
-				ACL:                  f.GCSConfig.ACL.ValueString(),
-				UploadPartSize:       f.GCSConfig.UploadPartSize.ValueInt64(),
-				UploadPartMaxTime:    int(f.GCSConfig.UploadPartMaxTime.ValueInt64()),
+		GCSConfig: client.GCSFsConfig{
+			BaseGCSFsConfig: client.BaseGCSFsConfig{
+				Bucket:                f.GCSConfig.Bucket.ValueString(),
+				KeyPrefix:             f.GCSConfig.KeyPrefix.ValueString(),
+				AutomaticCredentials:  int(f.GCSConfig.AutomaticCredentials.ValueInt64()),
+				HierarchicalNamespace: int(f.GCSConfig.HierarchicalNamespace.ValueInt64()),
+				StorageClass:          f.GCSConfig.StorageClass.ValueString(),
+				ACL:                   f.GCSConfig.ACL.ValueString(),
+				UploadPartSize:        f.GCSConfig.UploadPartSize.ValueInt64(),
+				UploadPartMaxTime:     int(f.GCSConfig.UploadPartMaxTime.ValueInt64()),
 			},
 			Credentials: getSFTPGoSecret(f.GCSConfig.Credentials.ValueString()),
 		},
@@ -1001,18 +1016,21 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 				WriteBufferSize: int(f.CryptConfig.WriteBufferSize.ValueInt64()),
 			},
 		},
-		SFTPConfig: sdk.SFTPFsConfig{
-			BaseSFTPFsConfig: sdk.BaseSFTPFsConfig{
+		SFTPConfig: client.SFTPFsConfig{
+			BaseSFTPFsConfig: client.BaseSFTPFsConfig{
 				Endpoint:                f.SFTPConfig.Endpoint.ValueString(),
 				Username:                f.SFTPConfig.Username.ValueString(),
 				Prefix:                  f.SFTPConfig.Prefix.ValueString(),
 				DisableCouncurrentReads: f.SFTPConfig.DisableCouncurrentReads.ValueBool(),
 				BufferSize:              f.SFTPConfig.BufferSize.ValueInt64(),
 				EqualityCheckMode:       int(f.SFTPConfig.EqualityCheckMode.ValueInt64()),
+				Socks5Proxy:             f.SFTPConfig.Socks5Proxy.ValueString(),
+				Socks5Username:          f.SFTPConfig.Socks5Username.ValueString(),
 			},
-			Password:      getSFTPGoSecret(f.SFTPConfig.Password.ValueString()),
-			PrivateKey:    getSFTPGoSecret(f.SFTPConfig.PrivateKey.ValueString()),
-			KeyPassphrase: getSFTPGoSecret(f.SFTPConfig.KeyPassphrase.ValueString()),
+			Password:       getSFTPGoSecret(f.SFTPConfig.Password.ValueString()),
+			PrivateKey:     getSFTPGoSecret(f.SFTPConfig.PrivateKey.ValueString()),
+			KeyPassphrase:  getSFTPGoSecret(f.SFTPConfig.KeyPassphrase.ValueString()),
+			Socks5Password: getSFTPGoSecret(f.SFTPConfig.Socks5Password.ValueString()),
 		},
 		HTTPConfig: sdk.HTTPFsConfig{
 			BaseHTTPFsConfig: sdk.BaseHTTPFsConfig{
@@ -1035,7 +1053,7 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (sdk.Filesystem, diag.Diagnos
 	return fs, nil
 }
 
-func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Diagnostics {
+func (f *filesystem) fromSFTPGo(ctx context.Context, fs *client.Filesystem) diag.Diagnostics {
 	f.Provider = types.Int64Value(int64(fs.Provider))
 	f.OSConfig = nil
 	f.S3Config = nil
@@ -1076,14 +1094,15 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 		}
 	case sdk.GCSFilesystemProvider:
 		f.GCSConfig = &gcsFsConfig{
-			Bucket:               getOptionalString(fs.GCSConfig.Bucket),
-			KeyPrefix:            getOptionalString(fs.GCSConfig.KeyPrefix),
-			Credentials:          getOptionalString(getSecretFromSFTPGo(fs.GCSConfig.Credentials)),
-			AutomaticCredentials: getOptionalInt64(int64(fs.GCSConfig.AutomaticCredentials)),
-			StorageClass:         getOptionalString(fs.GCSConfig.StorageClass),
-			ACL:                  getOptionalString(fs.GCSConfig.ACL),
-			UploadPartSize:       getOptionalInt64(fs.GCSConfig.UploadPartSize),
-			UploadPartMaxTime:    getOptionalInt64(int64(fs.GCSConfig.UploadPartMaxTime)),
+			Bucket:                getOptionalString(fs.GCSConfig.Bucket),
+			KeyPrefix:             getOptionalString(fs.GCSConfig.KeyPrefix),
+			Credentials:           getOptionalString(getSecretFromSFTPGo(fs.GCSConfig.Credentials)),
+			AutomaticCredentials:  getOptionalInt64(int64(fs.GCSConfig.AutomaticCredentials)),
+			HierarchicalNamespace: getOptionalInt64(int64(fs.GCSConfig.HierarchicalNamespace)),
+			StorageClass:          getOptionalString(fs.GCSConfig.StorageClass),
+			ACL:                   getOptionalString(fs.GCSConfig.ACL),
+			UploadPartSize:        getOptionalInt64(fs.GCSConfig.UploadPartSize),
+			UploadPartMaxTime:     getOptionalInt64(int64(fs.GCSConfig.UploadPartMaxTime)),
 		}
 	case sdk.AzureBlobFilesystemProvider:
 		f.AzBlobConfig = &azBlobFsConfig{
@@ -1117,6 +1136,9 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *sdk.Filesystem) diag.Di
 			DisableCouncurrentReads: getOptionalBool(fs.SFTPConfig.DisableCouncurrentReads),
 			BufferSize:              getOptionalInt64(fs.SFTPConfig.BufferSize),
 			EqualityCheckMode:       getOptionalInt64(int64(fs.SFTPConfig.EqualityCheckMode)),
+			Socks5Proxy:             getOptionalString(fs.SFTPConfig.Socks5Proxy),
+			Socks5Username:          getOptionalString(fs.SFTPConfig.Socks5Username),
+			Socks5Password:          getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.Socks5Password)),
 		}
 		fingerprints, diags := types.ListValueFrom(ctx, types.StringType, fs.SFTPConfig.Fingerprints)
 		if diags.HasError() {
@@ -1148,14 +1170,16 @@ type virtualFolderResourceModel struct {
 	FsConfig        types.Object `tfsdk:"filesystem"`
 }
 
-func (f *virtualFolderResourceModel) toSFTPGo(ctx context.Context) (*sdk.BaseVirtualFolder, diag.Diagnostics) {
-	folder := &sdk.BaseVirtualFolder{
-		Name:            f.Name.ValueString(),
-		MappedPath:      f.MappedPath.ValueString(),
-		Description:     f.Description.ValueString(),
-		UsedQuotaSize:   f.UsedQuotaSize.ValueInt64(),
-		UsedQuotaFiles:  int(f.UsedQuotaFiles.ValueInt64()),
-		LastQuotaUpdate: f.LastQuotaUpdate.ValueInt64(),
+func (f *virtualFolderResourceModel) toSFTPGo(ctx context.Context) (*client.BaseVirtualFolder, diag.Diagnostics) {
+	folder := &client.BaseVirtualFolder{
+		BaseVirtualFolder: sdk.BaseVirtualFolder{
+			Name:            f.Name.ValueString(),
+			MappedPath:      f.MappedPath.ValueString(),
+			Description:     f.Description.ValueString(),
+			UsedQuotaSize:   f.UsedQuotaSize.ValueInt64(),
+			UsedQuotaFiles:  int(f.UsedQuotaFiles.ValueInt64()),
+			LastQuotaUpdate: f.LastQuotaUpdate.ValueInt64(),
+		},
 	}
 	var fs filesystem
 	diags := f.FsConfig.As(ctx, &fs, basetypes.ObjectAsOptions{
@@ -1174,7 +1198,7 @@ func (f *virtualFolderResourceModel) toSFTPGo(ctx context.Context) (*sdk.BaseVir
 	return folder, nil
 }
 
-func (f *virtualFolderResourceModel) fromSFTPGo(ctx context.Context, folder *sdk.BaseVirtualFolder) diag.Diagnostics {
+func (f *virtualFolderResourceModel) fromSFTPGo(ctx context.Context, folder *client.BaseVirtualFolder) diag.Diagnostics {
 	f.Name = types.StringValue(folder.Name)
 	f.ID = f.Name
 	f.MappedPath = getOptionalString(folder.MappedPath)
@@ -1234,8 +1258,8 @@ func (f *virtualFolder) fromBaseFolder(folder *virtualFolderResourceModel) {
 	f.FsConfig = folder.FsConfig
 }
 
-func (f *virtualFolder) toSFTPGo(ctx context.Context) (sdk.VirtualFolder, diag.Diagnostics) {
-	folder := sdk.VirtualFolder{
+func (f *virtualFolder) toSFTPGo(ctx context.Context) (client.VirtualFolder, diag.Diagnostics) {
+	folder := client.VirtualFolder{
 		VirtualPath: f.VirtualPath.ValueString(),
 		QuotaSize:   f.QuotaSize.ValueInt64(),
 		QuotaFiles:  int(f.QuotaFiles.ValueInt64()),
@@ -1250,7 +1274,7 @@ func (f *virtualFolder) toSFTPGo(ctx context.Context) (sdk.VirtualFolder, diag.D
 	return folder, nil
 }
 
-func (f *virtualFolder) fromSFTPGo(ctx context.Context, folder *sdk.VirtualFolder) diag.Diagnostics {
+func (f *virtualFolder) fromSFTPGo(ctx context.Context, folder *client.VirtualFolder) diag.Diagnostics {
 	var base virtualFolderResourceModel
 	diags := base.fromSFTPGo(ctx, &folder.BaseVirtualFolder)
 	if diags.HasError() {
@@ -1333,8 +1357,8 @@ func (s *groupUserSettings) getTFAttributes() map[string]attr.Type {
 	}
 }
 
-func (s *groupUserSettings) toSFTPGo(ctx context.Context) (sdk.GroupUserSettings, diag.Diagnostics) {
-	settings := sdk.GroupUserSettings{
+func (s *groupUserSettings) toSFTPGo(ctx context.Context) (client.GroupUserSettings, diag.Diagnostics) {
+	settings := client.GroupUserSettings{
 		BaseGroupUserSettings: sdk.BaseGroupUserSettings{
 			HomeDir:              s.HomeDir.ValueString(),
 			MaxSessions:          int(s.MaxSessions.ValueInt64()),
@@ -1391,7 +1415,7 @@ func (s *groupUserSettings) toSFTPGo(ctx context.Context) (sdk.GroupUserSettings
 	return settings, nil
 }
 
-func (s *groupUserSettings) fromSFTPGo(ctx context.Context, settings *sdk.GroupUserSettings) diag.Diagnostics {
+func (s *groupUserSettings) fromSFTPGo(ctx context.Context, settings *client.GroupUserSettings) diag.Diagnostics {
 	s.HomeDir = getOptionalString(settings.HomeDir)
 	s.MaxSessions = getOptionalInt64(int64(settings.MaxSessions))
 	s.QuotaSize = getOptionalInt64(settings.QuotaSize)
@@ -1453,8 +1477,8 @@ type groupResourceModel struct {
 	VirtualFolders []virtualFolder `tfsdk:"virtual_folders"`
 }
 
-func (g *groupResourceModel) toSFTPGo(ctx context.Context) (*sdk.Group, diag.Diagnostics) {
-	group := &sdk.Group{
+func (g *groupResourceModel) toSFTPGo(ctx context.Context) (*client.Group, diag.Diagnostics) {
+	group := &client.Group{
 		BaseGroup: sdk.BaseGroup{
 			Name:        g.Name.ValueString(),
 			Description: g.Description.ValueString(),
@@ -1488,7 +1512,7 @@ func (g *groupResourceModel) toSFTPGo(ctx context.Context) (*sdk.Group, diag.Dia
 	return group, nil
 }
 
-func (g *groupResourceModel) fromSFTPGo(ctx context.Context, group *sdk.Group) diag.Diagnostics {
+func (g *groupResourceModel) fromSFTPGo(ctx context.Context, group *client.Group) diag.Diagnostics {
 	g.Name = types.StringValue(group.Name)
 	g.ID = g.Name
 	g.Description = getOptionalString(group.Description)

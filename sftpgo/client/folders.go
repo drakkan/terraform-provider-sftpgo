@@ -20,12 +20,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-
-	"github.com/sftpgo/sdk"
 )
 
 // GetFolders - Returns list of folders
-func (c *Client) GetFolders() ([]sdk.BaseVirtualFolder, error) {
+func (c *Client) GetFolders() ([]BaseVirtualFolder, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/dumpdata?output-data=1&scopes=folders", c.HostURL), nil)
 	if err != nil {
 		return nil, err
@@ -45,7 +43,7 @@ func (c *Client) GetFolders() ([]sdk.BaseVirtualFolder, error) {
 }
 
 // CreateFolder - creates a new folder
-func (c *Client) CreateFolder(folder sdk.BaseVirtualFolder) (*sdk.BaseVirtualFolder, error) {
+func (c *Client) CreateFolder(folder BaseVirtualFolder) (*BaseVirtualFolder, error) {
 	rb, err := json.Marshal(folder)
 	if err != nil {
 		return nil, err
@@ -61,13 +59,13 @@ func (c *Client) CreateFolder(folder sdk.BaseVirtualFolder) (*sdk.BaseVirtualFol
 		return nil, err
 	}
 
-	var newFolder sdk.BaseVirtualFolder
+	var newFolder BaseVirtualFolder
 	err = json.Unmarshal(body, &newFolder)
 	return &newFolder, err
 }
 
 // GetFolder - Returns a specifc folder
-func (c *Client) GetFolder(name string) (*sdk.BaseVirtualFolder, error) {
+func (c *Client) GetFolder(name string) (*BaseVirtualFolder, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/folders/%s?confidential_data=1", c.HostURL,
 		url.PathEscape(name)), nil)
 	if err != nil {
@@ -78,13 +76,13 @@ func (c *Client) GetFolder(name string) (*sdk.BaseVirtualFolder, error) {
 		return nil, err
 	}
 
-	var folder sdk.BaseVirtualFolder
+	var folder BaseVirtualFolder
 	err = json.Unmarshal(body, &folder)
 	return &folder, err
 }
 
 // UpdateFolder - Updates an existing folder
-func (c *Client) UpdateFolder(folder sdk.BaseVirtualFolder) error {
+func (c *Client) UpdateFolder(folder BaseVirtualFolder) error {
 	rb, err := json.Marshal(folder)
 	if err != nil {
 		return err

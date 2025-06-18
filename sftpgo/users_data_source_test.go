@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
@@ -57,44 +58,46 @@ func TestAccUsersDataSource(t *testing.T) {
 				},
 				Role: testRole.Name,
 			},
-			Filters: sdk.UserFilters{
-				BaseUserFilters: sdk.BaseUserFilters{
-					DeniedProtocols:  []string{"SSH"},
-					PasswordStrength: 75,
-					AccessTime: []sdk.TimePeriod{
-						{
-							DayOfWeek: 1,
-							From:      "12:03",
-							To:        "14:05",
-						},
-					},
+		},
+		Password: "Cheiha0ahy7Ieghatiet4phei",
+		FsConfig: client.Filesystem{
+			Provider: 6,
+			HTTPConfig: sdk.HTTPFsConfig{
+				BaseHTTPFsConfig: sdk.BaseHTTPFsConfig{
+					Endpoint: "http://127.0.0.1:8080",
 				},
-				RequirePasswordChange: true,
-			},
-			FsConfig: sdk.Filesystem{
-				Provider: 6,
-				HTTPConfig: sdk.HTTPFsConfig{
-					BaseHTTPFsConfig: sdk.BaseHTTPFsConfig{
-						Endpoint: "http://127.0.0.1:8080",
-					},
-					APIKey: kms.BaseSecret{
-						Status:  kms.SecretStatusPlain,
-						Payload: "api key",
-					},
-				},
-			},
-			VirtualFolders: []sdk.VirtualFolder{
-				{
-					BaseVirtualFolder: sdk.BaseVirtualFolder{
-						Name: testFolder.Name,
-					},
-					VirtualPath: "/vpath",
-					QuotaSize:   1000000,
-					QuotaFiles:  100,
+				APIKey: kms.BaseSecret{
+					Status:  kms.SecretStatusPlain,
+					Payload: "api key",
 				},
 			},
 		},
-		Password: "Cheiha0ahy7Ieghatiet4phei",
+		VirtualFolders: []client.VirtualFolder{
+			{
+				BaseVirtualFolder: client.BaseVirtualFolder{
+					BaseVirtualFolder: sdk.BaseVirtualFolder{
+						Name: testFolder.Name,
+					},
+				},
+				VirtualPath: "/vpath",
+				QuotaSize:   1000000,
+				QuotaFiles:  100,
+			},
+		},
+		Filters: client.UserFilters{
+			BaseUserFilters: client.BaseUserFilters{
+				DeniedProtocols:  []string{"SSH"},
+				PasswordStrength: 75,
+				AccessTime: []sdk.TimePeriod{
+					{
+						DayOfWeek: 1,
+						From:      "12:03",
+						To:        "14:05",
+					},
+				},
+			},
+			RequirePasswordChange: true,
+		},
 	}
 	_, err = c.CreateRole(testRole)
 	require.NoError(t, err)
@@ -165,6 +168,149 @@ func TestAccUsersDataSource(t *testing.T) {
 						fmt.Sprintf("%d", user.VirtualFolders[0].QuotaSize)),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.virtual_folders.0.quota_files",
 						fmt.Sprintf("%d", user.VirtualFolders[0].QuotaFiles)),
+					// Verify placeholder id attribute
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "id", placeholderID),
+				),
+			},
+		},
+	})
+}
+
+func TestAccEnterpriseUsersDataSource(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+	user1 := client.User{
+		User: sdk.User{
+			BaseUser: sdk.BaseUser{
+				Username:   "user1",
+				Status:     1,
+				Email:      "user1@sftpgo.com",
+				PublicKeys: []string{"ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEUWwDwEWhTbF0MqAsp/oXK1HR2cElhM8oo1uVmL3ZeDKDiTm4ljMr92wfTgIGDqIoxmVqgYIkAOAhuykAVWBzc= user@host"},
+				HomeDir:    filepath.Join(os.TempDir(), "user1"),
+				Permissions: map[string][]string{
+					"/": {"*"},
+				},
+			},
+		},
+		Password: "Cheiha0ahy7Ieghatiet4phei",
+		FsConfig: client.Filesystem{
+			Provider: sdk.SFTPFilesystemProvider,
+			SFTPConfig: client.SFTPFsConfig{
+				BaseSFTPFsConfig: client.BaseSFTPFsConfig{
+					Endpoint:       "127.0.0.1:2022",
+					Username:       "testuser",
+					Socks5Proxy:    "127.0.0.1:1080",
+					Socks5Username: "socks_user",
+				},
+				Password: kms.BaseSecret{
+					Status:  kms.SecretStatusPlain,
+					Payload: "sftppass",
+				},
+				Socks5Password: kms.BaseSecret{
+					Status:  kms.SecretStatusPlain,
+					Payload: "sockspass",
+				},
+			},
+		},
+		Filters: client.UserFilters{
+			BaseUserFilters: client.BaseUserFilters{
+				EnforceSecureAlgorithms: true,
+				WebClient: []string{"shares-require-email-auth",
+					"wopi-disabled", "rest-api-disabled", sdk.WebClientInfoChangeDisabled},
+			},
+		},
+	}
+
+	user2 := client.User{
+		User: sdk.User{
+			BaseUser: sdk.BaseUser{
+				Username: "user2",
+				Status:   1,
+				HomeDir:  filepath.Join(os.TempDir(), "user1"),
+				Permissions: map[string][]string{
+					"/": {"list", "download"},
+				},
+			},
+		},
+		FsConfig: client.Filesystem{
+			Provider: sdk.GCSFilesystemProvider,
+			GCSConfig: client.GCSFsConfig{
+				BaseGCSFsConfig: client.BaseGCSFsConfig{
+					Bucket:                "gcs_hns",
+					KeyPrefix:             "users/user2/",
+					AutomaticCredentials:  1,
+					HierarchicalNamespace: 1,
+				},
+			},
+		},
+	}
+
+	_, err = c.CreateUser(user1)
+	require.NoError(t, err)
+	_, err = c.CreateUser(user2)
+	require.NoError(t, err)
+
+	defer func() {
+		err = c.DeleteUser(user1.Username)
+		require.NoError(t, err)
+		err = c.DeleteUser(user2.Username)
+		require.NoError(t, err)
+	}()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Read testing
+			{
+				Config: `data "sftpgo_users" "test" {}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify number of users returned
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.#", "2"),
+					// Check the users fields
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.username", user1.Username),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.id", user1.Username),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.status", fmt.Sprintf("%d", user1.Status)),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.email", user1.Email),
+					resource.TestCheckResourceAttrSet("data.sftpgo_users.test", "users.0.password"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.public_keys.0", user1.PublicKeys[0]),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.home_dir", user1.HomeDir),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.permissions.%", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.permissions./", "*"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_users.test", "users.0.last_quota_update"),
+					resource.TestCheckResourceAttrSet("data.sftpgo_users.test", "users.0.created_at"),
+					resource.TestCheckResourceAttrSet("data.sftpgo_users.test", "users.0.updated_at"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.groups.#", "0"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.web_client.#", "4"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.web_client.0", "shares-require-email-auth"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.web_client.1", "wopi-disabled"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.web_client.2", "rest-api-disabled"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.web_client.3", sdk.WebClientInfoChangeDisabled),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.enforce_secure_algorithms", "true"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.provider", fmt.Sprintf("%d", user1.FsConfig.Provider)),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.endpoint", user1.FsConfig.SFTPConfig.Endpoint),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.username", user1.FsConfig.SFTPConfig.Username),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.socks5_proxy", user1.FsConfig.SFTPConfig.Socks5Proxy),
+					resource.TestCheckResourceAttrSet("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.socks5_password"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_users.test", "users.0.filesystem.osconfig"),
+					// Check user2
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.username", user2.Username),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.id", user2.Username),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.status", fmt.Sprintf("%d", user2.Status)),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.home_dir", user2.HomeDir),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.permissions.%", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.permissions./", "list,download"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.filesystem.provider", fmt.Sprintf("%d", user2.FsConfig.Provider)),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.filesystem.gcsconfig.bucket", user2.FsConfig.GCSConfig.Bucket),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.filesystem.gcsconfig.key_prefix", user2.FsConfig.GCSConfig.KeyPrefix),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.filesystem.gcsconfig.automatic_credentials", strconv.Itoa(user2.FsConfig.GCSConfig.AutomaticCredentials)),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.filesystem.gcsconfig.hns", strconv.Itoa(user2.FsConfig.GCSConfig.HierarchicalNamespace)),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "id", placeholderID),
 				),

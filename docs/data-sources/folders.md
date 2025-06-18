@@ -86,6 +86,7 @@ Read-Only:
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String)
 - `credentials` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `hns` (Number) If set to 1 Hierarchical namespace support is enabled for the bucket. Available in the Enterprise version.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
@@ -154,4 +155,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `socks5_password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Available in the Enterprise version.
+- `socks5_proxy` (String) The address of the SOCKS5 proxy server, including the hostname or IP and the port number. Available in the Enterprise version.
+- `socks5_username` (String) The optional SOCKS5 username. Available in the Enterprise version.
 - `username` (String)

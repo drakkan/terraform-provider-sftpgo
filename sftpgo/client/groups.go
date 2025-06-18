@@ -20,12 +20,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-
-	"github.com/sftpgo/sdk"
 )
 
 // GetGroups - Returns list of groups
-func (c *Client) GetGroups() ([]sdk.Group, error) {
+func (c *Client) GetGroups() ([]Group, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/dumpdata?output-data=1&scopes=groups", c.HostURL), nil)
 	if err != nil {
 		return nil, err
@@ -45,7 +43,7 @@ func (c *Client) GetGroups() ([]sdk.Group, error) {
 }
 
 // CreateGroup - creates a new group
-func (c *Client) CreateGroup(group sdk.Group) (*sdk.Group, error) {
+func (c *Client) CreateGroup(group Group) (*Group, error) {
 	rb, err := json.Marshal(group)
 	if err != nil {
 		return nil, err
@@ -61,13 +59,13 @@ func (c *Client) CreateGroup(group sdk.Group) (*sdk.Group, error) {
 		return nil, err
 	}
 
-	var newGroup sdk.Group
+	var newGroup Group
 	err = json.Unmarshal(body, &newGroup)
 	return &newGroup, err
 }
 
 // GetGroup - Returns a specifc group
-func (c *Client) GetGroup(name string) (*sdk.Group, error) {
+func (c *Client) GetGroup(name string) (*Group, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/api/v2/groups/%s?confidential_data=1", c.HostURL,
 		url.PathEscape(name)), nil)
 	if err != nil {
@@ -78,13 +76,13 @@ func (c *Client) GetGroup(name string) (*sdk.Group, error) {
 		return nil, err
 	}
 
-	var group sdk.Group
+	var group Group
 	err = json.Unmarshal(body, &group)
 	return &group, err
 }
 
 // UpdateGroup - Updates an existing group
-func (c *Client) UpdateGroup(group sdk.Group) error {
+func (c *Client) UpdateGroup(group Group) error {
 	rb, err := json.Marshal(group)
 	if err != nil {
 		return err

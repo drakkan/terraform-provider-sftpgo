@@ -391,3 +391,139 @@ func TestAccUserResource(t *testing.T) {
 		},
 	})
 }
+
+func TestAccEnterpriseUserResource(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: `
+					resource "sftpgo_user" "test" {
+  					  username = "test user"
+  					  status      = 1
+    				  password    = "secret pwd"
+                      home_dir    = "/tmp/testuser"
+    				  email       = "test@test.com"
+    				  permissions = {
+        				"/" = "*",
+    				  }
+    				  filesystem = {
+      					provider = 5
+      					sftpconfig = {
+        				  endpoint = "127.0.0.1:22"
+						  username = "root"
+						  password = "sftppwd"
+						  prefix = "/"
+						  equality_check_mode = 1
+						  socks5_proxy = "127.0.0.1:10080"
+						  socks5_username = "socksuser"
+						  socks5_password = "sockspwd"
+      				    }
+    				  }
+    				  filters = {
+      					web_client = ["shares-require-email-auth", "wopi-disabled", "rest-api-disabled"]
+    				  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.test", "username", "test user"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "id", "test user"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "status", "1"),
+					resource.TestCheckResourceAttrSet("sftpgo_user.test", "created_at"),
+					resource.TestCheckResourceAttrSet("sftpgo_user.test", "updated_at"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "password", "secret pwd"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "home_dir", "/tmp/testuser"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "email", "test@test.com"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./", "*"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.provider", "5"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.endpoint", "127.0.0.1:22"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.username", "root"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.password", "sftppwd"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.prefix", "/"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks5_proxy", "127.0.0.1:10080"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks5_username", "socksuser"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks5_password", "sockspwd"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.private_key"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.equality_check_mode", "1"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.gcsconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.osconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "description"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "additional_info"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.#", "3"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.0", "shares-require-email-auth"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.1", "wopi-disabled"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.2", "rest-api-disabled"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.enforce_secure_algorithms"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_user.test",
+				ImportState:       true,
+				ImportStateVerify: false, // SFTPGo will not return plain text password/secrets
+			},
+			// Update and Read testing
+			{
+				Config: `
+				resource "sftpgo_user" "test" {
+				  username = "test user"
+				  status      = 0
+				  home_dir    = "/tmp/testuser"
+				  additional_info = "info"
+				  permissions = {
+					"/" = "*",
+					"/p2" = "list,download"
+				  }
+				  filesystem = {
+					  provider = 2
+					  gcsconfig = {
+					    bucket = "gcs_hns"
+					    automatic_credentials = 1
+					    hns = 1
+			          }
+				  }
+				  filters = {
+					  web_client = ["write-disabled"]
+					  enforce_secure_algorithms = true
+				  }
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.test", "username", "test user"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "id", "test user"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "status", "0"),
+					resource.TestCheckResourceAttrSet("sftpgo_user.test", "created_at"),
+					resource.TestCheckResourceAttrSet("sftpgo_user.test", "updated_at"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "password"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "home_dir", "/tmp/testuser"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "email"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "2"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./", "*"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./p2", "list,download"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.provider", "2"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.osconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.s3config"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.gcsconfig.bucket", "gcs_hns"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.gcsconfig.automatic_credentials", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.gcsconfig.hns", "1"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "additional_info", "info"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "groups"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "virtual_folders"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.0", "write-disabled"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.enforce_secure_algorithms", "true"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}

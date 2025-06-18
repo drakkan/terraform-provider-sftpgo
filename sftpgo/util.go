@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -32,6 +33,7 @@ import (
 const (
 	computedSecretDescription = `SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".`
 	secretDescriptionGeneric  = `If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).`
+	enterpriseFeatureNote     = `Available in the Enterprise version.`
 )
 
 func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
@@ -150,6 +152,10 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					"automatic_credentials": schema.Int64Attribute{
 						Computed:    true,
 						Description: "If set to 1 SFTPGo will use credentials from the environment",
+					},
+					"hns": schema.Int64Attribute{
+						Computed:    true,
+						Description: "If set to 1 Hierarchical namespace support is enabled for the bucket. " + enterpriseFeatureNote,
 					},
 					"storage_class": schema.StringAttribute{
 						Computed: true,
@@ -274,6 +280,18 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					},
 					"equality_check_mode": schema.Int64Attribute{
 						Computed: true,
+					},
+					"socks5_proxy": schema.StringAttribute{
+						Computed:    true,
+						Description: "The address of the SOCKS5 proxy server, including the hostname or IP and the port number. " + enterpriseFeatureNote,
+					},
+					"socks5_username": schema.StringAttribute{
+						Computed:    true,
+						Description: "The optional SOCKS5 username. " + enterpriseFeatureNote,
+					},
+					"socks5_password": schema.StringAttribute{
+						Computed:    true,
+						Description: computedSecretDescription + " " + enterpriseFeatureNote,
 					},
 				},
 			},
@@ -431,6 +449,10 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"automatic_credentials": schema.Int64Attribute{
 						Optional: true,
 					},
+					"hns": schema.Int64Attribute{
+						Optional:    true,
+						Description: "Set to 1 if Hierarchical namespace is enabled for the bucket. " + enterpriseFeatureNote,
+					},
 					"key_prefix": schema.StringAttribute{
 						Optional:    true,
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"`,
@@ -577,6 +599,19 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"equality_check_mode": schema.Int64Attribute{
 						Optional:    true,
 						Description: "Defines how to check if this config points to the same server as another config. By default both the endpoint and the username must match. 1 means that only the endpoint must match. If different configs point to the same server the renaming between the fs configs is allowed.",
+					},
+					"socks5_proxy": schema.StringAttribute{
+						Optional:    true,
+						Description: "The address of the SOCKS5 proxy server, including the hostname or IP and the port number. " + enterpriseFeatureNote,
+					},
+					"socks5_username": schema.StringAttribute{
+						Optional:    true,
+						Description: "The optional SOCKS5 username. " + enterpriseFeatureNote,
+					},
+					"socks5_password": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text SOCKS5 password. " + secretDescriptionGeneric + " " + enterpriseFeatureNote,
 					},
 				},
 			},
@@ -876,6 +911,10 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 					},
 				},
 			},
+			"enforce_secure_algorithms": schema.BoolAttribute{
+				Computed:    true,
+				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote,
+			},
 		},
 	}
 	if onlyBase {
@@ -988,10 +1027,11 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 			"web_client": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-				Description: fmt.Sprintf("Web Client/user REST API restrictions. Valid values: %s", strings.Join(sdk.WebClientOptions, ", ")),
+				Description: fmt.Sprintf("Web Client/user REST API restrictions. Valid values: %s. Only available in the Enterprise version: %s",
+					strings.Join(client.WebClientOptions, ", "), strings.Join(client.EnterpriseWebClientOptions, ", ")),
 				Validators: []validator.List{
 					listvalidator.UniqueValues(),
-					listvalidator.ValueStringsAre(stringvalidator.OneOf(sdk.WebClientOptions...)),
+					listvalidator.ValueStringsAre(stringvalidator.OneOf(client.WebClientOptions...)),
 				},
 			},
 			"allow_api_key_auth": schema.BoolAttribute{
@@ -1089,6 +1129,10 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 					},
 				},
 			},
+			"enforce_secure_algorithms": schema.BoolAttribute{
+				Optional:    true,
+				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote,
+			},
 		},
 	}
 	if onlyBase {
@@ -1142,6 +1186,7 @@ func preserveFsConfigPlanFields(ctx context.Context, fsPlan, fsState filesystem)
 			fsState.SFTPConfig.Password = fsPlan.SFTPConfig.Password
 			fsState.SFTPConfig.PrivateKey = fsPlan.SFTPConfig.PrivateKey
 			fsState.SFTPConfig.KeyPassphrase = fsPlan.SFTPConfig.KeyPassphrase
+			fsState.SFTPConfig.Socks5Password = fsPlan.SFTPConfig.Socks5Password
 		}
 	case sdk.HTTPFilesystemProvider:
 		if fsPlan.HTTPConfig != nil {

@@ -20,8 +20,6 @@ import (
 	"net/http"
 	"sync"
 	"time"
-
-	"github.com/sftpgo/sdk"
 )
 
 // HostURL - Default SFTPGo URL
@@ -34,8 +32,13 @@ type Client struct {
 	APIKey       string
 	Auth         AuthStruct
 	Headers      []KeyValue
+	Edition      int64
 	mu           sync.RWMutex
 	authResponse *AuthResponse
+}
+
+func (c *Client) IsEnterpriseEdition() bool {
+	return c.Edition == 1
 }
 
 func (c *Client) setAuthResponse(ar *AuthResponse) {
@@ -73,40 +76,41 @@ type AuthResponse struct {
 }
 
 type backupData struct {
-	Users        []User                  `json:"users"`
-	Groups       []sdk.Group             `json:"groups"`
-	Folders      []sdk.BaseVirtualFolder `json:"folders"`
-	Admins       []Admin                 `json:"admins"`
-	EventActions []BaseEventAction       `json:"event_actions"`
-	Version      int                     `json:"version"`
+	Users        []User              `json:"users"`
+	Groups       []Group             `json:"groups"`
+	Folders      []BaseVirtualFolder `json:"folders"`
+	Admins       []Admin             `json:"admins"`
+	EventActions []BaseEventAction   `json:"event_actions"`
+	Version      int                 `json:"version"`
 }
 
 // NewClient return an SFTPGo API client
-func NewClient(host, username, password, apiKey *string, headers []KeyValue) (*Client, error) {
+func NewClient(host, username, password, apiKey string, headers []KeyValue, edition int64) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 20 * time.Second},
 		// Default SFTPGo URL
 		HostURL: HostURL,
 		Headers: headers,
+		Edition: edition,
 	}
 
-	if host != nil {
-		c.HostURL = *host
+	if host != "" {
+		c.HostURL = host
 	}
 
-	if getStringFromPointer(apiKey) != "" {
-		c.APIKey = *apiKey
+	if apiKey != "" {
+		c.APIKey = apiKey
 		return &c, nil
 	}
 
 	// If username or password not provided, return empty client
-	if getStringFromPointer(username) == "" || getStringFromPointer(password) == "" {
+	if username == "" || password == "" {
 		return nil, fmt.Errorf("define username and password")
 	}
 
 	c.Auth = AuthStruct{
-		Username: *username,
-		Password: *password,
+		Username: username,
+		Password: password,
 	}
 
 	return &c, nil
@@ -166,11 +170,4 @@ func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, e
 	}
 
 	return body, err
-}
-
-func getStringFromPointer(val *string) string {
-	if val == nil {
-		return ""
-	}
-	return *val
 }

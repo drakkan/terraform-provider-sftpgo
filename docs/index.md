@@ -27,6 +27,7 @@ provider "sftpgo" {
 ### Optional
 
 - `api_key` (String, Sensitive) SFTPGo API key. May also be provided via SFTPGO_API_KEY environment variable. You must provide an API key or username and password. If both an API key and username and password are provided, the API key will be used.
+- `edition` (Number) SFTPGo edition. 0 = Open Source, 1 = Enterprise
 - `headers` (Attributes List) Headers to add to the HTTP request. (see [below for nested schema](#nestedatt--headers))
 - `host` (String) URI for SFTPGo API. May also be provided via SFTPGO_HOST environment variable.
 - `password` (String, Sensitive) Password for SFTPGo API. May also be provided via SFTPGO_PASSWORD environment variable.

@@ -104,6 +104,7 @@ Read-Only:
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String)
 - `credentials` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `hns` (Number) If set to 1 Hierarchical namespace support is enabled for the bucket. Available in the Enterprise version.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
@@ -172,6 +173,9 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `socks5_password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Available in the Enterprise version.
+- `socks5_proxy` (String) The address of the SOCKS5 proxy server, including the hostname or IP and the port number. Available in the Enterprise version.
+- `socks5_username` (String) The optional SOCKS5 username. Available in the Enterprise version.
 - `username` (String)
 
 
@@ -191,6 +195,7 @@ Read-Only:
 - `denied_login_methods` (List of String) Disabled login methods.
 - `denied_protocols` (List of String) Disabled protocols.
 - `disable_fs_checks` (Boolean) Disable checks for existence and automatic creation of home directory and virtual folders after user login.
+- `enforce_secure_algorithms` (Boolean) If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. Available in the Enterprise version.
 - `external_auth_cache_time` (Number) Defines the cache time, in seconds, for users authenticated using an external auth hook. Not set means no cache.
 - `external_auth_disabled` (Boolean) If set, external auth hook will not be executed.
 - `file_patterns` (Attributes List) Filters based on shell patterns. (see [below for nested schema](#nestedatt--groups--user_settings--filters--file_patterns))
@@ -308,6 +313,7 @@ Read-Only:
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String)
 - `credentials` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `hns` (Number) If set to 1 Hierarchical namespace support is enabled for the bucket. Available in the Enterprise version.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
@@ -376,4 +382,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `socks5_password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Available in the Enterprise version.
+- `socks5_proxy` (String) The address of the SOCKS5 proxy server, including the hostname or IP and the port number. Available in the Enterprise version.
+- `socks5_username` (String) The optional SOCKS5 username. Available in the Enterprise version.
 - `username` (String)

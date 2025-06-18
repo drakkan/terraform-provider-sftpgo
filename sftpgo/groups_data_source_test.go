@@ -19,6 +19,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/sftpgo/sdk"
 	"github.com/sftpgo/sdk/kms"
@@ -26,26 +27,19 @@ import (
 )
 
 var (
-	testGroup = sdk.Group{
+	testGroup = client.Group{
 		BaseGroup: sdk.BaseGroup{
 			Name: "test group",
 		},
-		UserSettings: sdk.GroupUserSettings{
+		UserSettings: client.GroupUserSettings{
 			BaseGroupUserSettings: sdk.BaseGroupUserSettings{
 				Permissions: map[string][]string{
 					"/":   {"*"},
 					"/p1": {"list", "download"},
 				},
 				ExpiresIn: 10,
-				Filters: sdk.BaseUserFilters{
-					AllowedIP:         []string{"172.16.0.0/16"},
-					MaxUploadFileSize: 10000000,
-					Hooks: sdk.HooksFilter{
-						ExternalAuthDisabled: true,
-					},
-				},
 			},
-			FsConfig: sdk.Filesystem{
+			FsConfig: client.Filesystem{
 				Provider: 4,
 				CryptConfig: sdk.CryptFsConfig{
 					Passphrase: kms.BaseSecret{
@@ -58,11 +52,20 @@ var (
 					},
 				},
 			},
+			Filters: client.BaseUserFilters{
+				AllowedIP:         []string{"172.16.0.0/16"},
+				MaxUploadFileSize: 10000000,
+				Hooks: sdk.HooksFilter{
+					ExternalAuthDisabled: true,
+				},
+			},
 		},
-		VirtualFolders: []sdk.VirtualFolder{
+		VirtualFolders: []client.VirtualFolder{
 			{
-				BaseVirtualFolder: sdk.BaseVirtualFolder{
-					Name: testFolder.Name,
+				BaseVirtualFolder: client.BaseVirtualFolder{
+					BaseVirtualFolder: sdk.BaseVirtualFolder{
+						Name: testFolder.Name,
+					},
 				},
 				VirtualPath: "/vpath",
 				QuotaSize:   -1,
