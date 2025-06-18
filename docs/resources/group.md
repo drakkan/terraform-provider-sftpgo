@@ -111,7 +111,7 @@ Optional:
 - `acl` (String) The ACL to apply to uploaded objects. Not set means the bucket default.
 - `automatic_credentials` (Number)
 - `credentials` (String, Sensitive) Plain text credentials. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
-- `hns` (Number) Set to 1 if Hierarchical namespace is enabled for the bucket. Available in the Enterprise version.
+- `hns` (Number) Set to 1 if Hierarchical namespace is enabled for the bucket. Available in the Enterprise edition.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"
 - `storage_class` (String) The storage class to use when storing objects. Leave not set for default.
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
@@ -190,9 +190,9 @@ Optional:
 - `key_passphrase` (String, Sensitive) Plain text passphrase for the private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `private_key` (String, Sensitive) Plain text private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
-- `socks5_password` (String, Sensitive) Plain text SOCKS5 password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Available in the Enterprise version.
-- `socks5_proxy` (String) The address of the SOCKS5 proxy server, including the hostname or IP and the port number. Available in the Enterprise version.
-- `socks5_username` (String) The optional SOCKS5 username. Available in the Enterprise version.
+- `socks5_password` (String, Sensitive) Plain text SOCKS5 password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Available in the Enterprise edition.
+- `socks5_proxy` (String) The address of the SOCKS5 proxy server, including the hostname or IP and the port number. Available in the Enterprise edition.
+- `socks5_username` (String) The optional SOCKS5 username. Available in the Enterprise edition.
 
 
 
@@ -211,7 +211,7 @@ Optional:
 - `denied_login_methods` (List of String) Disabled login methods. Valid values: "publickey", "password", "password-over-SSH", "keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "TLSCertificate", "TLSCertificate+password"
 - `denied_protocols` (List of String) Disabled protocols. Valid values: SSH, FTP, DAV, HTTP
 - `disable_fs_checks` (Boolean) Disable checks for existence and automatic creation of home directory and virtual folders after user login.
-- `enforce_secure_algorithms` (Boolean) If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. Available in the Enterprise version.
+- `enforce_secure_algorithms` (Boolean) If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. Available in the Enterprise edition.
 - `external_auth_cache_time` (Number) Defines the cache time, in seconds, for users authenticated using an external auth hook. Not set means no cache.
 - `external_auth_disabled` (Boolean) If set, external auth hook will not be executed.
 - `file_patterns` (Attributes List) (see [below for nested schema](#nestedatt--user_settings--filters--file_patterns))
@@ -341,7 +341,7 @@ Read-Only:
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String)
 - `credentials` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
-- `hns` (Number) If set to 1 Hierarchical namespace support is enabled for the bucket. Available in the Enterprise version.
+- `hns` (Number) 1 if Hierarchical namespace support is enabled for the bucket. Available in the Enterprise edition.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
@@ -410,7 +410,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
-- `socks5_password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Available in the Enterprise version.
-- `socks5_proxy` (String) The address of the SOCKS5 proxy server, including the hostname or IP and the port number. Available in the Enterprise version.
-- `socks5_username` (String) The optional SOCKS5 username. Available in the Enterprise version.
+- `socks5_password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Available in the Enterprise edition.
+- `socks5_proxy` (String) The address of the SOCKS5 proxy server, including the hostname or IP and the port number. Available in the Enterprise edition.
+- `socks5_username` (String) The optional SOCKS5 username. Available in the Enterprise edition.
 - `username` (String)

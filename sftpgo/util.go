@@ -33,7 +33,7 @@ import (
 const (
 	computedSecretDescription = `SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".`
 	secretDescriptionGeneric  = `If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).`
-	enterpriseFeatureNote     = `Available in the Enterprise version.`
+	enterpriseFeatureNote     = `Available in the Enterprise edition.`
 )
 
 func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
@@ -155,7 +155,7 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					},
 					"hns": schema.Int64Attribute{
 						Computed:    true,
-						Description: "If set to 1 Hierarchical namespace support is enabled for the bucket. " + enterpriseFeatureNote,
+						Description: "1 if Hierarchical namespace support is enabled for the bucket. " + enterpriseFeatureNote,
 					},
 					"storage_class": schema.StringAttribute{
 						Computed: true,
