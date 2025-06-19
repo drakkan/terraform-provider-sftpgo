@@ -87,9 +87,12 @@ Read-Only:
 - `copy` (Attributes List) Paths to copy. The key is the source path, the value is the target. (see [below for nested schema](#nestedatt--actions--options--fs_config--copy))
 - `deletes` (List of String) Paths to delete.
 - `exist` (List of String) Paths to check for existence.
+- `folder` (String) Available in the Enterprise edition.
 - `mkdirs` (List of String) Directories paths to create.
+- `pgp` (Attributes) Configuration for PGP actions. Available in the Enterprise edition. (see [below for nested schema](#nestedatt--actions--options--fs_config--pgp))
 - `renames` (Attributes List) Paths to rename. The key is the source path, the value is the target. (see [below for nested schema](#nestedatt--actions--options--fs_config--renames))
-- `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy.
+- `target_folder` (String) Available in the Enterprise edition.
+- `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy. 7 = PGP (Available in the Enterprise edition.)
 
 <a id="nestedatt--actions--options--fs_config--compress"></a>
 ### Nested Schema for `actions.options.fs_config.compress`
@@ -107,6 +110,29 @@ Read-Only:
 
 - `key` (String)
 - `value` (String)
+
+
+<a id="nestedatt--actions--options--fs_config--pgp"></a>
+### Nested Schema for `actions.options.fs_config.pgp`
+
+Read-Only:
+
+- `mode` (Number) 1 = Encrypt, 2 = Decrypt.
+- `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `paths` (Attributes List) Paths to encrypt or decrypt. (see [below for nested schema](#nestedatt--actions--options--fs_config--pgp--paths))
+- `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `profile` (Number) 0 = Default, 1 = RFC 4880, 2 = RFC 9580. Don't set to use the default.
+- `public_key` (String)
+
+<a id="nestedatt--actions--options--fs_config--pgp--paths"></a>
+### Nested Schema for `actions.options.fs_config.pgp.paths`
+
+Read-Only:
+
+- `key` (String)
+- `value` (String)
+
 
 
 <a id="nestedatt--actions--options--fs_config--renames"></a>

@@ -1973,14 +1973,27 @@ type eventActionFsCompress struct {
 	Paths types.List   `tfsdk:"paths"`
 }
 
+type eventActionPGPConfig struct {
+	Mode       types.Int64  `tfsdk:"mode"`
+	Profile    types.Int64  `tfsdk:"profile"`
+	Paths      []keyValue   `tfsdk:"paths"`
+	Password   types.String `tfsdk:"password"`
+	PrivateKey types.String `tfsdk:"private_key"`
+	Passphrase types.String `tfsdk:"passphrase"`
+	PublicKey  types.String `tfsdk:"public_key"`
+}
+
 type eventActionFilesystemConfig struct {
-	Type     types.Int64            `tfsdk:"type"`
-	Renames  []renameConfig         `tfsdk:"renames"`
-	MkDirs   types.List             `tfsdk:"mkdirs"`
-	Deletes  types.List             `tfsdk:"deletes"`
-	Exist    types.List             `tfsdk:"exist"`
-	Copy     []keyValue             `tfsdk:"copy"`
-	Compress *eventActionFsCompress `tfsdk:"compress"`
+	Type         types.Int64            `tfsdk:"type"`
+	Renames      []renameConfig         `tfsdk:"renames"`
+	MkDirs       types.List             `tfsdk:"mkdirs"`
+	Deletes      types.List             `tfsdk:"deletes"`
+	Exist        types.List             `tfsdk:"exist"`
+	Copy         []keyValue             `tfsdk:"copy"`
+	Compress     *eventActionFsCompress `tfsdk:"compress"`
+	PGP          *eventActionPGPConfig  `tfsdk:"pgp"`
+	Folder       types.String           `tfsdk:"folder"`
+	TargetFolder types.String           `tfsdk:"target_folder"`
 }
 
 type eventActionPasswordExpiration struct {
@@ -2027,6 +2040,9 @@ func (o *eventActionOptions) ensureNotNull() {
 	}
 	if o.FsConfig.Compress == nil {
 		o.FsConfig.Compress = &eventActionFsCompress{}
+	}
+	if o.FsConfig.PGP == nil {
+		o.FsConfig.PGP = &eventActionPGPConfig{}
 	}
 	if o.PwdExpirationConfig == nil {
 		o.PwdExpirationConfig = &eventActionPasswordExpiration{}
@@ -2158,6 +2174,23 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 						},
 					},
 				},
+				"pgp": types.ObjectType{
+					AttrTypes: map[string]attr.Type{
+						"mode":    types.Int64Type,
+						"profile": types.Int64Type,
+						"paths": types.ListType{
+							ElemType: types.ObjectType{
+								AttrTypes: kv.getTFAttributes(),
+							},
+						},
+						"password":    types.StringType,
+						"private_key": types.StringType,
+						"passphrase":  types.StringType,
+						"public_key":  types.StringType,
+					},
+				},
+				"folder":        types.StringType,
+				"target_folder": types.StringType,
 			},
 		},
 		"pwd_expiration_config": types.ObjectType{
@@ -2207,6 +2240,16 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			Compress: client.EventActionFsCompress{
 				Name: o.FsConfig.Compress.Name.ValueString(),
 			},
+			PGP: client.EventActionPGP{
+				Mode:       int(o.FsConfig.PGP.Mode.ValueInt64()),
+				Profile:    int(o.FsConfig.PGP.Profile.ValueInt64()),
+				Password:   getSFTPGoSecret(o.FsConfig.PGP.Password.ValueString()),
+				PrivateKey: getSFTPGoSecret(o.FsConfig.PGP.PrivateKey.ValueString()),
+				Passphrase: getSFTPGoSecret(o.FsConfig.PGP.Passphrase.ValueString()),
+				PublicKey:  o.FsConfig.PGP.PublicKey.ValueString(),
+			},
+			Folder:       o.FsConfig.Folder.ValueString(),
+			TargetFolder: o.FsConfig.TargetFolder.ValueString(),
 		},
 		PwdExpirationConfig: client.EventActionPasswordExpiration{
 			Threshold: int(o.PwdExpirationConfig.Threshold.ValueInt64()),
@@ -2329,6 +2372,12 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			return options, diags
 		}
 	}
+	for _, v := range o.FsConfig.PGP.Paths {
+		options.FsConfig.PGP.Paths = append(options.FsConfig.PGP.Paths, client.KeyValue{
+			Key:   v.Key.ValueString(),
+			Value: v.Value.ValueString(),
+		})
+	}
 
 	return options, nil
 }
@@ -2429,10 +2478,12 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 		}
 	case client.ActionTypeFilesystem:
 		o.FsConfig = &eventActionFilesystemConfig{
-			Type:    types.Int64Value(int64(action.Options.FsConfig.Type)),
-			MkDirs:  types.ListNull(types.StringType),
-			Deletes: types.ListNull(types.StringType),
-			Exist:   types.ListNull(types.StringType),
+			Type:         types.Int64Value(int64(action.Options.FsConfig.Type)),
+			MkDirs:       types.ListNull(types.StringType),
+			Deletes:      types.ListNull(types.StringType),
+			Exist:        types.ListNull(types.StringType),
+			Folder:       getOptionalString(action.Options.FsConfig.Folder),
+			TargetFolder: getOptionalString(action.Options.FsConfig.TargetFolder),
 		}
 
 		switch action.Options.FsConfig.Type {
@@ -2474,6 +2525,21 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 		case client.FilesystemActionCopy:
 			for _, v := range action.Options.FsConfig.Copy {
 				o.FsConfig.Copy = append(o.FsConfig.Copy, keyValue{
+					Key:   types.StringValue(v.Key),
+					Value: types.StringValue(v.Value),
+				})
+			}
+		case client.FilesystemActionPGP:
+			o.FsConfig.PGP = &eventActionPGPConfig{
+				Mode:       types.Int64Value(int64(action.Options.FsConfig.PGP.Mode)),
+				Profile:    getOptionalInt64(int64(action.Options.FsConfig.PGP.Profile)),
+				Password:   getOptionalString(getSecretFromSFTPGo(action.Options.FsConfig.PGP.Password)),
+				PrivateKey: getOptionalString(getSecretFromSFTPGo(action.Options.FsConfig.PGP.PrivateKey)),
+				Passphrase: getOptionalString(getSecretFromSFTPGo(action.Options.FsConfig.PGP.Passphrase)),
+				PublicKey:  getOptionalString(action.Options.FsConfig.PGP.PublicKey),
+			}
+			for _, v := range action.Options.FsConfig.PGP.Paths {
+				o.FsConfig.PGP.Paths = append(o.FsConfig.PGP.Paths, keyValue{
 					Key:   types.StringValue(v.Key),
 					Value: types.StringValue(v.Value),
 				})

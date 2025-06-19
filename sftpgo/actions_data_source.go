@@ -264,7 +264,7 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 									Attributes: map[string]schema.Attribute{
 										"type": schema.Int64Attribute{
 											Computed:    true,
-											Description: `1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy.`,
+											Description: `1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy. 7 = PGP (` + enterpriseFeatureNote + `)`,
 										},
 										"renames": schema.ListNestedAttribute{
 											Computed:    true,
@@ -327,6 +327,57 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 													Description: "Paths to include in the compressed archive.",
 												},
 											},
+										},
+										"pgp": schema.SingleNestedAttribute{
+											Computed:    true,
+											Description: "Configuration for PGP actions. " + enterpriseFeatureNote,
+											Attributes: map[string]schema.Attribute{
+												"mode": schema.Int64Attribute{
+													Computed:    true,
+													Description: `1 = Encrypt, 2 = Decrypt.`,
+												},
+												"profile": schema.Int64Attribute{
+													Computed:    true,
+													Description: `0 = Default, 1 = RFC 4880, 2 = RFC 9580. Don't set to use the default.`,
+												},
+												"paths": schema.ListNestedAttribute{
+													Computed:    true,
+													Description: "Paths to encrypt or decrypt.",
+													NestedObject: schema.NestedAttributeObject{
+														Attributes: map[string]schema.Attribute{
+															"key": schema.StringAttribute{
+																Computed: true,
+															},
+															"value": schema.StringAttribute{
+																Computed: true,
+															},
+														},
+													},
+												},
+												"password": schema.StringAttribute{
+													Computed:    true,
+													Description: computedSecretDescription,
+												},
+												"private_key": schema.StringAttribute{
+													Computed:    true,
+													Description: computedSecretDescription,
+												},
+												"passphrase": schema.StringAttribute{
+													Computed:    true,
+													Description: computedSecretDescription,
+												},
+												"public_key": schema.StringAttribute{
+													Computed: true,
+												},
+											},
+										},
+										"folder": schema.StringAttribute{
+											Computed:    true,
+											Description: enterpriseFeatureNote,
+										},
+										"target_folder": schema.StringAttribute{
+											Computed:    true,
+											Description: enterpriseFeatureNote,
 										},
 									},
 								},

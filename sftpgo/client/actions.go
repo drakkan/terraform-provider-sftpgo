@@ -50,6 +50,7 @@ const (
 	FilesystemActionExist
 	FilesystemActionCompress
 	FilesystemActionCopy
+	FilesystemActionPGP // Enterprise
 )
 
 // KeyValue defines a key/value pair
@@ -117,6 +118,18 @@ type EventActionDataRetentionConfig struct {
 	Folders []FolderRetention `json:"folders,omitempty"`
 }
 
+type EventActionPGP struct {
+	// 1 Encrypt, 2 Decrypt
+	Mode int `json:"mode,omitempty"`
+	// 0 Default, 1 RFC 4880, 2 RFC 9580
+	Profile    int            `json:"profile,omitempty"`
+	Paths      []KeyValue     `json:"paths,omitempty"`
+	Password   kms.BaseSecret `json:"password,omitempty"`
+	PrivateKey kms.BaseSecret `json:"private_key,omitempty"`
+	Passphrase kms.BaseSecret `json:"passphrase,omitempty"`
+	PublicKey  string         `json:"public_key,omitempty"`
+}
+
 // EventActionFsCompress defines the configuration for the compress filesystem action
 type EventActionFsCompress struct {
 	// Archive path
@@ -150,6 +163,10 @@ type EventActionFilesystemConfig struct {
 	Copy []KeyValue `json:"copy,omitempty"`
 	// paths to compress and archive name
 	Compress EventActionFsCompress `json:"compress"`
+	// PGP encryption or decryption
+	PGP          EventActionPGP `json:"pgp"`
+	Folder       string         `json:"folder,omitempty"`
+	TargetFolder string         `json:"target_folder,omitempty"`
 }
 
 // EventActionPasswordExpiration defines the configuration for password expiration actions

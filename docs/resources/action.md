@@ -87,7 +87,7 @@ Optional:
 
 Required:
 
-- `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy.
+- `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy. 7 = PGP (Available in the Enterprise edition.)
 
 Optional:
 
@@ -95,8 +95,11 @@ Optional:
 - `copy` (Attributes List) Paths to copy. The key is the source path, the value is the target. (see [below for nested schema](#nestedatt--options--fs_config--copy))
 - `deletes` (List of String) Paths to delete.
 - `exist` (List of String) Paths to check for existence.
+- `folder` (String) Actions triggered by filesystem events, such as uploads or downloads, use the filesystem associated with the user. By specifying a folder, you can control which filesystem is used. This is especially useful for events that aren't tied to a user, such as scheduled tasks and advanced workflows. Available in the Enterprise edition.
 - `mkdirs` (List of String) Directories paths to create.
+- `pgp` (Attributes) Configuration for PGP actions. Either a password or a key pair is required. For encryption, the public key is required, and the private, if provided, will be used for signing. For decryption, the private key is required, and the public key, if provided, will be used for signature verification. Available in the Enterprise edition. (see [below for nested schema](#nestedatt--options--fs_config--pgp))
 - `renames` (Attributes List) Paths to rename. The key is the source path, the value is the target. (see [below for nested schema](#nestedatt--options--fs_config--renames))
+- `target_folder` (String) By specifying a target folder, you can use a different filesystem for target paths than the one associated with the user who triggered the action. This is useful for moving files to another storage backend, such as a different S3 bucket or an external SFTP server, accessing restricted areas of the same storage backend, supporting scheduled actions, or enabling more advanced workflows. Available in the Enterprise edition.
 
 <a id="nestedatt--options--fs_config--compress"></a>
 ### Nested Schema for `options.fs_config.compress`
@@ -114,6 +117,32 @@ Required:
 
 - `key` (String)
 - `value` (String)
+
+
+<a id="nestedatt--options--fs_config--pgp"></a>
+### Nested Schema for `options.fs_config.pgp`
+
+Required:
+
+- `mode` (Number) 1 = Encrypt, 2 = Decrypt.
+- `paths` (Attributes List) Paths to encrypt or decrypt. (see [below for nested schema](#nestedatt--options--fs_config--pgp--paths))
+
+Optional:
+
+- `passphrase` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `private_key` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `profile` (Number) Algorithms to use. 0 = Default (widely implemented algorithms), 1 = RFC 4880, 2 = RFC 9580. Don't set to use the default.
+- `public_key` (String)
+
+<a id="nestedatt--options--fs_config--pgp--paths"></a>
+### Nested Schema for `options.fs_config.pgp.paths`
+
+Required:
+
+- `key` (String)
+- `value` (String)
+
 
 
 <a id="nestedatt--options--fs_config--renames"></a>

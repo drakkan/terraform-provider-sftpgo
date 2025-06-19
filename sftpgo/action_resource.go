@@ -308,9 +308,9 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 						Attributes: map[string]schema.Attribute{
 							"type": schema.Int64Attribute{
 								Required:    true,
-								Description: `1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy.`,
+								Description: `1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy. 7 = PGP (` + enterpriseFeatureNote + `)`,
 								Validators: []validator.Int64{
-									int64validator.Between(1, 6),
+									int64validator.Between(1, 7),
 								},
 							},
 							"renames": schema.ListNestedAttribute{
@@ -386,6 +386,66 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 										},
 									},
 								},
+							},
+							"pgp": schema.SingleNestedAttribute{
+								Optional:    true,
+								Description: "Configuration for PGP actions. Either a password or a key pair is required. For encryption, the public key is required, and the private, if provided, will be used for signing. For decryption, the private key is required, and the public key, if provided, will be used for signature verification. " + enterpriseFeatureNote,
+								Attributes: map[string]schema.Attribute{
+									"mode": schema.Int64Attribute{
+										Required:    true,
+										Description: `1 = Encrypt, 2 = Decrypt.`,
+										Validators: []validator.Int64{
+											int64validator.Between(1, 2),
+										},
+									},
+									"profile": schema.Int64Attribute{
+										Optional:    true,
+										Description: `Algorithms to use. 0 = Default (widely implemented algorithms), 1 = RFC 4880, 2 = RFC 9580. Don't set to use the default.`,
+										Validators: []validator.Int64{
+											int64validator.Between(0, 2),
+										},
+									},
+									"paths": schema.ListNestedAttribute{
+										Required:    true,
+										Description: "Paths to encrypt or decrypt.",
+										NestedObject: schema.NestedAttributeObject{
+											Attributes: map[string]schema.Attribute{
+												"key": schema.StringAttribute{
+													Required: true,
+												},
+												"value": schema.StringAttribute{
+													Required: true,
+												},
+											},
+										},
+									},
+									"password": schema.StringAttribute{
+										Optional:    true,
+										Sensitive:   true,
+										Description: computedSecretDescription,
+									},
+									"private_key": schema.StringAttribute{
+										Optional:    true,
+										Sensitive:   true,
+										Description: computedSecretDescription,
+									},
+									"passphrase": schema.StringAttribute{
+										Optional:    true,
+										Sensitive:   true,
+										Description: computedSecretDescription,
+									},
+									"public_key": schema.StringAttribute{
+										Optional: true,
+									},
+								},
+							},
+							"folder": schema.StringAttribute{
+								Optional:    true,
+								Description: "Actions triggered by filesystem events, such as uploads or downloads, use the filesystem associated with the user. By specifying a folder, you can control which filesystem is used. This is especially useful for events that aren't tied to a user, such as scheduled tasks and advanced workflows. " + enterpriseFeatureNote,
+							},
+							"target_folder": schema.StringAttribute{
+								Optional:    true,
+								Description: "By specifying a target folder, you can use a different filesystem for target paths than the one associated with the user who triggered the action. This is useful for moving files to another storage backend, such as a different S3 bucket or an external SFTP server, accessing restricted areas of the same storage backend, supporting scheduled actions, or enabling more advanced workflows. " + enterpriseFeatureNote,
 							},
 						},
 					},
@@ -615,8 +675,9 @@ func (*actionResource) preservePlanFields(ctx context.Context, plan, state *even
 	if plan.Options.IsNull() {
 		return nil
 	}
-	// only HTTP config has a secret to preserve
-	if plan.Type.ValueInt64() != 1 {
+	// only HTTP and PGP config has a secret to preserve
+	actionType := plan.Type.ValueInt64()
+	if actionType != 1 && actionType != 9 {
 		return nil
 	}
 
@@ -638,7 +699,15 @@ func (*actionResource) preservePlanFields(ctx context.Context, plan, state *even
 		return diags
 	}
 
-	optionsState.HTTPConfig.Password = optionsPlan.HTTPConfig.Password
+	if actionType == 1 && optionsPlan.HTTPConfig != nil {
+		optionsState.HTTPConfig.Password = optionsPlan.HTTPConfig.Password
+	}
+	if actionType == 9 && optionsPlan.FsConfig != nil && optionsPlan.FsConfig.Type.ValueInt64() == 7 {
+		optionsState.FsConfig.PGP.Password = optionsPlan.FsConfig.PGP.Password
+		optionsState.FsConfig.PGP.PrivateKey = optionsPlan.FsConfig.PGP.PrivateKey
+		optionsState.FsConfig.PGP.Passphrase = optionsPlan.FsConfig.PGP.Passphrase
+	}
+
 	optionsStateObj, diags := types.ObjectValueFrom(ctx, optionsState.getTFAttributes(), optionsState)
 	if diags.HasError() {
 		return diags
