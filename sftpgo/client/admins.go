@@ -55,8 +55,10 @@ type AdminFilters struct {
 	// A password change is required at the next login
 	RequirePasswordChange bool `json:"require_password_change,omitempty"`
 	// Require two factor authentication
-	RequireTwoFactor bool             `json:"require_two_factor"`
-	Preferences      AdminPreferences `json:"preferences"`
+	RequireTwoFactor bool `json:"require_two_factor"`
+	// Password authentication is disabled
+	DisablePasswordAuth bool             `json:"disable_password_auth,omitempty"`
+	Preferences         AdminPreferences `json:"preferences"`
 }
 
 // AdminGroupMappingOptions defines the options for admin/group mapping

@@ -156,6 +156,10 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 						Optional:    true,
 						Description: "If set, API Key authentication is allowed.",
 					},
+					"disable_password_auth": schema.BoolAttribute{
+						Optional:    true,
+						Description: "If set, password authentication is disabled. The administrator can authenticate using an API key or OpenID Connect, if either is enabled.",
+					},
 				},
 			},
 			"preferences": schema.SingleNestedAttribute{
