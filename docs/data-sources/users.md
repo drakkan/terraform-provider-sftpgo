@@ -202,6 +202,7 @@ Read-Only:
 - `allowed_ip` (List of String) Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"
 - `bandwidth_limits` (Attributes List) Per-source bandwidth limits. (see [below for nested schema](#nestedatt--users--filters--bandwidth_limits))
 - `check_password_disabled` (Boolean) If set, check password hook will not be executed.
+- `custom1` (String) An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. Available in the Enterprise edition.
 - `default_shares_expiration` (Number) Default expiration for newly created shares as number of days. Not set means no default expiration.
 - `denied_ip` (List of String) Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.
 - `denied_login_methods` (List of String) Disabled login methods.

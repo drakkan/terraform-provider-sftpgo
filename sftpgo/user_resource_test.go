@@ -431,6 +431,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
     				  }
     				  filters = {
       					web_client = ["shares-require-email-auth", "wopi-disabled", "rest-api-disabled"]
+						custom1 = "testvalue"
     				  }
 					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -462,6 +463,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.0", "shares-require-email-auth"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.1", "wopi-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.2", "rest-api-disabled"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom1", "testvalue"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.enforce_secure_algorithms"),
 				),
 			},

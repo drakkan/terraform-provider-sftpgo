@@ -599,6 +599,7 @@ type userFilters struct {
 	AccessTime              []timePeriod     `tfsdk:"access_time"`
 	EnforceSecureAlgorithms types.Bool       `tfsdk:"enforce_secure_algorithms"`
 	AdditionalEmails        types.List       `tfsdk:"additional_emails"`
+	CustomPlaceholder1      types.String     `tfsdk:"custom1"`
 }
 
 func (f *userFilters) getTFAttributes() map[string]attr.Type {
@@ -613,6 +614,7 @@ func (f *userFilters) getTFAttributes() map[string]attr.Type {
 		"additional_emails": types.ListType{
 			ElemType: types.StringType,
 		},
+		"custom1": types.StringType,
 	}
 
 	for k, v := range filters {
@@ -702,6 +704,7 @@ func (f *userFilters) toSFTPGo(ctx context.Context) (client.UserFilters, diag.Di
 			return filters, diags
 		}
 	}
+	filters.CustomPlaceholder1 = f.CustomPlaceholder1.ValueString()
 
 	return filters, nil
 }
@@ -725,6 +728,7 @@ func (f *userFilters) fromSFTPGo(ctx context.Context, filters *client.UserFilter
 		return diags
 	}
 	f.AdditionalEmails = additionalEmails
+	f.CustomPlaceholder1 = getOptionalString(filters.CustomPlaceholder1)
 
 	return nil
 }

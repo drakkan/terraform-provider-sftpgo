@@ -197,6 +197,7 @@ type UserFilters struct {
 	AdditionalEmails      []string           `json:"additional_emails,omitempty"`
 	TOTPConfig            sdk.TOTPConfig     `json:"totp_config,omitempty"`
 	RecoveryCodes         []sdk.RecoveryCode `json:"recovery_codes,omitempty"`
+	CustomPlaceholder1    string             `json:"custom1,omitempty"`
 }
 
 // User defines a SFTPGo user

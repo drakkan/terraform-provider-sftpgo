@@ -934,6 +934,10 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 		Computed:    true,
 		Description: "Additional email addresses.",
 	}
+	result.Attributes["custom1"] = schema.StringAttribute{
+		Computed:    true,
+		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. ` + enterpriseFeatureNote,
+	}
 	return result
 }
 
@@ -1157,6 +1161,10 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 		Validators: []validator.List{
 			listvalidator.UniqueValues(),
 		},
+	}
+	result.Attributes["custom1"] = schema.StringAttribute{
+		Optional:    true,
+		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. ` + enterpriseFeatureNote,
 	}
 	return result
 }

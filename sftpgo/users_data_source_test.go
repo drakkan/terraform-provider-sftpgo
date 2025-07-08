@@ -225,6 +225,7 @@ func TestAccEnterpriseUsersDataSource(t *testing.T) {
 				WebClient: []string{"shares-require-email-auth",
 					"wopi-disabled", "rest-api-disabled", sdk.WebClientInfoChangeDisabled},
 			},
+			CustomPlaceholder1: "files/username",
 		},
 	}
 
@@ -293,6 +294,7 @@ func TestAccEnterpriseUsersDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.web_client.2", "rest-api-disabled"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.web_client.3", sdk.WebClientInfoChangeDisabled),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.enforce_secure_algorithms", "true"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.custom1", "files/username"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.provider", fmt.Sprintf("%d", user1.FsConfig.Provider)),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.endpoint", user1.FsConfig.SFTPConfig.Endpoint),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.username", user1.FsConfig.SFTPConfig.Username),
