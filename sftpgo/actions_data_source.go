@@ -256,6 +256,14 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 												},
 											},
 										},
+										"archive_folder": schema.StringAttribute{
+											Computed:    true,
+											Description: `Virtual folder name. If set, files will be moved there instead of being deleted. ` + enterpriseFeatureNote,
+										},
+										"archive_path": schema.StringAttribute{
+											Computed:    true,
+											Description: `The base path where archived files will be stored. Placeholders are supported. ` + enterpriseFeatureNote,
+										},
 									},
 								},
 								"fs_config": schema.SingleNestedAttribute{

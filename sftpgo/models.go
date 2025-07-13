@@ -1973,7 +1973,9 @@ type folderRetention struct {
 }
 
 type eventActionDataRetentionConfig struct {
-	Folders []folderRetention `tfsdk:"folders"`
+	Folders       []folderRetention `tfsdk:"folders"`
+	ArchiveFolder types.String      `tfsdk:"archive_folder"`
+	ArchivePath   types.String      `tfsdk:"archive_path"`
 }
 
 type eventActionFsCompress struct {
@@ -2146,6 +2148,8 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 						},
 					},
 				},
+				"archive_folder": types.StringType,
+				"archive_path":   types.StringType,
 			},
 		},
 		"fs_config": types.ObjectType{
@@ -2333,6 +2337,8 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 		}
 	}
 
+	options.RetentionConfig.ArchiveFolder = o.RetentionConfig.ArchiveFolder.ValueString()
+	options.RetentionConfig.ArchivePath = o.RetentionConfig.ArchivePath.ValueString()
 	for _, folder := range o.RetentionConfig.Folders {
 		options.RetentionConfig.Folders = append(options.RetentionConfig.Folders, client.FolderRetention{
 			Path:            folder.Path.ValueString(),
@@ -2476,7 +2482,10 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 		}
 		o.EmailConfig.Attachments = attachments
 	case client.ActionTypeDataRetentionCheck:
-		o.RetentionConfig = &eventActionDataRetentionConfig{}
+		o.RetentionConfig = &eventActionDataRetentionConfig{
+			ArchiveFolder: getOptionalString(action.Options.RetentionConfig.ArchiveFolder),
+			ArchivePath:   getOptionalString(action.Options.RetentionConfig.ArchivePath),
+		}
 		for _, f := range action.Options.RetentionConfig.Folders {
 			o.RetentionConfig.Folders = append(o.RetentionConfig.Folders, folderRetention{
 				Path:            types.StringValue(f.Path),

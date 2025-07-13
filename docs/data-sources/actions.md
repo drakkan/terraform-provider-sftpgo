@@ -227,6 +227,8 @@ Read-Only:
 
 Read-Only:
 
+- `archive_folder` (String) Virtual folder name. If set, files will be moved there instead of being deleted. Available in the Enterprise edition.
+- `archive_path` (String) The base path where archived files will be stored. Placeholders are supported. Available in the Enterprise edition.
 - `folders` (Attributes List) Folders to apply data retention rules to. (see [below for nested schema](#nestedatt--actions--options--retention_config--folders))
 
 <a id="nestedatt--actions--options--retention_config--folders"></a>

@@ -999,6 +999,41 @@ EOF
 				ImportStateVerifyIgnore: []string{"options.fs_config.pgp.private_key",
 					"options.fs_config.pgp.passphrase", "options.fs_config.pgp.password"},
 			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 8
+						options = {
+							retention_config = {
+								folders = [
+									{
+										path = "/"
+										retention = 24
+									}
+								],
+								archive_folder = "target_folder"
+								archive_path = "/base"
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "8"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.0.path", "/"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.0.retention", "24"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.archive_folder", "target_folder"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.archive_path", "/base"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

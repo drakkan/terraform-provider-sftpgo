@@ -115,7 +115,9 @@ type FolderRetention struct {
 
 // EventActionDataRetentionConfig defines the configuration for a data retention check
 type EventActionDataRetentionConfig struct {
-	Folders []FolderRetention `json:"folders,omitempty"`
+	Folders       []FolderRetention `json:"folders,omitempty"`
+	ArchiveFolder string            `json:"archive_folder,omitempty"`
+	ArchivePath   string            `json:"archive_path,omitempty"`
 }
 
 type EventActionPGP struct {
