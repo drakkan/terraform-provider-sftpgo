@@ -196,7 +196,7 @@ func TestAccEnterpriseFolderResource(t *testing.T) {
 						  username = "root"
 						  password = "sftppwd"
 						  prefix = "/"
-						  socks5_proxy = "127.0.0.1:10080"
+						  socks_proxy = "socks4://127.0.0.1:10080"
       				    }
   					  }
 					}`,
@@ -218,9 +218,9 @@ func TestAccEnterpriseFolderResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.username", "root"),
 					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.password", "sftppwd"),
 					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.prefix", "/"),
-					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.socks5_proxy", "127.0.0.1:10080"),
-					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.socks5_username"),
-					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.socks5_password"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.socks_proxy", "socks4://127.0.0.1:10080"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.socks_username"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.socks_password"),
 				),
 			},
 			// ImportState testing

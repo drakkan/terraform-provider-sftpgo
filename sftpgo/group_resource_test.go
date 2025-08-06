@@ -338,7 +338,7 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 							prefix = "/"
 							equality_check_mode = 1
 							fingerprints = ["SHA256:RFzBCUItH9LZS0cKB5UE6ceAYhBD5C8GeOBip8Z11+4"],
-							socks5_proxy = "127.0.0.1:10080"
+							socks_proxy = "socks5://127.0.0.1:10080"
 						  }
 					    }
 					  }
@@ -362,7 +362,7 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.fingerprints.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.fingerprints.0",
 						"SHA256:RFzBCUItH9LZS0cKB5UE6ceAYhBD5C8GeOBip8Z11+4"),
-					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.socks5_proxy", "127.0.0.1:10080"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.socks_proxy", "socks5://127.0.0.1:10080"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.disable_concurrent_reads"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.s3config"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.gcsconfig"),
@@ -394,9 +394,9 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 										password = "sftppwd"
 										prefix = "/"
 										equality_check_mode = 0
-										socks5_proxy = "127.0.1.1:10080"
-										socks5_username = "socksuser"
-										socks5_password = "sockspass"
+										socks_proxy = "socks5://127.0.1.1:10080"
+										socks_username = "socksuser"
+										socks_password = "sockspass"
 									  }
 								    }
 								  }
@@ -427,9 +427,9 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 								resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.equality_check_mode", "0"),
 								resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.private_key"),
 								resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.fingerprints.#", "0"),
-								resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.socks5_proxy", "127.0.1.1:10080"),
-								resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.socks5_username", "socksuser"),
-								resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.socks5_password", "sockspass"),
+								resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.socks_proxy", "socks5://127.0.1.1:10080"),
+								resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.socks_username", "socksuser"),
+								resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.socks_password", "sockspass"),
 								resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.disable_concurrent_reads"),
 								resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.osconfig"),
 								resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.s3config"),

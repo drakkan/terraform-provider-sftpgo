@@ -281,15 +281,15 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					"equality_check_mode": schema.Int64Attribute{
 						Computed: true,
 					},
-					"socks5_proxy": schema.StringAttribute{
+					"socks_proxy": schema.StringAttribute{
 						Computed:    true,
-						Description: "The address of the SOCKS5 proxy server, including the hostname or IP and the port number. " + enterpriseFeatureNote,
+						Description: "The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. " + enterpriseFeatureNote,
 					},
-					"socks5_username": schema.StringAttribute{
+					"socks_username": schema.StringAttribute{
 						Computed:    true,
-						Description: "The optional SOCKS5 username. " + enterpriseFeatureNote,
+						Description: "The optional SOCKS username. " + enterpriseFeatureNote,
 					},
-					"socks5_password": schema.StringAttribute{
+					"socks_password": schema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription + " " + enterpriseFeatureNote,
 					},
@@ -600,18 +600,18 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Optional:    true,
 						Description: "Defines how to check if this config points to the same server as another config. By default both the endpoint and the username must match. 1 means that only the endpoint must match. If different configs point to the same server the renaming between the fs configs is allowed.",
 					},
-					"socks5_proxy": schema.StringAttribute{
+					"socks_proxy": schema.StringAttribute{
 						Optional:    true,
-						Description: "The address of the SOCKS5 proxy server, including the hostname or IP and the port number. " + enterpriseFeatureNote,
+						Description: "The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. " + enterpriseFeatureNote,
 					},
-					"socks5_username": schema.StringAttribute{
+					"socks_username": schema.StringAttribute{
 						Optional:    true,
-						Description: "The optional SOCKS5 username. " + enterpriseFeatureNote,
+						Description: "The optional SOCKS username. " + enterpriseFeatureNote,
 					},
-					"socks5_password": schema.StringAttribute{
+					"socks_password": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Plain text SOCKS5 password. " + secretDescriptionGeneric + " " + enterpriseFeatureNote,
+						Description: "Plain text SOCKS password. " + secretDescriptionGeneric + " " + enterpriseFeatureNote,
 					},
 				},
 			},
@@ -1194,7 +1194,7 @@ func preserveFsConfigPlanFields(ctx context.Context, fsPlan, fsState filesystem)
 			fsState.SFTPConfig.Password = fsPlan.SFTPConfig.Password
 			fsState.SFTPConfig.PrivateKey = fsPlan.SFTPConfig.PrivateKey
 			fsState.SFTPConfig.KeyPassphrase = fsPlan.SFTPConfig.KeyPassphrase
-			fsState.SFTPConfig.Socks5Password = fsPlan.SFTPConfig.Socks5Password
+			fsState.SFTPConfig.SocksPassword = fsPlan.SFTPConfig.SocksPassword
 		}
 	case sdk.HTTPFilesystemProvider:
 		if fsPlan.HTTPConfig != nil {

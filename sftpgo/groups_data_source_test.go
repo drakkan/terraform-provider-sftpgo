@@ -172,16 +172,16 @@ func TestAccEnterpriseGroupsDataSource(t *testing.T) {
 			Provider: sdk.SFTPFilesystemProvider,
 			SFTPConfig: client.SFTPFsConfig{
 				BaseSFTPFsConfig: client.BaseSFTPFsConfig{
-					Endpoint:       "127.0.0.1:22",
-					Username:       "sftpuser",
-					Socks5Proxy:    "127.0.0.1:10080",
-					Socks5Username: "socks5user",
+					Endpoint:      "127.0.0.1:22",
+					Username:      "sftpuser",
+					SocksProxy:    "socks5://127.0.0.1:10080",
+					SocksUsername: "socks5user",
 				},
 				Password: kms.BaseSecret{
 					Status:  kms.SecretStatusPlain,
 					Payload: "sftps3cret",
 				},
-				Socks5Password: kms.BaseSecret{
+				SocksPassword: kms.BaseSecret{
 					Status:  kms.SecretStatusPlain,
 					Payload: "socks5s3cret",
 				},
@@ -292,11 +292,11 @@ func TestAccEnterpriseGroupsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.sftpconfig.username",
 						folder1.FsConfig.SFTPConfig.Username),
 					resource.TestCheckResourceAttrSet("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.sftpconfig.password"),
-					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.sftpconfig.socks5_proxy",
-						folder1.FsConfig.SFTPConfig.Socks5Proxy),
-					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.sftpconfig.socks5_username",
-						folder1.FsConfig.SFTPConfig.Socks5Username),
-					resource.TestCheckResourceAttrSet("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.sftpconfig.socks5_password"),
+					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.sftpconfig.socks_proxy",
+						folder1.FsConfig.SFTPConfig.SocksProxy),
+					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.sftpconfig.socks_username",
+						folder1.FsConfig.SFTPConfig.SocksUsername),
+					resource.TestCheckResourceAttrSet("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.sftpconfig.socks_password"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_groups.test", "groups.0.virtual_folders.0.filesystem.gcsconfig"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "id", placeholderID),

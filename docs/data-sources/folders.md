@@ -155,7 +155,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
-- `socks5_password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Available in the Enterprise edition.
-- `socks5_proxy` (String) The address of the SOCKS5 proxy server, including the hostname or IP and the port number. Available in the Enterprise edition.
-- `socks5_username` (String) The optional SOCKS5 username. Available in the Enterprise edition.
+- `socks_password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Available in the Enterprise edition.
+- `socks_proxy` (String) The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. Available in the Enterprise edition.
+- `socks_username` (String) The optional SOCKS username. Available in the Enterprise edition.
 - `username` (String)

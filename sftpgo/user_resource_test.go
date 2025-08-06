@@ -424,9 +424,9 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 						  password = "sftppwd"
 						  prefix = "/"
 						  equality_check_mode = 1
-						  socks5_proxy = "127.0.0.1:10080"
-						  socks5_username = "socksuser"
-						  socks5_password = "sockspwd"
+						  socks_proxy = "socks5://127.0.0.1:10080"
+						  socks_username = "socksuser"
+						  socks_password = "sockspwd"
       				    }
     				  }
     				  filters = {
@@ -450,9 +450,9 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.username", "root"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.password", "sftppwd"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.prefix", "/"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks5_proxy", "127.0.0.1:10080"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks5_username", "socksuser"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks5_password", "sockspwd"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks_proxy", "socks5://127.0.0.1:10080"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks_username", "socksuser"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks_password", "sockspwd"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.private_key"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.equality_check_mode", "1"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.gcsconfig"),

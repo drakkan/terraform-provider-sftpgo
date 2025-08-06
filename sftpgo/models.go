@@ -804,9 +804,9 @@ type sftpFsConfig struct {
 	DisableCouncurrentReads types.Bool   `tfsdk:"disable_concurrent_reads"`
 	BufferSize              types.Int64  `tfsdk:"buffer_size"`
 	EqualityCheckMode       types.Int64  `tfsdk:"equality_check_mode"`
-	Socks5Proxy             types.String `tfsdk:"socks5_proxy"`
-	Socks5Username          types.String `tfsdk:"socks5_username"`
-	Socks5Password          types.String `tfsdk:"socks5_password"`
+	SocksProxy              types.String `tfsdk:"socks_proxy"`
+	SocksUsername           types.String `tfsdk:"socks_username"`
+	SocksPassword           types.String `tfsdk:"socks_password"`
 }
 
 type httpFsConfig struct {
@@ -935,9 +935,9 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"disable_concurrent_reads": types.BoolType,
 				"buffer_size":              types.Int64Type,
 				"equality_check_mode":      types.Int64Type,
-				"socks5_proxy":             types.StringType,
-				"socks5_username":          types.StringType,
-				"socks5_password":          types.StringType,
+				"socks_proxy":              types.StringType,
+				"socks_username":           types.StringType,
+				"socks_password":           types.StringType,
 			},
 		},
 		"httpconfig": types.ObjectType{
@@ -1028,13 +1028,13 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 				DisableCouncurrentReads: f.SFTPConfig.DisableCouncurrentReads.ValueBool(),
 				BufferSize:              f.SFTPConfig.BufferSize.ValueInt64(),
 				EqualityCheckMode:       int(f.SFTPConfig.EqualityCheckMode.ValueInt64()),
-				Socks5Proxy:             f.SFTPConfig.Socks5Proxy.ValueString(),
-				Socks5Username:          f.SFTPConfig.Socks5Username.ValueString(),
+				SocksProxy:              f.SFTPConfig.SocksProxy.ValueString(),
+				SocksUsername:           f.SFTPConfig.SocksUsername.ValueString(),
 			},
-			Password:       getSFTPGoSecret(f.SFTPConfig.Password.ValueString()),
-			PrivateKey:     getSFTPGoSecret(f.SFTPConfig.PrivateKey.ValueString()),
-			KeyPassphrase:  getSFTPGoSecret(f.SFTPConfig.KeyPassphrase.ValueString()),
-			Socks5Password: getSFTPGoSecret(f.SFTPConfig.Socks5Password.ValueString()),
+			Password:      getSFTPGoSecret(f.SFTPConfig.Password.ValueString()),
+			PrivateKey:    getSFTPGoSecret(f.SFTPConfig.PrivateKey.ValueString()),
+			KeyPassphrase: getSFTPGoSecret(f.SFTPConfig.KeyPassphrase.ValueString()),
+			SocksPassword: getSFTPGoSecret(f.SFTPConfig.SocksPassword.ValueString()),
 		},
 		HTTPConfig: sdk.HTTPFsConfig{
 			BaseHTTPFsConfig: sdk.BaseHTTPFsConfig{
@@ -1140,9 +1140,9 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *client.Filesystem) diag
 			DisableCouncurrentReads: getOptionalBool(fs.SFTPConfig.DisableCouncurrentReads),
 			BufferSize:              getOptionalInt64(fs.SFTPConfig.BufferSize),
 			EqualityCheckMode:       getOptionalInt64(int64(fs.SFTPConfig.EqualityCheckMode)),
-			Socks5Proxy:             getOptionalString(fs.SFTPConfig.Socks5Proxy),
-			Socks5Username:          getOptionalString(fs.SFTPConfig.Socks5Username),
-			Socks5Password:          getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.Socks5Password)),
+			SocksProxy:              getOptionalString(fs.SFTPConfig.SocksProxy),
+			SocksUsername:           getOptionalString(fs.SFTPConfig.SocksUsername),
+			SocksPassword:           getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.SocksPassword)),
 		}
 		fingerprints, diags := types.ListValueFrom(ctx, types.StringType, fs.SFTPConfig.Fingerprints)
 		if diags.HasError() {

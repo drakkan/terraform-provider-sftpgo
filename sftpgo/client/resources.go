@@ -46,17 +46,17 @@ type BaseSFTPFsConfig struct {
 	DisableCouncurrentReads bool     `json:"disable_concurrent_reads,omitempty"`
 	BufferSize              int64    `json:"buffer_size,omitempty"`
 	EqualityCheckMode       int      `json:"equality_check_mode,omitempty"`
-	Socks5Proxy             string   `json:"socks5_proxy,omitempty"`
-	Socks5Username          string   `json:"socks5_username,omitempty"`
+	SocksProxy              string   `json:"socks_proxy,omitempty"`
+	SocksUsername           string   `json:"socks_username,omitempty"`
 }
 
 // SFTPFsConfig defines the configuration for SFTP based filesystem
 type SFTPFsConfig struct {
 	BaseSFTPFsConfig
-	Password       kms.BaseSecret `json:"password,omitempty"`
-	PrivateKey     kms.BaseSecret `json:"private_key,omitempty"`
-	KeyPassphrase  kms.BaseSecret `json:"key_passphrase,omitempty"`
-	Socks5Password kms.BaseSecret `json:"socks5_password,omitempty"`
+	Password      kms.BaseSecret `json:"password,omitempty"`
+	PrivateKey    kms.BaseSecret `json:"private_key,omitempty"`
+	KeyPassphrase kms.BaseSecret `json:"key_passphrase,omitempty"`
+	SocksPassword kms.BaseSecret `json:"socks_password,omitempty"`
 }
 
 // BaseGCSFsConfig defines the base configuration for Google Cloud Storage based filesystems

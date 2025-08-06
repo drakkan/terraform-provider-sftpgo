@@ -204,16 +204,16 @@ func TestAccEnterpriseUsersDataSource(t *testing.T) {
 			Provider: sdk.SFTPFilesystemProvider,
 			SFTPConfig: client.SFTPFsConfig{
 				BaseSFTPFsConfig: client.BaseSFTPFsConfig{
-					Endpoint:       "127.0.0.1:2022",
-					Username:       "testuser",
-					Socks5Proxy:    "127.0.0.1:1080",
-					Socks5Username: "socks_user",
+					Endpoint:      "127.0.0.1:2022",
+					Username:      "testuser",
+					SocksProxy:    "socks5://127.0.0.1:1080",
+					SocksUsername: "socks_user",
 				},
 				Password: kms.BaseSecret{
 					Status:  kms.SecretStatusPlain,
 					Payload: "sftppass",
 				},
-				Socks5Password: kms.BaseSecret{
+				SocksPassword: kms.BaseSecret{
 					Status:  kms.SecretStatusPlain,
 					Payload: "sockspass",
 				},
@@ -298,8 +298,8 @@ func TestAccEnterpriseUsersDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.provider", fmt.Sprintf("%d", user1.FsConfig.Provider)),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.endpoint", user1.FsConfig.SFTPConfig.Endpoint),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.username", user1.FsConfig.SFTPConfig.Username),
-					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.socks5_proxy", user1.FsConfig.SFTPConfig.Socks5Proxy),
-					resource.TestCheckResourceAttrSet("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.socks5_password"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.socks_proxy", user1.FsConfig.SFTPConfig.SocksProxy),
+					resource.TestCheckResourceAttrSet("data.sftpgo_users.test", "users.0.filesystem.sftpconfig.socks_password"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_users.test", "users.0.filesystem.osconfig"),
 					// Check user2
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.username", user2.Username),
