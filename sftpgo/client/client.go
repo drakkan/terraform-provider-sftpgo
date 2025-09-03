@@ -22,6 +22,16 @@ import (
 	"time"
 )
 
+// StatusError represents an HTTP error with status code
+type StatusError struct {
+	StatusCode int
+	Body       []byte
+}
+
+func (e StatusError) Error() string {
+	return fmt.Sprintf("status: %d, body: %s", e.StatusCode, e.Body)
+}
+
 // HostURL - Default SFTPGo URL
 const HostURL string = "http://localhost:8080"
 
@@ -166,7 +176,10 @@ func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, e
 	}
 
 	if res.StatusCode != expectedStatusCode {
-		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
+		return nil, StatusError{
+			StatusCode: res.StatusCode,
+			Body:       body,
+		}
 	}
 
 	return body, err
