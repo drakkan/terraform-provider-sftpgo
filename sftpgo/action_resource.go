@@ -596,6 +596,12 @@ func (r *actionResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	action, err := r.client.GetAction(state.Name.ValueString())
 	if err != nil {
+		// Check if the action was not found (404 error)
+		if statusErr, ok := err.(client.StatusError); ok && statusErr.StatusCode == 404 {
+			// Resource has been deleted outside of Terraform, remove it from state
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Reading SFTPGo Event Action",
 			"Could not read SFTPGo Event Action "+state.Name.ValueString()+": "+err.Error(),

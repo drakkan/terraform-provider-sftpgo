@@ -156,6 +156,12 @@ func (r *folderResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	folder, err := r.client.GetFolder(state.Name.ValueString())
 	if err != nil {
+		// Check if the folder was not found (404 error)
+		if statusErr, ok := err.(client.StatusError); ok && statusErr.StatusCode == 404 {
+			// Resource has been deleted outside of Terraform, remove it from state
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Reading SFTPGo Folder",
 			"Could not read SFTPGo Folder "+state.Name.ValueString()+": "+err.Error(),

@@ -293,6 +293,12 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	user, err := r.client.GetUser(state.Username.ValueString())
 	if err != nil {
+		// Check if the user was not found (404 error)
+		if statusErr, ok := err.(client.StatusError); ok && statusErr.StatusCode == 404 {
+			// Resource has been deleted outside of Terraform, remove it from state
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Reading SFTPGo User",
 			"Could not read SFTPGo User "+state.Username.ValueString()+": "+err.Error(),
