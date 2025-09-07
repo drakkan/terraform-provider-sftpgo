@@ -88,11 +88,12 @@ Read-Only:
 - `deletes` (List of String) Paths to delete.
 - `exist` (List of String) Paths to check for existence.
 - `folder` (String) Available in the Enterprise edition.
+- `metadata_check` (Attributes) Configuration for Metadata Check actions. Available in the Enterprise edition. (see [below for nested schema](#nestedatt--actions--options--fs_config--metadata_check))
 - `mkdirs` (List of String) Directories paths to create.
 - `pgp` (Attributes) Configuration for PGP actions. Available in the Enterprise edition. (see [below for nested schema](#nestedatt--actions--options--fs_config--pgp))
 - `renames` (Attributes List) Paths to rename. The key is the source path, the value is the target. (see [below for nested schema](#nestedatt--actions--options--fs_config--renames))
 - `target_folder` (String) Available in the Enterprise edition.
-- `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy. 7 = PGP (Available in the Enterprise edition.)
+- `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy, 7 = PGP (Available in the Enterprise edition), 8 Metadata Check (Available in the Enterprise edition).
 
 <a id="nestedatt--actions--options--fs_config--compress"></a>
 ### Nested Schema for `actions.options.fs_config.compress`
@@ -110,6 +111,25 @@ Read-Only:
 
 - `key` (String)
 - `value` (String)
+
+
+<a id="nestedatt--actions--options--fs_config--metadata_check"></a>
+### Nested Schema for `actions.options.fs_config.metadata_check`
+
+Read-Only:
+
+- `metadata` (Attributes) (see [below for nested schema](#nestedatt--actions--options--fs_config--metadata_check--metadata))
+- `path` (String)
+- `timeout` (Number)
+
+<a id="nestedatt--actions--options--fs_config--metadata_check--metadata"></a>
+### Nested Schema for `actions.options.fs_config.metadata_check.metadata`
+
+Read-Only:
+
+- `key` (String)
+- `value` (String)
+
 
 
 <a id="nestedatt--actions--options--fs_config--pgp"></a>

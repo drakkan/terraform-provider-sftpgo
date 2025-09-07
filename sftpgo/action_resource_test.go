@@ -1034,6 +1034,76 @@ EOF
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 9
+						options = {
+							fs_config = {
+	    						type = 8
+            					metadata_check = {
+             						path = "/{{.VirtualPath}}"
+            						metadata = {
+               							key = "virus_scan_status"
+                						value = "abc"
+	    							}
+                					timeout = 120
+								}
+            				}
+        				}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.type", "8"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.path", "/{{.VirtualPath}}"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.metadata.key", "virus_scan_status"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.metadata.value", "abc"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.timeout", "120"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 9
+						options = {
+							fs_config = {
+	    						type = 8
+            					metadata_check = {
+             						path = "/{{.VirtualPath}}"
+            						metadata = {
+               							key = "virus_scan_status"
+	    							}
+								}
+            				}
+        				}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.type", "8"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.path", "/{{.VirtualPath}}"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.metadata.key", "virus_scan_status"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.metadata.value"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.timeout"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

@@ -1993,17 +1993,24 @@ type eventActionPGPConfig struct {
 	PublicKey  types.String `tfsdk:"public_key"`
 }
 
+type eventActionMetadataCheck struct {
+	Path     types.String `tfsdk:"path"`
+	Metadata keyValue     `tfsdk:"metadata"`
+	Timeout  types.Int64  `tfsdk:"timeout"`
+}
+
 type eventActionFilesystemConfig struct {
-	Type         types.Int64            `tfsdk:"type"`
-	Renames      []renameConfig         `tfsdk:"renames"`
-	MkDirs       types.List             `tfsdk:"mkdirs"`
-	Deletes      types.List             `tfsdk:"deletes"`
-	Exist        types.List             `tfsdk:"exist"`
-	Copy         []keyValue             `tfsdk:"copy"`
-	Compress     *eventActionFsCompress `tfsdk:"compress"`
-	PGP          *eventActionPGPConfig  `tfsdk:"pgp"`
-	Folder       types.String           `tfsdk:"folder"`
-	TargetFolder types.String           `tfsdk:"target_folder"`
+	Type          types.Int64               `tfsdk:"type"`
+	Renames       []renameConfig            `tfsdk:"renames"`
+	MkDirs        types.List                `tfsdk:"mkdirs"`
+	Deletes       types.List                `tfsdk:"deletes"`
+	Exist         types.List                `tfsdk:"exist"`
+	Copy          []keyValue                `tfsdk:"copy"`
+	Compress      *eventActionFsCompress    `tfsdk:"compress"`
+	PGP           *eventActionPGPConfig     `tfsdk:"pgp"`
+	MetadataCheck *eventActionMetadataCheck `tfsdk:"metadata_check"`
+	Folder        types.String              `tfsdk:"folder"`
+	TargetFolder  types.String              `tfsdk:"target_folder"`
 }
 
 type eventActionPasswordExpiration struct {
@@ -2053,6 +2060,9 @@ func (o *eventActionOptions) ensureNotNull() {
 	}
 	if o.FsConfig.PGP == nil {
 		o.FsConfig.PGP = &eventActionPGPConfig{}
+	}
+	if o.FsConfig.MetadataCheck == nil {
+		o.FsConfig.MetadataCheck = &eventActionMetadataCheck{}
 	}
 	if o.PwdExpirationConfig == nil {
 		o.PwdExpirationConfig = &eventActionPasswordExpiration{}
@@ -2201,6 +2211,15 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 						"public_key":  types.StringType,
 					},
 				},
+				"metadata_check": types.ObjectType{
+					AttrTypes: map[string]attr.Type{
+						"path": types.StringType,
+						"metadata": types.ObjectType{
+							AttrTypes: kv.getTFAttributes(),
+						},
+						"timeout": types.Int64Type,
+					},
+				},
 				"folder":        types.StringType,
 				"target_folder": types.StringType,
 			},
@@ -2259,6 +2278,14 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 				PrivateKey: getSFTPGoSecret(o.FsConfig.PGP.PrivateKey.ValueString()),
 				Passphrase: getSFTPGoSecret(o.FsConfig.PGP.Passphrase.ValueString()),
 				PublicKey:  o.FsConfig.PGP.PublicKey.ValueString(),
+			},
+			MetadataCheck: client.EventActionMetadataCheck{
+				Path: o.FsConfig.MetadataCheck.Path.ValueString(),
+				Metadata: client.KeyValue{
+					Key:   o.FsConfig.MetadataCheck.Metadata.Key.ValueString(),
+					Value: o.FsConfig.MetadataCheck.Metadata.Value.ValueString(),
+				},
+				Timeout: int(o.FsConfig.MetadataCheck.Timeout.ValueInt64()),
 			},
 			Folder:       o.FsConfig.Folder.ValueString(),
 			TargetFolder: o.FsConfig.TargetFolder.ValueString(),
@@ -2560,6 +2587,15 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 					Key:   types.StringValue(v.Key),
 					Value: types.StringValue(v.Value),
 				})
+			}
+		case client.FilesystemActionMetadataCheck:
+			o.FsConfig.MetadataCheck = &eventActionMetadataCheck{
+				Path: types.StringValue(action.Options.FsConfig.MetadataCheck.Path),
+				Metadata: keyValue{
+					Key:   types.StringValue(action.Options.FsConfig.MetadataCheck.Metadata.Key),
+					Value: getOptionalString(action.Options.FsConfig.MetadataCheck.Metadata.Value),
+				},
+				Timeout: getOptionalInt64(int64(action.Options.FsConfig.MetadataCheck.Timeout)),
 			}
 		}
 	case client.ActionTypePasswordExpirationCheck:

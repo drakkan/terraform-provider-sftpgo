@@ -129,7 +129,7 @@ func (d *adminsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 								},
 								"disable_password_auth": schema.BoolAttribute{
 									Computed:    true,
-									Description: "If set, password authentication is disabled. The administrator can authenticate using an API key or OpenID Connect, if either is enabled. " + enterpriseFeatureNote,
+									Description: "If set, password authentication is disabled. The administrator can authenticate using an API key or OpenID Connect, if either is enabled. " + enterpriseFeatureNote + ".",
 								},
 							},
 						},

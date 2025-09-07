@@ -157,8 +157,30 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 	_, err = c.CreateAction(action)
 	require.NoError(t, err)
 
+	action1 := client.BaseEventAction{
+		Name: "metadata check",
+		Type: client.ActionTypeFilesystem,
+		Options: client.EventActionOptions{
+			FsConfig: client.EventActionFilesystemConfig{
+				Type: client.FilesystemActionMetadataCheck,
+				MetadataCheck: client.EventActionMetadataCheck{
+					Path: "/test",
+					Metadata: client.KeyValue{
+						Key:   "k",
+						Value: "v",
+					},
+					Timeout: 10,
+				},
+			},
+		},
+	}
+	_, err = c.CreateAction(action1)
+	require.NoError(t, err)
+
 	defer func() {
 		err = c.DeleteAction(action.Name)
+		require.NoError(t, err)
+		err = c.DeleteAction(action1.Name)
 		require.NoError(t, err)
 		err = c.DeleteFolder(folder.Name)
 		require.NoError(t, err)
@@ -174,7 +196,7 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 				Config: `data "sftpgo_actions" "test" {}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify number of actions returned
-					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.#", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.#", "2"),
 					// Check the created action
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.name", action.Name),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.id", action.Name),
@@ -205,6 +227,14 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.pwd_expiration_config"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.user_inactivity_config"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.idp_config"),
+
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.1.name", action1.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.1.type", fmt.Sprintf("%d", action1.Type)),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.1.options.fs_config.type", "8"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.1.options.fs_config.metadata_check.path", "/test"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.1.options.fs_config.metadata_check.metadata.key", "k"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.1.options.fs_config.metadata_check.metadata.value", "v"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.1.options.fs_config.metadata_check.timeout", "10"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "id", placeholderID),
 				),

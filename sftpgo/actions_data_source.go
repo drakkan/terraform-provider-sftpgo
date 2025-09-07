@@ -258,11 +258,11 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 										},
 										"archive_folder": schema.StringAttribute{
 											Computed:    true,
-											Description: `Virtual folder name. If set, files will be moved there instead of being deleted. ` + enterpriseFeatureNote,
+											Description: `Virtual folder name. If set, files will be moved there instead of being deleted. ` + enterpriseFeatureNote + ".",
 										},
 										"archive_path": schema.StringAttribute{
 											Computed:    true,
-											Description: `The base path where archived files will be stored. Placeholders are supported. ` + enterpriseFeatureNote,
+											Description: `The base path where archived files will be stored. Placeholders are supported. ` + enterpriseFeatureNote + ".",
 										},
 									},
 								},
@@ -272,7 +272,7 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 									Attributes: map[string]schema.Attribute{
 										"type": schema.Int64Attribute{
 											Computed:    true,
-											Description: `1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy. 7 = PGP (` + enterpriseFeatureNote + `)`,
+											Description: `1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy, 7 = PGP (` + enterpriseFeatureNote + `), ` + `8 Metadata Check (` + enterpriseFeatureNote + `).`,
 										},
 										"renames": schema.ListNestedAttribute{
 											Computed:    true,
@@ -338,7 +338,7 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 										},
 										"pgp": schema.SingleNestedAttribute{
 											Computed:    true,
-											Description: "Configuration for PGP actions. " + enterpriseFeatureNote,
+											Description: "Configuration for PGP actions. " + enterpriseFeatureNote + ".",
 											Attributes: map[string]schema.Attribute{
 												"mode": schema.Int64Attribute{
 													Computed:    true,
@@ -379,13 +379,36 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 												},
 											},
 										},
+										"metadata_check": schema.SingleNestedAttribute{
+											Computed:    true,
+											Description: "Configuration for Metadata Check actions. " + enterpriseFeatureNote + ".",
+											Attributes: map[string]schema.Attribute{
+												"path": schema.StringAttribute{
+													Computed: true,
+												},
+												"metadata": schema.SingleNestedAttribute{
+													Computed: true,
+													Attributes: map[string]schema.Attribute{
+														"key": schema.StringAttribute{
+															Computed: true,
+														},
+														"value": schema.StringAttribute{
+															Computed: true,
+														},
+													},
+												},
+												"timeout": schema.Int64Attribute{
+													Computed: true,
+												},
+											},
+										},
 										"folder": schema.StringAttribute{
 											Computed:    true,
-											Description: enterpriseFeatureNote,
+											Description: enterpriseFeatureNote + ".",
 										},
 										"target_folder": schema.StringAttribute{
 											Computed:    true,
-											Description: enterpriseFeatureNote,
+											Description: enterpriseFeatureNote + ".",
 										},
 									},
 								},

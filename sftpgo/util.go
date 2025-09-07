@@ -33,7 +33,7 @@ import (
 const (
 	computedSecretDescription = `SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".`
 	secretDescriptionGeneric  = `If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).`
-	enterpriseFeatureNote     = `Available in the Enterprise edition.`
+	enterpriseFeatureNote     = `Available in the Enterprise edition`
 )
 
 func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
@@ -155,7 +155,7 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					},
 					"hns": schema.Int64Attribute{
 						Computed:    true,
-						Description: "1 if Hierarchical namespace support is enabled for the bucket. " + enterpriseFeatureNote,
+						Description: "1 if Hierarchical namespace support is enabled for the bucket. " + enterpriseFeatureNote + ".",
 					},
 					"storage_class": schema.StringAttribute{
 						Computed: true,
@@ -283,15 +283,15 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					},
 					"socks_proxy": schema.StringAttribute{
 						Computed:    true,
-						Description: "The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. " + enterpriseFeatureNote,
+						Description: "The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. " + enterpriseFeatureNote + ".",
 					},
 					"socks_username": schema.StringAttribute{
 						Computed:    true,
-						Description: "The optional SOCKS username. " + enterpriseFeatureNote,
+						Description: "The optional SOCKS username. " + enterpriseFeatureNote + ".",
 					},
 					"socks_password": schema.StringAttribute{
 						Computed:    true,
-						Description: computedSecretDescription + " " + enterpriseFeatureNote,
+						Description: computedSecretDescription + " " + enterpriseFeatureNote + ".",
 					},
 				},
 			},
@@ -451,7 +451,7 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					},
 					"hns": schema.Int64Attribute{
 						Optional:    true,
-						Description: "Set to 1 if Hierarchical namespace is enabled for the bucket. " + enterpriseFeatureNote,
+						Description: "Set to 1 if Hierarchical namespace is enabled for the bucket. " + enterpriseFeatureNote + ".",
 					},
 					"key_prefix": schema.StringAttribute{
 						Optional:    true,
@@ -602,16 +602,16 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					},
 					"socks_proxy": schema.StringAttribute{
 						Optional:    true,
-						Description: "The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. " + enterpriseFeatureNote,
+						Description: "The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. " + enterpriseFeatureNote + ".",
 					},
 					"socks_username": schema.StringAttribute{
 						Optional:    true,
-						Description: "The optional SOCKS username. " + enterpriseFeatureNote,
+						Description: "The optional SOCKS username. " + enterpriseFeatureNote + ".",
 					},
 					"socks_password": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
-						Description: "Plain text SOCKS password. " + secretDescriptionGeneric + " " + enterpriseFeatureNote,
+						Description: "Plain text SOCKS password. " + secretDescriptionGeneric + " " + enterpriseFeatureNote + ".",
 					},
 				},
 			},
@@ -913,7 +913,7 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 			},
 			"enforce_secure_algorithms": schema.BoolAttribute{
 				Computed:    true,
-				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote,
+				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote + ".",
 			},
 		},
 	}
@@ -936,7 +936,7 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 	}
 	result.Attributes["custom1"] = schema.StringAttribute{
 		Computed:    true,
-		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. ` + enterpriseFeatureNote,
+		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. ` + enterpriseFeatureNote + ".",
 	}
 	return result
 }
@@ -1135,7 +1135,7 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 			},
 			"enforce_secure_algorithms": schema.BoolAttribute{
 				Optional:    true,
-				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote,
+				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote + ".",
 			},
 		},
 	}
@@ -1164,7 +1164,7 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 	}
 	result.Attributes["custom1"] = schema.StringAttribute{
 		Optional:    true,
-		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. ` + enterpriseFeatureNote,
+		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. ` + enterpriseFeatureNote + ".",
 	}
 	return result
 }

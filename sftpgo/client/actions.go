@@ -50,7 +50,8 @@ const (
 	FilesystemActionExist
 	FilesystemActionCompress
 	FilesystemActionCopy
-	FilesystemActionPGP // Enterprise
+	FilesystemActionPGP           // Enterprise
+	FilesystemActionMetadataCheck // Enterprise
 )
 
 // KeyValue defines a key/value pair
@@ -132,6 +133,14 @@ type EventActionPGP struct {
 	PublicKey  string         `json:"public_key,omitempty"`
 }
 
+type EventActionMetadataCheck struct {
+	// Path to check metadata for
+	Path     string   `json:"path,omitempty"`
+	Metadata KeyValue `json:"metadata"`
+	// Optional timeout to wait for
+	Timeout int `json:"timeout,omitempty"`
+}
+
 // EventActionFsCompress defines the configuration for the compress filesystem action
 type EventActionFsCompress struct {
 	// Archive path
@@ -166,9 +175,11 @@ type EventActionFilesystemConfig struct {
 	// paths to compress and archive name
 	Compress EventActionFsCompress `json:"compress"`
 	// PGP encryption or decryption
-	PGP          EventActionPGP `json:"pgp"`
-	Folder       string         `json:"folder,omitempty"`
-	TargetFolder string         `json:"target_folder,omitempty"`
+	PGP EventActionPGP `json:"pgp"`
+	// Metadata check
+	MetadataCheck EventActionMetadataCheck `json:"metadata_check"`
+	Folder        string                   `json:"folder,omitempty"`
+	TargetFolder  string                   `json:"target_folder,omitempty"`
 }
 
 // EventActionPasswordExpiration defines the configuration for password expiration actions

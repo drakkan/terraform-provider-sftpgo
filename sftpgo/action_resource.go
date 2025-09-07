@@ -302,11 +302,11 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							},
 							"archive_folder": schema.StringAttribute{
 								Optional:    true,
-								Description: `Virtual folder name. If set, files will be moved there instead of being deleted. ` + enterpriseFeatureNote,
+								Description: `Virtual folder name. If set, files will be moved there instead of being deleted. ` + enterpriseFeatureNote + ".",
 							},
 							"archive_path": schema.StringAttribute{
 								Optional:    true,
-								Description: `The base path where archived files will be stored. Placeholders are supported. ` + enterpriseFeatureNote,
+								Description: `The base path where archived files will be stored. Placeholders are supported. ` + enterpriseFeatureNote + ".",
 							},
 						},
 					},
@@ -316,9 +316,9 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 						Attributes: map[string]schema.Attribute{
 							"type": schema.Int64Attribute{
 								Required:    true,
-								Description: `1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy. 7 = PGP (` + enterpriseFeatureNote + `)`,
+								Description: `1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy, 7 = PGP (` + enterpriseFeatureNote + `), ` + `8 Metadata Check (` + enterpriseFeatureNote + `).`,
 								Validators: []validator.Int64{
-									int64validator.Between(1, 7),
+									int64validator.Between(1, 8),
 								},
 							},
 							"renames": schema.ListNestedAttribute{
@@ -397,7 +397,7 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							},
 							"pgp": schema.SingleNestedAttribute{
 								Optional:    true,
-								Description: "Configuration for PGP actions. Either a password or a key pair is required. For encryption, the public key is required, and the private, if provided, will be used for signing. For decryption, the private key is required, and the public key, if provided, will be used for signature verification. " + enterpriseFeatureNote,
+								Description: "Configuration for PGP actions. Either a password or a key pair is required. For encryption, the public key is required, and the private, if provided, will be used for signing. For decryption, the private key is required, and the public key, if provided, will be used for signature verification. " + enterpriseFeatureNote + ".",
 								Attributes: map[string]schema.Attribute{
 									"mode": schema.Int64Attribute{
 										Required:    true,
@@ -447,13 +447,36 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 									},
 								},
 							},
+							"metadata_check": schema.SingleNestedAttribute{
+								Optional:    true,
+								Description: "This action verifies whether the metadata key matches the configured value or is absent for the specified path. Optionally, it can retry periodically until the specified timeout (in seconds) is reached. " + enterpriseFeatureNote + ".",
+								Attributes: map[string]schema.Attribute{
+									"path": schema.StringAttribute{
+										Required: true,
+									},
+									"metadata": schema.SingleNestedAttribute{
+										Required: true,
+										Attributes: map[string]schema.Attribute{
+											"key": schema.StringAttribute{
+												Required: true,
+											},
+											"value": schema.StringAttribute{
+												Optional: true,
+											},
+										},
+									},
+									"timeout": schema.Int64Attribute{
+										Optional: true,
+									},
+								},
+							},
 							"folder": schema.StringAttribute{
 								Optional:    true,
-								Description: "Actions triggered by filesystem events, such as uploads or downloads, use the filesystem associated with the user. By specifying a folder, you can control which filesystem is used. This is especially useful for events that aren't tied to a user, such as scheduled tasks and advanced workflows. " + enterpriseFeatureNote,
+								Description: "Actions triggered by filesystem events, such as uploads or downloads, use the filesystem associated with the user. By specifying a folder, you can control which filesystem is used. This is especially useful for events that aren't tied to a user, such as scheduled tasks and advanced workflows. " + enterpriseFeatureNote + ".",
 							},
 							"target_folder": schema.StringAttribute{
 								Optional:    true,
-								Description: "By specifying a target folder, you can use a different filesystem for target paths than the one associated with the user who triggered the action. This is useful for moving files to another storage backend, such as a different S3 bucket or an external SFTP server, accessing restricted areas of the same storage backend, supporting scheduled actions, or enabling more advanced workflows. " + enterpriseFeatureNote,
+								Description: "By specifying a target folder, you can use a different filesystem for target paths than the one associated with the user who triggered the action. This is useful for moving files to another storage backend, such as a different S3 bucket or an external SFTP server, accessing restricted areas of the same storage backend, supporting scheduled actions, or enabling more advanced workflows. " + enterpriseFeatureNote + ".",
 							},
 						},
 					},
@@ -683,7 +706,7 @@ func (*actionResource) preservePlanFields(ctx context.Context, plan, state *even
 	if plan.Options.IsNull() {
 		return nil
 	}
-	// only HTTP and PGP config has a secret to preserve
+	// only HTTP and PGP config have a secret to preserve
 	actionType := plan.Type.ValueInt64()
 	if actionType != 1 && actionType != 9 {
 		return nil

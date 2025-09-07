@@ -87,7 +87,7 @@ Optional:
 
 Required:
 
-- `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy. 7 = PGP (Available in the Enterprise edition.)
+- `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy, 7 = PGP (Available in the Enterprise edition), 8 Metadata Check (Available in the Enterprise edition).
 
 Optional:
 
@@ -96,6 +96,7 @@ Optional:
 - `deletes` (List of String) Paths to delete.
 - `exist` (List of String) Paths to check for existence.
 - `folder` (String) Actions triggered by filesystem events, such as uploads or downloads, use the filesystem associated with the user. By specifying a folder, you can control which filesystem is used. This is especially useful for events that aren't tied to a user, such as scheduled tasks and advanced workflows. Available in the Enterprise edition.
+- `metadata_check` (Attributes) This action verifies whether the metadata key matches the configured value or is absent for the specified path. Optionally, it can retry periodically until the specified timeout (in seconds) is reached. Available in the Enterprise edition. (see [below for nested schema](#nestedatt--options--fs_config--metadata_check))
 - `mkdirs` (List of String) Directories paths to create.
 - `pgp` (Attributes) Configuration for PGP actions. Either a password or a key pair is required. For encryption, the public key is required, and the private, if provided, will be used for signing. For decryption, the private key is required, and the public key, if provided, will be used for signature verification. Available in the Enterprise edition. (see [below for nested schema](#nestedatt--options--fs_config--pgp))
 - `renames` (Attributes List) Paths to rename. The key is the source path, the value is the target. (see [below for nested schema](#nestedatt--options--fs_config--renames))
@@ -117,6 +118,31 @@ Required:
 
 - `key` (String)
 - `value` (String)
+
+
+<a id="nestedatt--options--fs_config--metadata_check"></a>
+### Nested Schema for `options.fs_config.metadata_check`
+
+Required:
+
+- `metadata` (Attributes) (see [below for nested schema](#nestedatt--options--fs_config--metadata_check--metadata))
+- `path` (String)
+
+Optional:
+
+- `timeout` (Number)
+
+<a id="nestedatt--options--fs_config--metadata_check--metadata"></a>
+### Nested Schema for `options.fs_config.metadata_check.metadata`
+
+Required:
+
+- `key` (String)
+
+Optional:
+
+- `value` (String)
+
 
 
 <a id="nestedatt--options--fs_config--pgp"></a>
