@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccRoleResource(t *testing.T) {
@@ -43,6 +44,20 @@ func TestAccRoleResource(t *testing.T) {
 				ResourceName:      "sftpgo_role.test",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			// External deletion test
+			{
+				PreConfig: func() {
+					c, err := getClient()
+					assert.NoError(t, err)
+					err = c.DeleteRole("test role")
+					assert.NoError(t, err)
+				},
+				Config: `
+					resource "sftpgo_role" "test" {
+					  name = "test role"
+					  description = "desc"
+				    }`,
 			},
 			// Update and Read testing
 			{

@@ -207,8 +207,7 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	group, err := r.client.GetGroup(state.Name.ValueString())
 	if err != nil {
-		// Check if the group was not found (404 error)
-		if statusErr, ok := err.(client.StatusError); ok && statusErr.StatusCode == 404 {
+		if client.IsNotFound(err) {
 			// Resource has been deleted outside of Terraform, remove it from state
 			resp.State.RemoveResource(ctx)
 			return

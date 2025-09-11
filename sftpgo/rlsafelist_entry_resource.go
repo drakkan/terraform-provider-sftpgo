@@ -148,8 +148,7 @@ func (r *rlSafeListEntryResource) Read(ctx context.Context, req resource.ReadReq
 
 	entry, err := r.client.GetIPListEntry(3, state.IPOrNet.ValueString())
 	if err != nil {
-		// Check if the entry was not found (404 error)
-		if statusErr, ok := err.(client.StatusError); ok && statusErr.StatusCode == 404 {
+		if client.IsNotFound(err) {
 			// Resource has been deleted outside of Terraform, remove it from state
 			resp.State.RemoveResource(ctx)
 			return

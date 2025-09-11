@@ -15,6 +15,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,6 +31,15 @@ type StatusError struct {
 
 func (e StatusError) Error() string {
 	return fmt.Sprintf("status: %d, body: %s", e.StatusCode, e.Body)
+}
+
+// IsNotFound checks whether the given error is a StatusError with a NotFound (404) status code
+func IsNotFound(err error) bool {
+	var se *StatusError
+	if errors.As(err, &se) {
+		return se.StatusCode == http.StatusNotFound
+	}
+	return false
 }
 
 // HostURL - Default SFTPGo URL
@@ -176,7 +186,7 @@ func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, e
 	}
 
 	if res.StatusCode != expectedStatusCode {
-		return nil, StatusError{
+		return nil, &StatusError{
 			StatusCode: res.StatusCode,
 			Body:       body,
 		}
