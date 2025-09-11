@@ -253,6 +253,9 @@ func (r *folderResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	// Delete existing folder
 	err := r.client.DeleteFolder(state.Name.ValueString())
 	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Deleting SFTPGo folder",
 			"Could not delete folder, unexpected error: "+err.Error(),

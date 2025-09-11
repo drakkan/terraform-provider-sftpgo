@@ -234,6 +234,9 @@ func (r *allowListEntryResource) Delete(ctx context.Context, req resource.Delete
 	// Delete existing entry
 	err := r.client.DeleteIPListEntry(1, state.IPOrNet.ValueString())
 	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Deleting SFTPGo allow list entry",
 			"Could not delete allow list entry, unexpected error: "+err.Error(),

@@ -435,6 +435,9 @@ func (r *ruleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	// Delete existing event rule
 	err := r.client.DeleteRule(state.Name.ValueString())
 	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Deleting SFTPGo event rule",
 			"Could not delete event rule, unexpected error: "+err.Error(),

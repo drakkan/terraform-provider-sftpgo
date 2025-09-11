@@ -304,6 +304,9 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	// Delete existing group
 	err := r.client.DeleteGroup(state.Name.ValueString())
 	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Deleting SFTPGo group",
 			"Could not delete group, unexpected error: "+err.Error(),

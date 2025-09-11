@@ -230,6 +230,9 @@ func (r *roleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	// Delete existing role
 	err := r.client.DeleteRole(state.Name.ValueString())
 	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Deleting SFTPGo role",
 			"Could not delete role, unexpected error: "+err.Error(),

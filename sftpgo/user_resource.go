@@ -390,6 +390,9 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	// Delete existing user
 	err := r.client.DeleteUser(state.Username.ValueString())
 	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Deleting SFTPGo user",
 			"Could not delete user, unexpected error: "+err.Error(),

@@ -74,6 +74,22 @@ func TestAccRoleResource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("sftpgo_role.test", "updated_at"),
 				),
 			},
+			// External deletion test as last step
+			{
+				PreConfig: func() {
+					c, err := getClient()
+					assert.NoError(t, err)
+					err = c.DeleteRole("test role")
+					assert.NoError(t, err)
+				},
+				Config: `
+					resource "sftpgo_role" "test" {
+					  name = "test role"
+					  description = "desc"
+				    }`,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

@@ -223,7 +223,6 @@ func (r *licenseResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	// Since the license cannot be deleted, we simply remove it from Terraform state.
-	resp.State.RemoveResource(ctx)
 }
 
 // ImportState imports an existing the resource and save the Terraform state

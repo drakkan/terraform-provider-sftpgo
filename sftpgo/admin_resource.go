@@ -345,6 +345,9 @@ func (r *adminResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	// Delete existing admin
 	err := r.client.DeleteAdmin(state.Username.ValueString())
 	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Deleting SFTPGo admin",
 			"Could not delete admin, unexpected error: "+err.Error(),

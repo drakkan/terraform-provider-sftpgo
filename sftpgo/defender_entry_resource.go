@@ -243,6 +243,9 @@ func (r *defenderEntryResource) Delete(ctx context.Context, req resource.DeleteR
 	// Delete existing entry
 	err := r.client.DeleteIPListEntry(2, state.IPOrNet.ValueString())
 	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Deleting SFTPGo defender entry",
 			"Could not delete defender entry, unexpected error: "+err.Error(),

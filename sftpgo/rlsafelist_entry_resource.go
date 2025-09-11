@@ -234,6 +234,9 @@ func (r *rlSafeListEntryResource) Delete(ctx context.Context, req resource.Delet
 	// Delete existing entry
 	err := r.client.DeleteIPListEntry(3, state.IPOrNet.ValueString())
 	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Deleting SFTPGo rate limiters safe list entry",
 			"Could not delete rate limiters safe list entry, unexpected error: "+err.Error(),

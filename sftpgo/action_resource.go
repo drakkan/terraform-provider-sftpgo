@@ -693,6 +693,9 @@ func (r *actionResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	// Delete existing action
 	err := r.client.DeleteAction(state.Name.ValueString())
 	if err != nil {
+		if client.IsNotFound(err) {
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error Deleting SFTPGo Event Action",
 			"Could not delete event action, unexpected error: "+err.Error(),
