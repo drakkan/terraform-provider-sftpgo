@@ -3008,6 +3008,38 @@ func (r *eventRuleResourceModel) fromSFTPGo(ctx context.Context, rule *client.Ev
 	return nil
 }
 
+const (
+	licensePlaceholderID = "license"
+)
+
+type licenseResourceModel struct {
+	ID        types.String `tfsdk:"id"`
+	Key       types.String `tfsdk:"key"`
+	Type      types.Int64  `tfsdk:"type"`
+	ValidFrom types.Int64  `tfsdk:"valid_from"`
+	ValidTo   types.Int64  `tfsdk:"valid_to"`
+}
+
+func (r *licenseResourceModel) toSFTPGo(_ context.Context) (*client.License, diag.Diagnostics) {
+	license := &client.License{
+		Key:       r.Key.ValueString(),
+		Type:      int(r.Type.ValueInt64()),
+		ValidFrom: r.ValidFrom.ValueInt64(),
+		ValidTo:   r.ValidTo.ValueInt64(),
+	}
+
+	return license, nil
+}
+
+func (r *licenseResourceModel) fromSFTPGo(_ context.Context, license *client.License) diag.Diagnostics {
+	r.Key = types.StringValue(license.Key)
+	r.ID = types.StringValue(licensePlaceholderID)
+	r.Type = types.Int64Value(int64(license.Type))
+	r.ValidFrom = types.Int64Value(license.ValidFrom)
+	r.ValidTo = types.Int64Value(license.ValidTo)
+	return nil
+}
+
 func getOptionalInt64(val int64) types.Int64 {
 	if val == 0 {
 		return types.Int64Null()

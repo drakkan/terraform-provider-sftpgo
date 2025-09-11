@@ -305,6 +305,7 @@ func (p *sftpgoProvider) DataSources(_ context.Context) []func() datasource.Data
 		NewRlSafeListEntriesDataSource,
 		NewActionsDataSource,
 		NewRulesDataSource,
+		NewLicenseDataSource,
 	}
 }
 
@@ -321,6 +322,7 @@ func (p *sftpgoProvider) Resources(_ context.Context) []func() resource.Resource
 		NewRlSafeListEntryResource,
 		NewActionResource,
 		NewRuleResource,
+		NewLicenseResource,
 	}
 }
 
