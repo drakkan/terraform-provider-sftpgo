@@ -891,6 +891,27 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 				Computed:    true,
 				Description: "Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.",
 			},
+			"password_policy": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: "Static password complexity requirements. Whenever possible, prefer using the entropy-based approach provided by password_strength. " + enterpriseFeatureNote,
+				Attributes: map[string]schema.Attribute{
+					"length": schema.Int64Attribute{
+						Optional: true,
+					},
+					"uppers": schema.Int64Attribute{
+						Optional: true,
+					},
+					"lowers": schema.Int64Attribute{
+						Optional: true,
+					},
+					"digits": schema.Int64Attribute{
+						Optional: true,
+					},
+					"specials": schema.Int64Attribute{
+						Optional: true,
+					},
+				},
+			},
 			"access_time": schema.ListNestedAttribute{
 				Computed:    true,
 				Description: "Time periods in which access is allowed",
@@ -1109,6 +1130,27 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 			"password_strength": schema.Int64Attribute{
 				Optional:    true,
 				Description: "Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.",
+			},
+			"password_policy": schema.SingleNestedAttribute{
+				Optional:    true,
+				Description: "Static password complexity requirements. Whenever possible, prefer using the entropy-based approach provided by password_strength. " + enterpriseFeatureNote,
+				Attributes: map[string]schema.Attribute{
+					"length": schema.Int64Attribute{
+						Optional: true,
+					},
+					"uppers": schema.Int64Attribute{
+						Optional: true,
+					},
+					"lowers": schema.Int64Attribute{
+						Optional: true,
+					},
+					"digits": schema.Int64Attribute{
+						Optional: true,
+					},
+					"specials": schema.Int64Attribute{
+						Optional: true,
+					},
+				},
 			},
 			"access_time": schema.ListNestedAttribute{
 				Optional:    true,

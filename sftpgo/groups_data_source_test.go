@@ -215,6 +215,9 @@ func TestAccEnterpriseGroupsDataSource(t *testing.T) {
 			Filters: client.BaseUserFilters{
 				WebClient:               client.EnterpriseWebClientOptions,
 				EnforceSecureAlgorithms: true,
+				PasswordPolicy: client.PasswordPolicy{
+					Length: 8,
+				},
 			},
 		},
 		VirtualFolders: []client.VirtualFolder{
@@ -260,6 +263,7 @@ func TestAccEnterpriseGroupsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.expires_in", "10"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.home_dir"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.max_sessions"),
+					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.password_policy.length", "8"),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.web_client.#", "3"),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.web_client.0",
 						client.EnterpriseWebClientOptions[0]),

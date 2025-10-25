@@ -271,6 +271,14 @@ type timePeriod struct {
 	To        types.String `tfsdk:"to"`
 }
 
+type passwordPolicy struct {
+	Length   types.Int64 `tfsdk:"length"`
+	Uppers   types.Int64 `tfsdk:"uppers"`
+	Lowers   types.Int64 `tfsdk:"lowers"`
+	Digits   types.Int64 `tfsdk:"digits"`
+	Specials types.Int64 `tfsdk:"specials"`
+}
+
 type baseUserFilters struct {
 	AllowedIP               types.List       `tfsdk:"allowed_ip"`
 	DeniedIP                types.List       `tfsdk:"denied_ip"`
@@ -296,6 +304,7 @@ type baseUserFilters struct {
 	MaxSharesExpiration     types.Int64      `tfsdk:"max_shares_expiration"`
 	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
 	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
+	PasswordPolicy          *passwordPolicy  `tfsdk:"password_policy"`
 	AccessTime              []timePeriod     `tfsdk:"access_time"`
 	EnforceSecureAlgorithms types.Bool       `tfsdk:"enforce_secure_algorithms"`
 }
@@ -361,6 +370,15 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 		"max_shares_expiration":     types.Int64Type,
 		"password_expiration":       types.Int64Type,
 		"password_strength":         types.Int64Type,
+		"password_policy": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"length":   types.Int64Type,
+				"uppers":   types.Int64Type,
+				"lowers":   types.Int64Type,
+				"digits":   types.Int64Type,
+				"specials": types.Int64Type,
+			},
+		},
 		"access_time": types.ListType{
 			ElemType: types.ObjectType{
 				AttrTypes: map[string]attr.Type{
@@ -375,6 +393,9 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 }
 
 func (f *baseUserFilters) toSFTPGo(ctx context.Context) (client.BaseUserFilters, diag.Diagnostics) {
+	if f.PasswordPolicy == nil {
+		f.PasswordPolicy = &passwordPolicy{}
+	}
 	filters := client.BaseUserFilters{
 		MaxUploadFileSize: f.MaxUploadFileSize.ValueInt64(),
 		TLSUsername:       sdk.TLSUsername(f.TLSUsername.ValueString()),
@@ -394,6 +415,13 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (client.BaseUserFilters,
 		MaxSharesExpiration:     int(f.MaxSharesExpiration.ValueInt64()),
 		PasswordExpiration:      int(f.PasswordExpiration.ValueInt64()),
 		PasswordStrength:        int(f.PasswordStrength.ValueInt64()),
+		PasswordPolicy: client.PasswordPolicy{
+			Length:   int(f.PasswordPolicy.Length.ValueInt64()),
+			Uppers:   int(f.PasswordPolicy.Uppers.ValueInt64()),
+			Lowers:   int(f.PasswordPolicy.Lowers.ValueInt64()),
+			Digits:   int(f.PasswordPolicy.Digits.ValueInt64()),
+			Specials: int(f.PasswordPolicy.Specials.ValueInt64()),
+		},
 		EnforceSecureAlgorithms: f.EnforceSecureAlgorithms.ValueBool(),
 	}
 	for _, p := range f.FilePatterns {
@@ -564,6 +592,15 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *client.BaseUs
 	f.MaxSharesExpiration = getOptionalInt64(int64(filters.MaxSharesExpiration))
 	f.PasswordExpiration = getOptionalInt64(int64(filters.PasswordExpiration))
 	f.PasswordStrength = getOptionalInt64(int64(filters.PasswordStrength))
+	if filters.PasswordPolicy.IsSet() {
+		f.PasswordPolicy = &passwordPolicy{
+			Length:   getOptionalInt64(int64(filters.PasswordPolicy.Length)),
+			Uppers:   getOptionalInt64(int64(filters.PasswordPolicy.Uppers)),
+			Lowers:   getOptionalInt64(int64(filters.PasswordPolicy.Lowers)),
+			Digits:   getOptionalInt64(int64(filters.PasswordPolicy.Digits)),
+			Specials: getOptionalInt64(int64(filters.PasswordPolicy.Specials)),
+		}
+	}
 	return nil
 }
 
@@ -595,6 +632,7 @@ type userFilters struct {
 	MaxSharesExpiration     types.Int64      `tfsdk:"max_shares_expiration"`
 	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
 	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
+	PasswordPolicy          *passwordPolicy  `tfsdk:"password_policy"`
 	RequirePasswordChange   types.Bool       `tfsdk:"require_password_change"`
 	AccessTime              []timePeriod     `tfsdk:"access_time"`
 	EnforceSecureAlgorithms types.Bool       `tfsdk:"enforce_secure_algorithms"`
@@ -649,6 +687,7 @@ func (f *userFilters) getBaseFilters() baseUserFilters {
 		MaxSharesExpiration:     f.MaxSharesExpiration,
 		PasswordExpiration:      f.PasswordExpiration,
 		PasswordStrength:        f.PasswordStrength,
+		PasswordPolicy:          f.PasswordPolicy,
 		AccessTime:              f.AccessTime,
 		EnforceSecureAlgorithms: f.EnforceSecureAlgorithms,
 	}
@@ -679,6 +718,7 @@ func (f *userFilters) fromBaseFilters(filters *baseUserFilters) {
 	f.MaxSharesExpiration = filters.MaxSharesExpiration
 	f.PasswordExpiration = filters.PasswordExpiration
 	f.PasswordStrength = filters.PasswordStrength
+	f.PasswordPolicy = filters.PasswordPolicy
 	f.AccessTime = filters.AccessTime
 	f.EnforceSecureAlgorithms = filters.EnforceSecureAlgorithms
 }

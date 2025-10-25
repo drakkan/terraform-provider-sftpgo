@@ -107,6 +107,20 @@ type Group struct {
 	VirtualFolders []VirtualFolder   `json:"virtual_folders,omitempty"`
 }
 
+// PasswordPolicy defines static password validation rules
+type PasswordPolicy struct {
+	Length   int `json:"length,omitempty"`
+	Uppers   int `json:"uppers,omitempty"`
+	Lowers   int `json:"lowers,omitempty"`
+	Digits   int `json:"digits,omitempty"`
+	Specials int `json:"specials,omitempty"`
+}
+
+// IsSet reports whether at least one rule is defined
+func (p *PasswordPolicy) IsSet() bool {
+	return p.Length > 0 || p.Uppers > 0 || p.Lowers > 0 || p.Digits > 0 || p.Specials > 0
+}
+
 // BaseUserFilters defines additional restrictions for a user
 type BaseUserFilters struct {
 	// only clients connecting from these IP/Mask are allowed.
@@ -185,6 +199,10 @@ type BaseUserFilters struct {
 	// 0 means disabled, any password will be accepted. Values in the 50-70
 	// range are suggested for common use cases.
 	PasswordStrength int `json:"password_strength,omitempty"`
+	// PasswordPolicy defines static password complexity requirements. Whenever
+	// possible, prefer using the entropy-based approach provided by
+	// PasswordStrength.
+	PasswordPolicy PasswordPolicy `json:"password_policy,omitempty"`
 	// AccessTime defines the time periods in which access is allowed
 	AccessTime []sdk.TimePeriod `json:"access_time,omitempty"`
 	// If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP

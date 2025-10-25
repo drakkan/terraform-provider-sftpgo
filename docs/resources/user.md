@@ -230,6 +230,7 @@ Optional:
 - `max_shares_expiration` (Number) Maximum allowed expiration, as a number of days, when a user creates or updates a share. Not set means that non-expiring shares are allowed.
 - `max_upload_file_size` (Number) Max size allowed for a single upload. Unset means no limit.
 - `password_expiration` (Number) The password expires after the defined number of days. Not set means no expiration
+- `password_policy` (Attributes) Static password complexity requirements. Whenever possible, prefer using the entropy-based approach provided by password_strength. Available in the Enterprise edition (see [below for nested schema](#nestedatt--filters--password_policy))
 - `password_strength` (Number) Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.
 - `pre_login_disabled` (Boolean) If set, external pre-login hook will not be executed.
 - `require_password_change` (Boolean) If set, user must change their password from WebClient/REST API at next login.
@@ -275,6 +276,18 @@ Optional:
 - `allowed_patterns` (List of String) Files/directories with these, case insensitive, patterns are allowed. Allowed file patterns are evaluated before the denied ones.
 - `denied_patterns` (List of String) Files/directories with these, case insensitive, patterns are not allowed.
 - `deny_policy` (Number) Set to 1 to hide denied files/directories in directory listing.
+
+
+<a id="nestedatt--filters--password_policy"></a>
+### Nested Schema for `filters.password_policy`
+
+Optional:
+
+- `digits` (Number)
+- `length` (Number)
+- `lowers` (Number)
+- `specials` (Number)
+- `uppers` (Number)
 
 
 

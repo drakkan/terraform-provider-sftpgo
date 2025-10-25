@@ -410,7 +410,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource "sftpgo_user" "test" {
   					  username = "test user"
   					  status      = 1
-    				  password    = "secret pwd"
+    				  password    = "secret Pwd@123"
                       home_dir    = "/tmp/testuser"
     				  email       = "test@test.com"
     				  permissions = {
@@ -432,6 +432,13 @@ func TestAccEnterpriseUserResource(t *testing.T) {
     				  filters = {
       					web_client = ["shares-require-email-auth", "wopi-disabled", "rest-api-disabled"]
 						custom1 = "testvalue"
+						password_policy = {
+						  length = 12
+						  uppers = 1
+						  lowers = 1
+						  digits = 1
+						  specials = 1
+						}
     				  }
 					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -440,7 +447,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "status", "1"),
 					resource.TestCheckResourceAttrSet("sftpgo_user.test", "created_at"),
 					resource.TestCheckResourceAttrSet("sftpgo_user.test", "updated_at"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "password", "secret pwd"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "password", "secret Pwd@123"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "home_dir", "/tmp/testuser"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "email", "test@test.com"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "1"),
@@ -464,6 +471,11 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.1", "wopi-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.2", "rest-api-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom1", "testvalue"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.length", "12"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.uppers", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.lowers", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.digits", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.specials", "1"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.enforce_secure_algorithms"),
 				),
 			},
@@ -496,6 +508,9 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 				  filters = {
 					  web_client = ["write-disabled"]
 					  enforce_secure_algorithms = true
+					  password_policy = {
+						  length = 10
+			          }
 				  }
 				}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -523,6 +538,11 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.0", "write-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.enforce_secure_algorithms", "true"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.length", "10"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.password_policy.uppers"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.password_policy.lowers"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.password_policy.digits"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.password_policy.specials"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
