@@ -52,6 +52,7 @@ const (
 	FilesystemActionCopy
 	FilesystemActionPGP           // Enterprise
 	FilesystemActionMetadataCheck // Enterprise
+	FilesystemActionDecompress    // Enterprise
 )
 
 // KeyValue defines a key/value pair
@@ -149,6 +150,14 @@ type EventActionFsCompress struct {
 	Paths []string `json:"paths,omitempty"`
 }
 
+// EventActionFsExtract defines the configuration for the extract filesystem action
+type EventActionFsExtract struct {
+	// Archive path
+	Name string `json:"name,omitempty"`
+	// Directory to extract the archive into
+	ExtractDir string `json:"extract_dir,omitempty"`
+}
+
 // RenameConfig defines the configuration for a filesystem rename
 type RenameConfig struct {
 	// key is the source and target the value
@@ -174,6 +183,8 @@ type EventActionFilesystemConfig struct {
 	Copy []KeyValue `json:"copy,omitempty"`
 	// paths to compress and archive name
 	Compress EventActionFsCompress `json:"compress"`
+	// archive to decompress and directory to extract the archive into
+	Decompress EventActionFsExtract `json:"decompress"`
 	// PGP encryption or decryption
 	PGP EventActionPGP `json:"pgp"`
 	// Metadata check

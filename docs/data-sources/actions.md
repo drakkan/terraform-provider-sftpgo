@@ -85,6 +85,7 @@ Read-Only:
 
 - `compress` (Attributes) Configuration for paths to compress as zip. (see [below for nested schema](#nestedatt--actions--options--fs_config--compress))
 - `copy` (Attributes List) Paths to copy. The key is the source path, the value is the target. (see [below for nested schema](#nestedatt--actions--options--fs_config--copy))
+- `decompress` (Attributes) Configuration for archive to extract. Available in the Enterprise edition (see [below for nested schema](#nestedatt--actions--options--fs_config--decompress))
 - `deletes` (List of String) Paths to delete.
 - `exist` (List of String) Paths to check for existence.
 - `folder` (String) Available in the Enterprise edition.
@@ -111,6 +112,15 @@ Read-Only:
 
 - `key` (String)
 - `value` (String)
+
+
+<a id="nestedatt--actions--options--fs_config--decompress"></a>
+### Nested Schema for `actions.options.fs_config.decompress`
+
+Read-Only:
+
+- `extract_dir` (String) Directory to extract the archive into.
+- `name` (String) Full path to the zip file.
 
 
 <a id="nestedatt--actions--options--fs_config--metadata_check"></a>

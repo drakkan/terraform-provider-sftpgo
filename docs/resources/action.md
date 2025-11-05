@@ -87,12 +87,13 @@ Optional:
 
 Required:
 
-- `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy, 7 = PGP (Available in the Enterprise edition), 8 Metadata Check (Available in the Enterprise edition).
+- `type` (Number) 1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy, 7 = PGP (Available in the Enterprise edition), 8 Metadata Check (Available in the Enterprise edition), 9 Decompress (Available in the Enterprise edition).
 
 Optional:
 
 - `compress` (Attributes) Configuration for paths to compress as zip. (see [below for nested schema](#nestedatt--options--fs_config--compress))
 - `copy` (Attributes List) Paths to copy. The key is the source path, the value is the target. (see [below for nested schema](#nestedatt--options--fs_config--copy))
+- `decompress` (Attributes) Configuration for archive to extract. Available in the Enterprise edition (see [below for nested schema](#nestedatt--options--fs_config--decompress))
 - `deletes` (List of String) Paths to delete.
 - `exist` (List of String) Paths to check for existence.
 - `folder` (String) Actions triggered by filesystem events, such as uploads or downloads, use the filesystem associated with the user. By specifying a folder, you can control which filesystem is used. This is especially useful for events that aren't tied to a user, such as scheduled tasks and advanced workflows. Available in the Enterprise edition.
@@ -118,6 +119,15 @@ Required:
 
 - `key` (String)
 - `value` (String)
+
+
+<a id="nestedatt--options--fs_config--decompress"></a>
+### Nested Schema for `options.fs_config.decompress`
+
+Required:
+
+- `extract_dir` (String) Directory to extract the archive into.
+- `name` (String) Full path to the zip file.
 
 
 <a id="nestedatt--options--fs_config--metadata_check"></a>

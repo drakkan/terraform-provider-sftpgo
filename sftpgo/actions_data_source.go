@@ -336,6 +336,20 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 												},
 											},
 										},
+										"decompress": schema.SingleNestedAttribute{
+											Computed:    true,
+											Description: "Configuration for archive to extract. " + enterpriseFeatureNote,
+											Attributes: map[string]schema.Attribute{
+												"name": schema.StringAttribute{
+													Computed:    true,
+													Description: `Full path to the zip file.`,
+												},
+												"extract_dir": schema.StringAttribute{
+													Computed:    true,
+													Description: `Directory to extract the archive into.`,
+												},
+											},
+										},
 										"pgp": schema.SingleNestedAttribute{
 											Computed:    true,
 											Description: "Configuration for PGP actions. " + enterpriseFeatureNote + ".",

@@ -316,9 +316,9 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 						Attributes: map[string]schema.Attribute{
 							"type": schema.Int64Attribute{
 								Required:    true,
-								Description: `1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy, 7 = PGP (` + enterpriseFeatureNote + `), ` + `8 Metadata Check (` + enterpriseFeatureNote + `).`,
+								Description: `1 = Rename, 2 = Delete, 3 = Mkdir, 4 = Exist, 5 = Compress, 6 = Copy, 7 = PGP (` + enterpriseFeatureNote + `), ` + `8 Metadata Check (` + enterpriseFeatureNote + `), ` + `9 Decompress (` + enterpriseFeatureNote + `).`,
 								Validators: []validator.Int64{
-									int64validator.Between(1, 8),
+									int64validator.Between(1, 9),
 								},
 							},
 							"renames": schema.ListNestedAttribute{
@@ -392,6 +392,20 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 										Validators: []validator.List{
 											listvalidator.UniqueValues(),
 										},
+									},
+								},
+							},
+							"decompress": schema.SingleNestedAttribute{
+								Optional:    true,
+								Description: "Configuration for archive to extract. " + enterpriseFeatureNote,
+								Attributes: map[string]schema.Attribute{
+									"name": schema.StringAttribute{
+										Required:    true,
+										Description: `Full path to the zip file.`,
+									},
+									"extract_dir": schema.StringAttribute{
+										Required:    true,
+										Description: `Directory to extract the archive into.`,
 									},
 								},
 							},

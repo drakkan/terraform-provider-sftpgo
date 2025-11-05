@@ -1003,6 +1003,39 @@ EOF
 				Config: `
 					resource "sftpgo_action" "test" {
 						name = "test action"
+						type = 9
+						options = {
+							fs_config = {
+								type = 9
+								decompress = {
+									name = "/test.zip"
+									extract_dir = "/testdir"
+								}
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.decompress.%", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.decompress.name", "/test.zip"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.decompress.extract_dir", "/testdir"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.pwd_expiration_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.user_inactivity_config"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.idp_config"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
 						type = 8
 						options = {
 							retention_config = {

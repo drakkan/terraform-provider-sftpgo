@@ -2023,6 +2023,11 @@ type eventActionFsCompress struct {
 	Paths types.List   `tfsdk:"paths"`
 }
 
+type eventActionFsDecompress struct {
+	Name       types.String `tfsdk:"name"`
+	ExtractDir types.String `tfsdk:"extract_dir"`
+}
+
 type eventActionPGPConfig struct {
 	Mode       types.Int64  `tfsdk:"mode"`
 	Profile    types.Int64  `tfsdk:"profile"`
@@ -2047,6 +2052,7 @@ type eventActionFilesystemConfig struct {
 	Exist         types.List                `tfsdk:"exist"`
 	Copy          []keyValue                `tfsdk:"copy"`
 	Compress      *eventActionFsCompress    `tfsdk:"compress"`
+	Decompress    *eventActionFsDecompress  `tfsdk:"decompress"`
 	PGP           *eventActionPGPConfig     `tfsdk:"pgp"`
 	MetadataCheck *eventActionMetadataCheck `tfsdk:"metadata_check"`
 	Folder        types.String              `tfsdk:"folder"`
@@ -2097,6 +2103,9 @@ func (o *eventActionOptions) ensureNotNull() {
 	}
 	if o.FsConfig.Compress == nil {
 		o.FsConfig.Compress = &eventActionFsCompress{}
+	}
+	if o.FsConfig.Decompress == nil {
+		o.FsConfig.Decompress = &eventActionFsDecompress{}
 	}
 	if o.FsConfig.PGP == nil {
 		o.FsConfig.PGP = &eventActionPGPConfig{}
@@ -2236,6 +2245,12 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 						},
 					},
 				},
+				"decompress": types.ObjectType{
+					AttrTypes: map[string]attr.Type{
+						"name":        types.StringType,
+						"extract_dir": types.StringType,
+					},
+				},
 				"pgp": types.ObjectType{
 					AttrTypes: map[string]attr.Type{
 						"mode":    types.Int64Type,
@@ -2310,6 +2325,10 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			Type: int(o.FsConfig.Type.ValueInt64()),
 			Compress: client.EventActionFsCompress{
 				Name: o.FsConfig.Compress.Name.ValueString(),
+			},
+			Decompress: client.EventActionFsExtract{
+				Name:       o.FsConfig.Decompress.Name.ValueString(),
+				ExtractDir: o.FsConfig.Decompress.ExtractDir.ValueString(),
 			},
 			PGP: client.EventActionPGP{
 				Mode:       int(o.FsConfig.PGP.Mode.ValueInt64()),
@@ -2606,6 +2625,11 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 				return diags
 			}
 			o.FsConfig.Compress.Paths = paths
+		case client.FilesystemActionDecompress:
+			o.FsConfig.Decompress = &eventActionFsDecompress{
+				Name:       types.StringValue(action.Options.FsConfig.Decompress.Name),
+				ExtractDir: types.StringValue(action.Options.FsConfig.Decompress.ExtractDir),
+			}
 		case client.FilesystemActionCopy:
 			for _, v := range action.Options.FsConfig.Copy {
 				o.FsConfig.Copy = append(o.FsConfig.Copy, keyValue{
