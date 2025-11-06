@@ -545,6 +545,73 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.password_policy.specials"),
 				),
 			},
+			{
+				Config: `
+				resource "sftpgo_user" "test" {
+				  username = "test user"
+				  status      = 1
+				  home_dir    = "/tmp/testuser"
+				  additional_info = "info"
+				  permissions = {
+					"/" = "*",
+					"/p2" = "list,download"
+				  }
+				  filesystem = {
+					  provider = 7
+					  ftpconfig = {
+					    endpoint = "127.0.0.1:2021"
+					    username = "test"
+						password = "pwd"
+						tls_mode = 1
+			          }
+				  }
+				  filters = {
+					  web_client = ["write-disabled"]
+					  enforce_secure_algorithms = true
+					  password_policy = {
+						  length = 10
+			          }
+				  }
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.test", "username", "test user"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "id", "test user"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "status", "1"),
+					resource.TestCheckResourceAttrSet("sftpgo_user.test", "created_at"),
+					resource.TestCheckResourceAttrSet("sftpgo_user.test", "updated_at"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "password"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "home_dir", "/tmp/testuser"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "email"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "2"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./", "*"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./p2", "list,download"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.provider", "7"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.osconfig"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.s3config"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.ftpconfig.endpoint", "127.0.0.1:2021"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.ftpconfig.username", "test"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.ftpconfig.password", "pwd"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.ftpconfig.tls_mode", "1"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "additional_info", "info"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "groups"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "virtual_folders"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.0", "write-disabled"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.enforce_secure_algorithms", "true"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.length", "10"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.password_policy.uppers"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.password_policy.lowers"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.password_policy.digits"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.password_policy.specials"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_user.test",
+				ImportState:       true,
+				ImportStateVerify: false, // SFTPGo will not return plain text password/secrets
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})

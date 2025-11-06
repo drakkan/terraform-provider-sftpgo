@@ -58,12 +58,13 @@ Optional:
 
 Required:
 
-- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
+- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP, 7 = FTP
 
 Optional:
 
 - `azblobconfig` (Attributes) (see [below for nested schema](#nestedatt--user_settings--filesystem--azblobconfig))
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--user_settings--filesystem--cryptconfig))
+- `ftpconfig` (Attributes) Available in the Enterprise edition (see [below for nested schema](#nestedatt--user_settings--filesystem--ftpconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--user_settings--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--user_settings--filesystem--httpconfig))
 - `osconfig` (Attributes) (see [below for nested schema](#nestedatt--user_settings--filesystem--osconfig))
@@ -97,6 +98,21 @@ Optional:
 - `passphrase` (String, Sensitive) Plain text passphrase. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
 - `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads. Omit to disable buffering, that's fine in most use cases.
 - `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads. Omit to disable buffering, that's fine in most use cases.
+
+
+<a id="nestedatt--user_settings--filesystem--ftpconfig"></a>
+### Nested Schema for `user_settings.filesystem.ftpconfig`
+
+Required:
+
+- `endpoint` (String) FTP endpoint as host:port.
+- `username` (String)
+
+Optional:
+
+- `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `skip_tls_verify` (Boolean)
+- `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
 
 
 <a id="nestedatt--user_settings--filesystem--gcsconfig"></a>
@@ -309,6 +325,7 @@ Read-Only:
 
 - `azblobconfig` (Attributes) (see [below for nested schema](#nestedatt--virtual_folders--filesystem--azblobconfig))
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--virtual_folders--filesystem--cryptconfig))
+- `ftpconfig` (Attributes) Available in the Enterprise edition (see [below for nested schema](#nestedatt--virtual_folders--filesystem--ftpconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--virtual_folders--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--virtual_folders--filesystem--httpconfig))
 - `osconfig` (Attributes) (see [below for nested schema](#nestedatt--virtual_folders--filesystem--osconfig))
@@ -343,6 +360,18 @@ Read-Only:
 - `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads.
 - `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads.
+
+
+<a id="nestedatt--virtual_folders--filesystem--ftpconfig"></a>
+### Nested Schema for `virtual_folders.filesystem.ftpconfig`
+
+Read-Only:
+
+- `endpoint` (String) FTP endpoint as host:port.
+- `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `skip_tls_verify` (Boolean)
+- `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
+- `username` (String)
 
 
 <a id="nestedatt--virtual_folders--filesystem--gcsconfig"></a>

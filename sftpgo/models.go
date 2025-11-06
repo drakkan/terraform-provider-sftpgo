@@ -849,6 +849,14 @@ type sftpFsConfig struct {
 	SocksPassword           types.String `tfsdk:"socks_password"`
 }
 
+type ftpFsConfig struct {
+	Endpoint      types.String `tfsdk:"endpoint"`
+	Username      types.String `tfsdk:"username"`
+	Password      types.String `tfsdk:"password"`
+	TLSMode       types.Int64  `tfsdk:"tls_mode"`
+	SkipTLSVerify types.Bool   `tfsdk:"skip_tls_verify"`
+}
+
 type httpFsConfig struct {
 	Endpoint          types.String `tfsdk:"endpoint"`
 	Username          types.String `tfsdk:"username"`
@@ -866,6 +874,7 @@ type filesystem struct {
 	AzBlobConfig *azBlobFsConfig `tfsdk:"azblobconfig"`
 	CryptConfig  *cryptFsConfig  `tfsdk:"cryptconfig"`
 	SFTPConfig   *sftpFsConfig   `tfsdk:"sftpconfig"`
+	FTPConfig    *ftpFsConfig    `tfsdk:"ftpconfig"`
 	HTTPConfig   *httpFsConfig   `tfsdk:"httpconfig"`
 }
 
@@ -887,6 +896,9 @@ func (f *filesystem) ensureNotNull() {
 	}
 	if f.SFTPConfig == nil {
 		f.SFTPConfig = &sftpFsConfig{}
+	}
+	if f.FTPConfig == nil {
+		f.FTPConfig = &ftpFsConfig{}
 	}
 	if f.HTTPConfig == nil {
 		f.HTTPConfig = &httpFsConfig{}
@@ -978,6 +990,15 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"socks_proxy":              types.StringType,
 				"socks_username":           types.StringType,
 				"socks_password":           types.StringType,
+			},
+		},
+		"ftpconfig": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"endpoint":        types.StringType,
+				"username":        types.StringType,
+				"password":        types.StringType,
+				"tls_mode":        types.Int64Type,
+				"skip_tls_verify": types.BoolType,
 			},
 		},
 		"httpconfig": types.ObjectType{
@@ -1076,6 +1097,13 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 			KeyPassphrase: getSFTPGoSecret(f.SFTPConfig.KeyPassphrase.ValueString()),
 			SocksPassword: getSFTPGoSecret(f.SFTPConfig.SocksPassword.ValueString()),
 		},
+		FTPConfig: client.FTPFsConfig{
+			Endpoint:      f.FTPConfig.Endpoint.ValueString(),
+			Username:      f.FTPConfig.Username.ValueString(),
+			Password:      getSFTPGoSecret(f.FTPConfig.Password.ValueString()),
+			TLSMode:       int(f.FTPConfig.TLSMode.ValueInt64()),
+			SkipTLSVerify: f.FTPConfig.SkipTLSVerify.ValueBool(),
+		},
 		HTTPConfig: sdk.HTTPFsConfig{
 			BaseHTTPFsConfig: sdk.BaseHTTPFsConfig{
 				Endpoint:          f.HTTPConfig.Endpoint.ValueString(),
@@ -1105,6 +1133,7 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *client.Filesystem) diag
 	f.AzBlobConfig = nil
 	f.CryptConfig = nil
 	f.SFTPConfig = nil
+	f.FTPConfig = nil
 	f.HTTPConfig = nil
 	switch fs.Provider {
 	case sdk.LocalFilesystemProvider:
@@ -1189,6 +1218,14 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *client.Filesystem) diag
 			return diags
 		}
 		f.SFTPConfig.Fingerprints = fingerprints
+	case client.FTPFilesystemProvider:
+		f.FTPConfig = &ftpFsConfig{
+			Endpoint:      getOptionalString(fs.FTPConfig.Endpoint),
+			Username:      getOptionalString(fs.FTPConfig.Username),
+			Password:      getOptionalString(getSecretFromSFTPGo(fs.FTPConfig.Password)),
+			TLSMode:       getOptionalInt64(int64(fs.FTPConfig.TLSMode)),
+			SkipTLSVerify: getOptionalBool(fs.FTPConfig.SkipTLSVerify),
+		}
 	case sdk.HTTPFilesystemProvider:
 		f.HTTPConfig = &httpFsConfig{
 			Endpoint:          getOptionalString(fs.HTTPConfig.Endpoint),

@@ -19,6 +19,10 @@ import (
 	"github.com/sftpgo/sdk/kms"
 )
 
+const (
+	FTPFilesystemProvider = 7
+)
+
 var (
 	// EnterpriseWebClientOptions defines the additional WebClientOptions available in the Enterprise version.
 	EnterpriseWebClientOptions = []string{"shares-require-email-auth", "wopi-disabled", "rest-api-disabled"}
@@ -34,6 +38,7 @@ type Filesystem struct {
 	AzBlobConfig sdk.AzBlobFsConfig     `json:"azblobconfig,omitempty"`
 	CryptConfig  sdk.CryptFsConfig      `json:"cryptconfig,omitempty"`
 	SFTPConfig   SFTPFsConfig           `json:"sftpconfig,omitempty"`
+	FTPConfig    FTPFsConfig            `json:"ftpconfig,omitempty"`
 	HTTPConfig   sdk.HTTPFsConfig       `json:"httpconfig,omitempty"`
 }
 
@@ -76,6 +81,16 @@ type BaseGCSFsConfig struct {
 type GCSFsConfig struct {
 	BaseGCSFsConfig
 	Credentials kms.BaseSecret `json:"credentials,omitempty"`
+}
+
+// FTPFsConfig defines the configuration for FTP based filesystem
+type FTPFsConfig struct {
+	Endpoint string         `json:"endpoint,omitempty"`
+	Username string         `json:"username,omitempty"`
+	Password kms.BaseSecret `json:"password,omitempty"`
+	// 0 disabled, 1 explicit, 2 implicit
+	TLSMode       int  `json:"tls_mode,omitempty"`
+	SkipTLSVerify bool `json:"skip_tls_verify,omitempty"`
 }
 
 type BaseVirtualFolder struct {

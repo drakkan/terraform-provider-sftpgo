@@ -41,6 +41,7 @@ Read-Only:
 
 - `azblobconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--azblobconfig))
 - `cryptconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--cryptconfig))
+- `ftpconfig` (Attributes) Available in the Enterprise edition (see [below for nested schema](#nestedatt--folders--filesystem--ftpconfig))
 - `gcsconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--gcsconfig))
 - `httpconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--httpconfig))
 - `osconfig` (Attributes) (see [below for nested schema](#nestedatt--folders--filesystem--osconfig))
@@ -75,6 +76,18 @@ Read-Only:
 - `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads.
 - `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads.
+
+
+<a id="nestedatt--folders--filesystem--ftpconfig"></a>
+### Nested Schema for `folders.filesystem.ftpconfig`
+
+Read-Only:
+
+- `endpoint` (String) FTP endpoint as host:port.
+- `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `skip_tls_verify` (Boolean)
+- `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
+- `username` (String)
 
 
 <a id="nestedatt--folders--filesystem--gcsconfig"></a>

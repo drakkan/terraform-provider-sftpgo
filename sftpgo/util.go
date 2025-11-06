@@ -295,6 +295,30 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					},
 				},
 			},
+			"ftpconfig": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: enterpriseFeatureNote,
+				Attributes: map[string]schema.Attribute{
+					"endpoint": schema.StringAttribute{
+						Computed:    true,
+						Description: "FTP endpoint as host:port.",
+					},
+					"username": schema.StringAttribute{
+						Computed: true,
+					},
+					"password": schema.StringAttribute{
+						Computed:    true,
+						Description: computedSecretDescription,
+					},
+					"tls_mode": schema.Int64Attribute{
+						Computed:    true,
+						Description: "0 disabled, 1 Explicit, 2 Implicit.",
+					},
+					"skip_tls_verify": schema.BoolAttribute{
+						Computed: true,
+					},
+				},
+			},
 			"httpconfig": schema.SingleNestedAttribute{
 				Computed: true,
 				Attributes: map[string]schema.Attribute{
@@ -331,9 +355,9 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 		Attributes: map[string]schema.Attribute{
 			"provider": schema.Int64Attribute{
 				Required:    true,
-				Description: "Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP",
+				Description: "Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP, 7 = FTP",
 				Validators: []validator.Int64{
-					int64validator.Between(0, 6),
+					int64validator.Between(0, 7),
 				},
 			},
 			"osconfig": schema.SingleNestedAttribute{
@@ -612,6 +636,31 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Optional:    true,
 						Sensitive:   true,
 						Description: "Plain text SOCKS password. " + secretDescriptionGeneric + " " + enterpriseFeatureNote + ".",
+					},
+				},
+			},
+			"ftpconfig": schema.SingleNestedAttribute{
+				Optional:    true,
+				Description: enterpriseFeatureNote,
+				Attributes: map[string]schema.Attribute{
+					"endpoint": schema.StringAttribute{
+						Required:    true,
+						Description: "FTP endpoint as host:port.",
+					},
+					"username": schema.StringAttribute{
+						Required: true,
+					},
+					"password": schema.StringAttribute{
+						Optional:    true,
+						Sensitive:   true,
+						Description: "Plain text password. " + secretDescriptionGeneric,
+					},
+					"tls_mode": schema.Int64Attribute{
+						Optional:    true,
+						Description: "0 disabled, 1 Explicit, 2 Implicit.",
+					},
+					"skip_tls_verify": schema.BoolAttribute{
+						Optional: true,
 					},
 				},
 			},
@@ -1242,6 +1291,10 @@ func preserveFsConfigPlanFields(ctx context.Context, fsPlan, fsState filesystem)
 		if fsPlan.HTTPConfig != nil {
 			fsState.HTTPConfig.Password = fsPlan.HTTPConfig.Password
 			fsState.HTTPConfig.APIKey = fsPlan.HTTPConfig.APIKey
+		}
+	case client.FTPFilesystemProvider:
+		if fsPlan.FTPConfig != nil {
+			fsState.FTPConfig.Password = fsPlan.FTPConfig.Password
 		}
 	}
 
