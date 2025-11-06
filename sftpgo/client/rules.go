@@ -24,6 +24,7 @@ import (
 
 // Schedule defines an event schedule
 type Schedule struct {
+	Minute     string `json:"minute"`
 	Hours      string `json:"hour"`
 	DayOfWeek  string `json:"day_of_week"`
 	DayOfMonth string `json:"day_of_month"`

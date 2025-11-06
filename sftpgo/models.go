@@ -2769,6 +2769,7 @@ func (a *eventActionResourceModel) fromSFTPGo(ctx context.Context, action *clien
 }
 
 type ruleSchedule struct {
+	Minute     types.String `tfsdk:"minute"`
 	Hours      types.String `tfsdk:"hour"`
 	DayOfWeek  types.String `tfsdk:"day_of_week"`
 	DayOfMonth types.String `tfsdk:"day_of_month"`
@@ -2821,6 +2822,7 @@ func (*ruleConditions) getTFAttributes() map[string]attr.Type {
 		"schedules": types.ListType{
 			ElemType: types.ObjectType{
 				AttrTypes: map[string]attr.Type{
+					"minute":       types.StringType,
 					"hour":         types.StringType,
 					"day_of_week":  types.StringType,
 					"day_of_month": types.StringType,
@@ -2886,6 +2888,7 @@ func (c *ruleConditions) toSFTPGo(ctx context.Context) (client.EventRuleConditio
 	}
 	for _, schedule := range c.Schedules {
 		conditions.Schedules = append(conditions.Schedules, client.Schedule{
+			Minute:     schedule.Minute.ValueString(),
 			Hours:      schedule.Hours.ValueString(),
 			DayOfWeek:  schedule.DayOfWeek.ValueString(),
 			DayOfMonth: schedule.DayOfMonth.ValueString(),
@@ -2960,6 +2963,7 @@ func (c *ruleConditions) fromSFTPGo(ctx context.Context, conditions *client.Even
 
 	for _, schedule := range conditions.Schedules {
 		c.Schedules = append(c.Schedules, ruleSchedule{
+			Minute:     getOptionalString(schedule.Minute),
 			Hours:      types.StringValue(schedule.Hours),
 			DayOfWeek:  types.StringValue(schedule.DayOfWeek),
 			DayOfMonth: types.StringValue(schedule.DayOfMonth),

@@ -139,6 +139,10 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 						Description: "List of schedules that trigger the rule. Hours: 0-23. Day of week: 0-6 (Sun-Sat). Day of month: 1-31. Month: 1-12. Asterisk (*) indicates a match for all the values of the field. e.g. every day of week, every day of month and so on.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
+								"minute": schema.StringAttribute{
+									Optional:    true,
+									Description: enterpriseFeatureNote,
+								},
 								"hour": schema.StringAttribute{
 									Required: true,
 								},

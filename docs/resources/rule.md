@@ -132,3 +132,7 @@ Required:
 - `day_of_week` (String)
 - `hour` (String)
 - `month` (String)
+
+Optional:
+
+- `minute` (String) Available in the Enterprise edition

@@ -118,4 +118,5 @@ Read-Only:
 - `day_of_month` (String)
 - `day_of_week` (String)
 - `hour` (String)
+- `minute` (String)
 - `month` (String)
