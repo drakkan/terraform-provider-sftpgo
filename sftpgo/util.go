@@ -185,10 +185,12 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 					},
 					"account_key": schema.StringAttribute{
 						Computed:    true,
+						Sensitive:   true,
 						Description: computedSecretDescription,
 					},
 					"sas_url": schema.StringAttribute{
 						Computed:    true,
+						Sensitive:   true,
 						Description: computedSecretDescription,
 					},
 					"endpoint": schema.StringAttribute{
