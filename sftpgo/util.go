@@ -743,8 +743,8 @@ func getComputedSchemaForVirtualFolders() schema.ListNestedAttribute {
 	}
 }
 
-func getSchemaForVirtualFolders() schema.ListNestedAttribute {
-	return schema.ListNestedAttribute{
+func getSchemaForVirtualFolders() schema.SetNestedAttribute {
+	return schema.SetNestedAttribute{
 		Optional: true,
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
