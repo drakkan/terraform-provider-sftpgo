@@ -638,6 +638,7 @@ type userFilters struct {
 	EnforceSecureAlgorithms types.Bool       `tfsdk:"enforce_secure_algorithms"`
 	AdditionalEmails        types.List       `tfsdk:"additional_emails"`
 	CustomPlaceholder1      types.String     `tfsdk:"custom1"`
+	CustomPlaceholders      types.List       `tfsdk:"custom_placeholders"`
 }
 
 func (f *userFilters) getTFAttributes() map[string]attr.Type {
@@ -653,6 +654,9 @@ func (f *userFilters) getTFAttributes() map[string]attr.Type {
 			ElemType: types.StringType,
 		},
 		"custom1": types.StringType,
+		"custom_placeholders": types.ListType{
+			ElemType: types.StringType,
+		},
 	}
 
 	for k, v := range filters {
@@ -745,6 +749,12 @@ func (f *userFilters) toSFTPGo(ctx context.Context) (client.UserFilters, diag.Di
 		}
 	}
 	filters.CustomPlaceholder1 = f.CustomPlaceholder1.ValueString()
+	if !f.CustomPlaceholders.IsNull() {
+		diags := f.CustomPlaceholders.ElementsAs(ctx, &filters.CustomPlaceholders, false)
+		if diags.HasError() {
+			return filters, diags
+		}
+	}
 
 	return filters, nil
 }
@@ -769,6 +779,11 @@ func (f *userFilters) fromSFTPGo(ctx context.Context, filters *client.UserFilter
 	}
 	f.AdditionalEmails = additionalEmails
 	f.CustomPlaceholder1 = getOptionalString(filters.CustomPlaceholder1)
+	customPlaceholders, diags := types.ListValueFrom(ctx, types.StringType, filters.CustomPlaceholders)
+	if diags.HasError() {
+		return diags
+	}
+	f.CustomPlaceholders = customPlaceholders
 
 	return nil
 }

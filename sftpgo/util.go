@@ -1006,7 +1006,12 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 	}
 	result.Attributes["custom1"] = schema.StringAttribute{
 		Computed:    true,
-		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. ` + enterpriseFeatureNote + ".",
+		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. Deprecated: use custom_placeholders instead. ` + enterpriseFeatureNote + ".",
+	}
+	result.Attributes["custom_placeholders"] = schema.ListAttribute{
+		ElementType: types.StringType,
+		Computed:    true,
+		Description: "List of extra placeholders available for use in group configurations. Each placeholder can be referenced as %custom1%, %custom2%, and so on. " + enterpriseFeatureNote + ".",
 	}
 	return result
 }
@@ -1256,6 +1261,11 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 	result.Attributes["custom1"] = schema.StringAttribute{
 		Optional:    true,
 		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. ` + enterpriseFeatureNote + ".",
+	}
+	result.Attributes["custom_placeholders"] = schema.ListAttribute{
+		ElementType: types.StringType,
+		Optional:    true,
+		Description: "List of extra placeholders available for use in group configurations. Each placeholder can be referenced as %custom1%, %custom2%, and so on. " + enterpriseFeatureNote + ".",
 	}
 	return result
 }

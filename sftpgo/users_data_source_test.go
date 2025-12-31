@@ -231,7 +231,8 @@ func TestAccEnterpriseUsersDataSource(t *testing.T) {
 					Digits: 2,
 				},
 			},
-			CustomPlaceholder1: "files/username",
+			CustomPlaceholder1: "files",
+			CustomPlaceholders: []string{"files", "username"},
 		},
 	}
 
@@ -300,7 +301,9 @@ func TestAccEnterpriseUsersDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.web_client.2", "rest-api-disabled"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.web_client.3", sdk.WebClientInfoChangeDisabled),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.enforce_secure_algorithms", "true"),
-					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.custom1", "files/username"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.custom1", "files"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.custom_placeholders.0", "files"),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.custom_placeholders.1", "username"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.password_policy.length", "12"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.password_policy.uppers", "1"),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.0.filters.password_policy.lowers", "1"),

@@ -432,6 +432,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
     				  filters = {
       					web_client = ["shares-require-email-auth", "wopi-disabled", "rest-api-disabled"]
 						custom1 = "testvalue"
+						custom_placeholders = ["testvalue","testvalue1"]
 						password_policy = {
 						  length = 12
 						  uppers = 1
@@ -471,6 +472,8 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.1", "wopi-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.2", "rest-api-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom1", "testvalue"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom_placeholders.0", "testvalue"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom_placeholders.1", "testvalue1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.length", "12"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.uppers", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.lowers", "1"),
