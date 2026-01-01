@@ -643,26 +643,21 @@ type userFilters struct {
 
 func (f *userFilters) getTFAttributes() map[string]attr.Type {
 	baseFilters := baseUserFilters{}
-	base := baseFilters.getTFAttributes()
+	attrs := baseFilters.getTFAttributes()
 
-	filters := map[string]attr.Type{
-		"require_password_change": types.BoolType,
-		"tls_certs": types.ListType{
-			ElemType: types.StringType,
-		},
-		"additional_emails": types.ListType{
-			ElemType: types.StringType,
-		},
-		"custom1": types.StringType,
-		"custom_placeholders": types.ListType{
-			ElemType: types.StringType,
-		},
+	attrs["require_password_change"] = types.BoolType
+	attrs["tls_certs"] = types.ListType{
+		ElemType: types.StringType,
+	}
+	attrs["additional_emails"] = types.ListType{
+		ElemType: types.StringType,
+	}
+	attrs["custom1"] = types.StringType
+	attrs["custom_placeholders"] = types.ListType{
+		ElemType: types.StringType,
 	}
 
-	for k, v := range filters {
-		base[k] = v
-	}
-	return base
+	return attrs
 }
 
 func (f *userFilters) getBaseFilters() baseUserFilters {
@@ -784,6 +779,66 @@ func (f *userFilters) fromSFTPGo(ctx context.Context, filters *client.UserFilter
 		return diags
 	}
 	f.CustomPlaceholders = customPlaceholders
+
+	return nil
+}
+
+type baseShareGovernanceRule struct {
+	Permissions types.Int64 `tfsdk:"permissions"`
+	Mode        types.Int64 `tfsdk:"mode"`
+}
+
+type groupFilters struct {
+	baseUserFilters
+	SharePolicy *baseShareGovernanceRule `tfsdk:"share_policy"`
+}
+
+func (f *groupFilters) getTFAttributes() map[string]attr.Type {
+	baseFilters := baseUserFilters{}
+	attrs := baseFilters.getTFAttributes()
+
+	attrs["share_policy"] = types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"permissions": types.Int64Type,
+			"mode":        types.Int64Type,
+		},
+	}
+
+	return attrs
+}
+
+func (f *groupFilters) toSFTPGo(ctx context.Context) (client.GroupFilters, diag.Diagnostics) {
+	if f.SharePolicy == nil {
+		f.SharePolicy = &baseShareGovernanceRule{}
+	}
+	var filters client.GroupFilters
+
+	base, diags := f.baseUserFilters.toSFTPGo(ctx)
+	if diags.HasError() {
+		return filters, diags
+	}
+	filters.BaseUserFilters = base
+	filters.SharePolicy = client.BaseShareGovernanceRule{
+		Permissions: client.SharePermission(f.SharePolicy.Permissions.ValueInt64()),
+		Mode:        client.SharePolicyMode(f.SharePolicy.Mode.ValueInt64()),
+	}
+
+	return filters, nil
+}
+
+func (f *groupFilters) fromSFTPGo(ctx context.Context, filters *client.GroupFilters) diag.Diagnostics {
+	var base baseUserFilters
+	diags := base.fromSFTPGo(ctx, &filters.BaseUserFilters)
+	if diags.HasError() {
+		return diags
+	}
+	f.baseUserFilters = base
+	if filters.SharePolicy.IsSet() {
+		f.SharePolicy = &baseShareGovernanceRule{
+			Permissions: getOptionalInt64(int64(filters.SharePolicy.Permissions)),
+			Mode:        getOptionalInt64(int64(filters.SharePolicy.Mode)),
+		}
+	}
 
 	return nil
 }
@@ -1428,7 +1483,7 @@ type groupUserSettings struct {
 }
 
 func (s *groupUserSettings) getTFAttributes() map[string]attr.Type {
-	filters := baseUserFilters{}
+	filters := groupFilters{}
 	fs := filesystem{}
 	return map[string]attr.Type{
 		"home_dir":     types.StringType,
@@ -1480,7 +1535,7 @@ func (s *groupUserSettings) toSFTPGo(ctx context.Context) (client.GroupUserSetti
 		settings.Permissions[k] = strings.Split(v, ",")
 	}
 
-	var filters baseUserFilters
+	var filters groupFilters
 	diags := s.Filters.As(ctx, &filters, basetypes.ObjectAsOptions{
 		UnhandledNullAsEmpty:    true,
 		UnhandledUnknownAsEmpty: true,
@@ -1538,7 +1593,7 @@ func (s *groupUserSettings) fromSFTPGo(ctx context.Context, settings *client.Gro
 	s.TotalDataTransfer = getOptionalInt64(settings.TotalDataTransfer)
 	s.ExpiresIn = getOptionalInt64(int64(settings.ExpiresIn))
 
-	var f baseUserFilters
+	var f groupFilters
 	diags := f.fromSFTPGo(ctx, &settings.Filters)
 	if diags.HasError() {
 		return diags

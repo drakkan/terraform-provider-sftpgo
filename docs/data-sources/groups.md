@@ -220,6 +220,7 @@ Read-Only:
 - `password_policy` (Attributes) Static password complexity requirements. Whenever possible, prefer using the entropy-based approach provided by password_strength. Available in the Enterprise edition (see [below for nested schema](#nestedatt--groups--user_settings--filters--password_policy))
 - `password_strength` (Number) Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.
 - `pre_login_disabled` (Boolean) If set, external pre-login hook will not be executed.
+- `share_policy` (Attributes) Share access rules. Available in the Enterprise edition (see [below for nested schema](#nestedatt--groups--user_settings--filters--share_policy))
 - `start_directory` (String) Alternate starting directory. If not set, the default is "/". This option is supported for SFTP/SCP, FTP and HTTP (WebClient/REST API) protocols. Relative paths will use this directory as base.
 - `tls_username` (String) TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command. For WebDAV, if no username is provided, the CN will be used as username. For WebDAV clients it must match the implicit or provided username.
 - `two_factor_protocols` (List of String) Defines protocols that require two factor authentication
@@ -267,6 +268,15 @@ Optional:
 - `lowers` (Number)
 - `specials` (Number)
 - `uppers` (Number)
+
+
+<a id="nestedatt--groups--user_settings--filters--share_policy"></a>
+### Nested Schema for `groups.user_settings.filters.share_policy`
+
+Read-Only:
+
+- `mode` (Number)
+- `permissions` (Number)
 
 
 

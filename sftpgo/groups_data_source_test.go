@@ -53,11 +53,13 @@ var (
 					},
 				},
 			},
-			Filters: client.BaseUserFilters{
-				AllowedIP:         []string{"172.16.0.0/16"},
-				MaxUploadFileSize: 10000000,
-				Hooks: sdk.HooksFilter{
-					ExternalAuthDisabled: true,
+			Filters: client.GroupFilters{
+				BaseUserFilters: client.BaseUserFilters{
+					AllowedIP:         []string{"172.16.0.0/16"},
+					MaxUploadFileSize: 10000000,
+					Hooks: sdk.HooksFilter{
+						ExternalAuthDisabled: true,
+					},
 				},
 			},
 		},
@@ -212,11 +214,17 @@ func TestAccEnterpriseGroupsDataSource(t *testing.T) {
 					},
 				},
 			},
-			Filters: client.BaseUserFilters{
-				WebClient:               client.EnterpriseWebClientOptions,
-				EnforceSecureAlgorithms: true,
-				PasswordPolicy: client.PasswordPolicy{
-					Length: 8,
+			Filters: client.GroupFilters{
+				BaseUserFilters: client.BaseUserFilters{
+					WebClient:               client.EnterpriseWebClientOptions,
+					EnforceSecureAlgorithms: true,
+					PasswordPolicy: client.PasswordPolicy{
+						Length: 8,
+					},
+				},
+				SharePolicy: client.BaseShareGovernanceRule{
+					Permissions: client.SharePermissionRead | client.SharePermissionWrite,
+					Mode:        client.SharePolicyModeEnforced,
 				},
 			},
 		},
@@ -271,6 +279,8 @@ func TestAccEnterpriseGroupsDataSource(t *testing.T) {
 						client.EnterpriseWebClientOptions[1]),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.web_client.2",
 						client.EnterpriseWebClientOptions[2]),
+					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.share_policy.permissions", "3"),
+					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.share_policy.mode", "2"),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.enforce_secure_algorithms", "true"),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filesystem.provider", "2"),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filesystem.gcsconfig.bucket", "bucket"),

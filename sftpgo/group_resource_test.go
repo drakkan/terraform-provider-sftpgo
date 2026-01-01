@@ -331,6 +331,10 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 							password_policy = {
 								uppers = 1
 							}
+							share_policy = {
+							    permissions = 2
+								mode = 1
+							}
 						}
 						filesystem = {
 						  provider = 5
@@ -356,6 +360,8 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.permissions.%", "0"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.enforce_secure_algorithms", "true"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.password_policy.uppers", "1"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.share_policy.permissions", "2"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.share_policy.mode", "1"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.provider", "5"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.endpoint", "127.0.0.1:22"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.username", "root"),

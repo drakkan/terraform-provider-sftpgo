@@ -107,11 +107,48 @@ type VirtualFolder struct {
 	QuotaFiles int `json:"quota_files"`
 }
 
+type SharePermission int
+
+const (
+	SharePermissionNone   SharePermission = 0
+	SharePermissionRead   SharePermission = 1
+	SharePermissionWrite  SharePermission = 2
+	SharePermissionDelete SharePermission = 4
+	SharePermissionAll    SharePermission = 7
+)
+
+// SharePolicyMode defines how the default share policy is applied.
+type SharePolicyMode int
+
+const (
+	// SharePolicyModeSuggested means the group is pre-selected but removable.
+	SharePolicyModeSuggested SharePolicyMode = 1
+	// SharePolicyModeEnforced means the association is mandatory.
+	SharePolicyModeEnforced SharePolicyMode = 2
+)
+
+// BasaeShareGovernanceRule defines a base default access rule.
+type BaseShareGovernanceRule struct {
+	// Permissions indicates the access level
+	Permissions SharePermission `json:"permissions"`
+	// Mode defines if this rule is a suggestion or strict enforcement
+	Mode SharePolicyMode `json:"mode"`
+}
+
+func (b *BaseShareGovernanceRule) IsSet() bool {
+	return b.Permissions > 0 && b.Mode > 0
+}
+
+type GroupFilters struct {
+	BaseUserFilters
+	SharePolicy BaseShareGovernanceRule `json:"share_policy,omitempty"`
+}
+
 // GroupUserSettings defines the settings to apply to users
 type GroupUserSettings struct {
 	sdk.BaseGroupUserSettings
-	FsConfig Filesystem      `json:"filesystem"`
-	Filters  BaseUserFilters `json:"filters"`
+	FsConfig Filesystem   `json:"filesystem"`
+	Filters  GroupFilters `json:"filters"`
 }
 
 // Group defines an SFTPGo group.

@@ -795,7 +795,7 @@ func getSchemaForVirtualFolders() schema.ListNestedAttribute {
 	}
 }
 
-func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
+func getComputedSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 	result := schema.SingleNestedAttribute{
 		Computed: true,
 		Attributes: map[string]schema.Attribute{
@@ -987,7 +987,19 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 			},
 		},
 	}
-	if onlyBase {
+	if isGroup {
+		result.Attributes["share_policy"] = schema.SingleNestedAttribute{
+			Computed:    true,
+			Description: "Share access rules. " + enterpriseFeatureNote,
+			Attributes: map[string]schema.Attribute{
+				"permissions": schema.Int64Attribute{
+					Computed: true,
+				},
+				"mode": schema.Int64Attribute{
+					Computed: true,
+				},
+			},
+		}
 		return result
 	}
 	result.Attributes["require_password_change"] = schema.BoolAttribute{
@@ -1016,7 +1028,7 @@ func getComputedSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute
 	return result
 }
 
-func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
+func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 	result := schema.SingleNestedAttribute{
 		Optional: true,
 		Computed: true,
@@ -1235,7 +1247,33 @@ func getSchemaForUserFilters(onlyBase bool) schema.SingleNestedAttribute {
 			},
 		},
 	}
-	if onlyBase {
+	if isGroup {
+		result.Attributes["share_policy"] = schema.SingleNestedAttribute{
+			Optional:    true,
+			Description: "Share access rules. " + enterpriseFeatureNote,
+			Attributes: map[string]schema.Attribute{
+				"permissions": schema.Int64Attribute{
+					Optional: true,
+					MarkdownDescription: "Bitmask of permissions. Sum the values to combine permissions.\n\n" +
+						"Supported values:\n" +
+						"* `0`: None\n" +
+						"* `1`: Read\n" +
+						"* `2`: Write\n" +
+						"* `4`: Delete\n" +
+						"* `7`: All",
+				},
+				"mode": schema.Int64Attribute{
+					Optional: true,
+					MarkdownDescription: "Defines how the default share policy is applied.\n\n" +
+						"Supported values:\n" +
+						"* `1` (Suggested): The group is pre-selected but removable.\n" +
+						"* `2` (Enforced): The association is mandatory.",
+					Validators: []validator.Int64{
+						int64validator.OneOf(1, 2),
+					},
+				},
+			},
+		}
 		return result
 	}
 	result.Attributes["require_password_change"] = schema.BoolAttribute{
