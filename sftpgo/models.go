@@ -605,40 +605,12 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *client.BaseUs
 }
 
 type userFilters struct {
-	// embedded structs are not supported
-	//baseUserFilters
-	AllowedIP               types.List       `tfsdk:"allowed_ip"`
-	DeniedIP                types.List       `tfsdk:"denied_ip"`
-	DeniedLoginMethods      types.List       `tfsdk:"denied_login_methods"`
-	DeniedProtocols         types.List       `tfsdk:"denied_protocols"`
-	FilePatterns            []patternsFilter `tfsdk:"file_patterns"`
-	MaxUploadFileSize       types.Int64      `tfsdk:"max_upload_file_size"`
-	TLSUsername             types.String     `tfsdk:"tls_username"`
-	TLSCerts                types.List       `tfsdk:"tls_certs"`
-	ExternalAuthDisabled    types.Bool       `tfsdk:"external_auth_disabled"`
-	PreLoginDisabled        types.Bool       `tfsdk:"pre_login_disabled"`
-	CheckPasswordDisabled   types.Bool       `tfsdk:"check_password_disabled"`
-	DisableFsChecks         types.Bool       `tfsdk:"disable_fs_checks"`
-	WebClient               types.List       `tfsdk:"web_client"`
-	AllowAPIKeyAuth         types.Bool       `tfsdk:"allow_api_key_auth"`
-	UserType                types.String     `tfsdk:"user_type"`
-	BandwidthLimits         []bandwidthLimit `tfsdk:"bandwidth_limits"`
-	ExternalAuthCacheTime   types.Int64      `tfsdk:"external_auth_cache_time"`
-	StartDirectory          types.String     `tfsdk:"start_directory"`
-	TwoFactorAuthProtocols  types.List       `tfsdk:"two_factor_protocols"`
-	FTPSecurity             types.Int64      `tfsdk:"ftp_security"`
-	IsAnonymous             types.Bool       `tfsdk:"is_anonymous"`
-	DefaultSharesExpiration types.Int64      `tfsdk:"default_shares_expiration"`
-	MaxSharesExpiration     types.Int64      `tfsdk:"max_shares_expiration"`
-	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
-	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
-	PasswordPolicy          *passwordPolicy  `tfsdk:"password_policy"`
-	RequirePasswordChange   types.Bool       `tfsdk:"require_password_change"`
-	AccessTime              []timePeriod     `tfsdk:"access_time"`
-	EnforceSecureAlgorithms types.Bool       `tfsdk:"enforce_secure_algorithms"`
-	AdditionalEmails        types.List       `tfsdk:"additional_emails"`
-	CustomPlaceholder1      types.String     `tfsdk:"custom1"`
-	CustomPlaceholders      types.List       `tfsdk:"custom_placeholders"`
+	baseUserFilters
+	RequirePasswordChange types.Bool   `tfsdk:"require_password_change"`
+	TLSCerts              types.List   `tfsdk:"tls_certs"`
+	AdditionalEmails      types.List   `tfsdk:"additional_emails"`
+	CustomPlaceholder1    types.String `tfsdk:"custom1"`
+	CustomPlaceholders    types.List   `tfsdk:"custom_placeholders"`
 }
 
 func (f *userFilters) getTFAttributes() map[string]attr.Type {
@@ -660,72 +632,9 @@ func (f *userFilters) getTFAttributes() map[string]attr.Type {
 	return attrs
 }
 
-func (f *userFilters) getBaseFilters() baseUserFilters {
-	return baseUserFilters{
-		AllowedIP:               f.AllowedIP,
-		DeniedIP:                f.DeniedIP,
-		DeniedLoginMethods:      f.DeniedLoginMethods,
-		DeniedProtocols:         f.DeniedProtocols,
-		FilePatterns:            f.FilePatterns,
-		MaxUploadFileSize:       f.MaxUploadFileSize,
-		TLSUsername:             f.TLSUsername,
-		ExternalAuthDisabled:    f.ExternalAuthDisabled,
-		PreLoginDisabled:        f.PreLoginDisabled,
-		CheckPasswordDisabled:   f.CheckPasswordDisabled,
-		DisableFsChecks:         f.DisableFsChecks,
-		WebClient:               f.WebClient,
-		AllowAPIKeyAuth:         f.AllowAPIKeyAuth,
-		UserType:                f.UserType,
-		BandwidthLimits:         f.BandwidthLimits,
-		ExternalAuthCacheTime:   f.ExternalAuthCacheTime,
-		StartDirectory:          f.StartDirectory,
-		TwoFactorAuthProtocols:  f.TwoFactorAuthProtocols,
-		FTPSecurity:             f.FTPSecurity,
-		IsAnonymous:             f.IsAnonymous,
-		DefaultSharesExpiration: f.DefaultSharesExpiration,
-		MaxSharesExpiration:     f.MaxSharesExpiration,
-		PasswordExpiration:      f.PasswordExpiration,
-		PasswordStrength:        f.PasswordStrength,
-		PasswordPolicy:          f.PasswordPolicy,
-		AccessTime:              f.AccessTime,
-		EnforceSecureAlgorithms: f.EnforceSecureAlgorithms,
-	}
-}
-
-func (f *userFilters) fromBaseFilters(filters *baseUserFilters) {
-	f.AllowedIP = filters.AllowedIP
-	f.DeniedIP = filters.DeniedIP
-	f.DeniedLoginMethods = filters.DeniedLoginMethods
-	f.DeniedProtocols = filters.DeniedProtocols
-	f.FilePatterns = filters.FilePatterns
-	f.MaxUploadFileSize = filters.MaxUploadFileSize
-	f.TLSUsername = filters.TLSUsername
-	f.ExternalAuthDisabled = filters.ExternalAuthDisabled
-	f.PreLoginDisabled = filters.PreLoginDisabled
-	f.CheckPasswordDisabled = filters.CheckPasswordDisabled
-	f.DisableFsChecks = filters.DisableFsChecks
-	f.WebClient = filters.WebClient
-	f.AllowAPIKeyAuth = filters.AllowAPIKeyAuth
-	f.UserType = filters.UserType
-	f.BandwidthLimits = filters.BandwidthLimits
-	f.ExternalAuthCacheTime = filters.ExternalAuthCacheTime
-	f.StartDirectory = filters.StartDirectory
-	f.TwoFactorAuthProtocols = filters.TwoFactorAuthProtocols
-	f.FTPSecurity = filters.FTPSecurity
-	f.IsAnonymous = filters.IsAnonymous
-	f.DefaultSharesExpiration = filters.DefaultSharesExpiration
-	f.MaxSharesExpiration = filters.MaxSharesExpiration
-	f.PasswordExpiration = filters.PasswordExpiration
-	f.PasswordStrength = filters.PasswordStrength
-	f.PasswordPolicy = filters.PasswordPolicy
-	f.AccessTime = filters.AccessTime
-	f.EnforceSecureAlgorithms = filters.EnforceSecureAlgorithms
-}
-
 func (f *userFilters) toSFTPGo(ctx context.Context) (client.UserFilters, diag.Diagnostics) {
 	var filters client.UserFilters
-	baseFilters := f.getBaseFilters()
-	base, diags := baseFilters.toSFTPGo(ctx)
+	base, diags := f.baseUserFilters.toSFTPGo(ctx)
 	if diags.HasError() {
 		return filters, diags
 	}
@@ -760,7 +669,7 @@ func (f *userFilters) fromSFTPGo(ctx context.Context, filters *client.UserFilter
 	if diags.HasError() {
 		return diags
 	}
-	f.fromBaseFilters(&base)
+	f.baseUserFilters = base
 	f.RequirePasswordChange = getOptionalBool(filters.RequirePasswordChange)
 	tlsCerts, diags := types.ListValueFrom(ctx, types.StringType, filters.TLSCerts)
 	if diags.HasError() {
@@ -1373,8 +1282,6 @@ func (f *virtualFolderResourceModel) fromSFTPGo(ctx context.Context, folder *cli
 }
 
 type virtualFolder struct {
-	// embedded structs are not supported
-	//baseVirtualFolder
 	Name            types.String `tfsdk:"name"`
 	MappedPath      types.String `tfsdk:"mapped_path"`
 	Description     types.String `tfsdk:"description"`
