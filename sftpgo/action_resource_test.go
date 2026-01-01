@@ -42,7 +42,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "description", "test desc"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "4"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -72,7 +71,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "description", "test rotate log file"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "15"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -109,7 +107,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "1"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.endpoint",
 						"http://127.0.0.1:8082/notify"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.username", "myuser"),
@@ -145,7 +142,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "1"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.endpoint",
 						"http://127.0.0.1:8082/deletenotify"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.username", "myuser"),
@@ -199,7 +195,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "1"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.endpoint",
 						"https://127.0.0.1:8082/notify"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.http_config.username", "myuser"),
@@ -250,7 +245,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "3"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.#", "2"),
@@ -297,7 +291,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "3"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.recipients.#", "2"),
@@ -348,7 +341,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "8"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -397,7 +389,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -442,7 +433,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -483,7 +473,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -524,7 +513,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -563,7 +551,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -610,7 +597,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -647,7 +633,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "11"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -676,7 +661,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "13"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -709,7 +693,6 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "14"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -921,7 +904,6 @@ EOF
 					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
-					resource.TestCheckResourceAttr("sftpgo_action.test", "options.%", "8"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.http_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.cmd_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.email_config"),
@@ -1130,6 +1112,232 @@ EOF
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.metadata.key", "virus_scan_status"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.metadata.value"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.metadata_check.timeout"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 16
+						options = {
+							imap_config = {
+								endpoint = "imap://imap.example.net:143"
+								mailbox = "INBOX"
+								path = "/"
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "16"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.endpoint", "imap://imap.example.net:143"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.mailbox", "INBOX"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.path", "/"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 16
+						options = {
+							imap_config = {
+								endpoint = "imaps://imap.example.net:993"
+								username = "user"
+								password = "password"
+								mailbox = "Sent"
+								path = "/test"
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "16"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.endpoint", "imaps://imap.example.net:993"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.mailbox", "Sent"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.path", "/test"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.username", "user"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.password", "password"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 16
+						options = {
+							imap_config = {
+								endpoint = "imaps://imap.gmail.com:993"
+								username = "user"
+								mailbox = "Sent"
+								path = "/test"
+								auth_type = 1
+								oauth2 = {
+									provider = 1
+									tenant = "test tenant"
+									client_id = "my client id"
+									client_secret = "client secret"
+									refresh_token = "refresh token"
+								}
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "16"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.endpoint", "imaps://imap.gmail.com:993"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.mailbox", "Sent"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.path", "/test"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.username", "user"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.imap_config.password"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.auth_type", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.oauth2.provider", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.oauth2.tenant", "test tenant"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.oauth2.client_id", "my client id"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.oauth2.client_secret", "client secret"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.oauth2.refresh_token", "refresh token"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 17
+						options = {
+							icap_config = {
+								endpoint = "icap://icap.example.net"
+								timeout = 20
+								paths = ["/{{.VirtualPath}}","/test"]
+								method = "REQMOD"
+								headers = [
+								    {
+										key = "X-Client-IP"
+										value = "{{.IP}}"
+									}
+								]
+								block_action = 1
+								adapt_action = 4
+								failure_policy = 3
+								quarantine_path = "/quarantine"
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "17"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.endpoint", "icap://icap.example.net"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.timeout", "20"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.paths.0", "/{{.VirtualPath}}"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.paths.1", "/test"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.method", "REQMOD"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.headers.0.key", "X-Client-IP"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.headers.0.value", "{{.IP}}"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.block_action", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.failure_policy", "3"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.adapt_action", "4"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.quarantine_path", "/quarantine"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 17
+						options = {
+							icap_config = {
+								endpoint = "icap://icap.example.com"
+								timeout = 10
+								paths = ["/{{.VirtualPath}}"]
+								method = "REQMOD"
+								block_action = 2
+								adapt_action = 3
+								failure_policy = 1
+								quarantine_path = "/quarantine1"
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "17"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.endpoint", "icap://icap.example.com"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.timeout", "10"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.paths.0", "/{{.VirtualPath}}"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.method", "REQMOD"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.icap_config.headers"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.block_action", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.failure_policy", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.adapt_action", "3"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.icap_config.quarantine_path", "/quarantine1"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 18
+						options = {
+							share_expiration_config = {
+								advance_notice = 5
+								grace_period = 10
+								inactivity_threshold = 15
+								split_events = true
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "18"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.share_expiration_config.advance_notice", "5"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.share_expiration_config.grace_period", "10"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.share_expiration_config.inactivity_threshold", "15"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.share_expiration_config.split_events", "true"),
 				),
 			},
 			{

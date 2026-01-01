@@ -40,6 +40,10 @@ const (
 	ActionTypeUserExpirationCheck
 	ActionTypeIDPAccountCheck
 	ActionTypeUserInactivityCheck
+	ActionTypeRotateLogs
+	ActionTypeIMAP                 // Enterprise
+	ActionTypeICAP                 // Enterprise
+	ActionTypeShareExpirationCheck // Enterprise
 )
 
 // Supported filesystem actions
@@ -216,6 +220,55 @@ type EventActionIDPAccountCheck struct {
 	TemplateAdmin string `json:"template_admin,omitempty"`
 }
 
+type OAuth2Config struct {
+	Provider     int            `json:"provider,omitempty"`
+	Tenant       string         `json:"tenant,omitempty"`
+	ClientID     string         `json:"client_id,omitempty"`
+	ClientSecret kms.BaseSecret `json:"client_secret,omitempty"`
+	RefreshToken kms.BaseSecret `json:"refresh_token,omitempty"`
+}
+
+type EventActionIMAPConfig struct {
+	Endpoint string         `json:"endpoint,omitempty"`
+	Username string         `json:"username,omitempty"`
+	Password kms.BaseSecret `json:"password,omitempty"`
+	// 0 Login, 1 OAuth2
+	AuthType int          `json:"auth_type,omitempty"`
+	OAuth2   OAuth2Config `json:"oauth2"`
+	Mailbox  string       `json:"mailbox,omitempty"`
+	Path     string       `json:"path"`
+	// 0 mark seen, 1 delete
+	PostProcessAction int    `json:"post_process_action,omitempty"`
+	TargetFolder      string `json:"target_folder,omitempty"`
+}
+
+type EventActionICAPConfig struct {
+	Paths         []string `json:"paths,omitempty"`
+	URL           string   `json:"endpoint,omitempty"`
+	Timeout       int      `json:"timeout,omitempty"`
+	SkipTLSVerify bool     `json:"skip_tls_verify,omitempty"`
+	// REQMOD for now
+	Method string `json:"method"`
+	// 1 Ignore, 2 Delete, 3 Quarantine
+	BlockAction int `json:"block_action,omitempty"`
+	// 1 Ignore, 2 Delete, 3 Quarantine, 4 Overwrite (adapt)
+	AdaptAction int `json:"adapt_action,omitempty"`
+	// Specifies the behavior when the ICAP action cannot be executed (e.g.,
+	// when the ICAP server is unreachable).
+	// 1 Ignore, 2 Delete, 3 Quarantine
+	FailurePolicy    int        `json:"failure_policy,omitempty"`
+	QuarantineFolder string     `json:"quarantine_folder,omitempty"`
+	QuarantinePath   string     `json:"quarantine_path,omitempty"`
+	Headers          []KeyValue `json:"headers,omitempty"`
+}
+
+type EventActionShareExpiration struct {
+	InactivityThreshold int  `json:"inactivity_threshold,omitempty"`
+	AdvanceNotice       int  `json:"advance_notice,omitempty"`
+	GracePeriod         int  `json:"grace_period,omitempty"`
+	SplitEvents         bool `json:"split_events,omitempty"`
+}
+
 // EventActionOptions defines the supported configuration options for event actions
 type EventActionOptions struct {
 	HTTPConfig           EventActionHTTPConfig          `json:"http_config"`
@@ -226,6 +279,9 @@ type EventActionOptions struct {
 	PwdExpirationConfig  EventActionPasswordExpiration  `json:"pwd_expiration_config"`
 	UserInactivityConfig EventActionUserInactivity      `json:"user_inactivity_config"`
 	IDPConfig            EventActionIDPAccountCheck     `json:"idp_config"`
+	IMAPConfig           EventActionIMAPConfig          `json:"imap_config"`
+	ICAPConfig           EventActionICAPConfig          `json:"icap_config"`
+	ShareExpiration      EventActionShareExpiration     `json:"share_expiration_config"`
 }
 
 // BaseEventAction defines the common fields for an event action

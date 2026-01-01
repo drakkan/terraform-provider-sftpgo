@@ -286,7 +286,7 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 														Computed: true,
 													},
 													"update_modtime": schema.BoolAttribute{
-														Optional:    true,
+														Computed:    true,
 														Description: "Update modification time. This setting is not recursive and only applies to storage providers that support changing modification times.",
 													},
 												},
@@ -465,6 +465,181 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 										"template_admin": schema.StringAttribute{
 											Computed:    true,
 											Description: `SFTPGo admin template in JSON format.`,
+										},
+									},
+								},
+								"imap_config": schema.SingleNestedAttribute{
+									Computed:            true,
+									MarkdownDescription: "Enables automatic retrieval of email attachments from IMAP mailboxes. " + enterpriseFeatureNote,
+									Attributes: map[string]schema.Attribute{
+										"endpoint": schema.StringAttribute{
+											Computed:            true,
+											MarkdownDescription: "IMAP endpoint in the format `schema://host:port`. Supported schemas: `imap`, `imaps`.",
+										},
+										"username": schema.StringAttribute{
+											Computed: true,
+										},
+										"password": schema.StringAttribute{
+											Computed:    true,
+											Sensitive:   true,
+											Description: computedSecretDescription,
+										},
+										"auth_type": schema.Int64Attribute{
+											Computed: true,
+											MarkdownDescription: "Authentication type.\n\n" +
+												"Supported values:\n" +
+												"* `0`: Login\n" +
+												"* `1`: Plain",
+										},
+										"oauth2": schema.SingleNestedAttribute{
+											Computed: true,
+											Attributes: map[string]schema.Attribute{
+												"provider": schema.Int64Attribute{
+													Computed: true,
+													MarkdownDescription: "OAuth2 Provider.\n\n" +
+														"Supported values:\n" +
+														"* `0`: Google\n" +
+														"* `1`: Microsoft",
+												},
+												"tenant": schema.StringAttribute{
+													Computed:    true,
+													Description: "OAuth2 Tenant.",
+												},
+												"client_id": schema.StringAttribute{
+													Computed:    true,
+													Description: "OAuth2 Client ID.",
+												},
+												"client_secret": schema.StringAttribute{
+													Computed:    true,
+													Sensitive:   true,
+													Description: computedSecretDescription,
+												},
+												"refresh_token": schema.StringAttribute{
+													Computed:    true,
+													Sensitive:   true,
+													Description: computedSecretDescription,
+												},
+											},
+										},
+										"mailbox": schema.StringAttribute{
+											Computed:            true,
+											MarkdownDescription: "Mailbox to check, e.g. `INBOX`.",
+										},
+										"path": schema.StringAttribute{
+											Computed:    true,
+											Description: "Directory path where downloaded attachments will be stored.",
+										},
+										"post_process_action": schema.Int64Attribute{
+											Computed: true,
+											MarkdownDescription: "Action to perform on the email after processing.\n\n" +
+												"Supported values:\n" +
+												"* `0`: Mark messages as read\n" +
+												"* `1`: Delete messages",
+										},
+										"target_folder": schema.StringAttribute{
+											Computed: true,
+											MarkdownDescription: "If specified, attachments are stored directly in this target virtual folder. " +
+												"If not specified, attachments are downloaded to the user account associated with the action.\n\n" +
+												"**Note:** IMAP actions are executed for a single user only, so a target folder or an appropriate filter in the related rule is recommended.",
+										},
+									},
+								},
+								"icap_config": schema.SingleNestedAttribute{
+									Computed:            true,
+									MarkdownDescription: "Enables integration with ICAP servers to perform antivirus scanning and DLP checks. " + enterpriseFeatureNote,
+									Attributes: map[string]schema.Attribute{
+										"endpoint": schema.StringAttribute{
+											Computed: true,
+											MarkdownDescription: "ICAP endpoint in the format `schema://host:port`. Supported schemas: `icap`, `icaps`. " +
+												"If the port is omitted, port `1344` is used.",
+										},
+										"timeout": schema.Int64Attribute{
+											Computed:    true,
+											Description: "Timeout in seconds for ICAP requests.",
+										},
+										"skip_tls_verify": schema.BoolAttribute{
+											Computed: true,
+											MarkdownDescription: "If enabled, any certificate presented by the server and any host name in that certificate are accepted. " +
+												"**Warning:** In this mode, TLS is susceptible to machine-in-the-middle attacks.",
+										},
+										"paths": schema.ListAttribute{
+											ElementType:         types.StringType,
+											Computed:            true,
+											MarkdownDescription: "List of virtual paths to scan. Placeholders are supported, e.g. `{{.VirtualPath}}`.",
+										},
+										"method": schema.StringAttribute{
+											Computed:            true,
+											MarkdownDescription: "ICAP method.",
+										},
+										"headers": schema.ListNestedAttribute{
+											Computed:    true,
+											Description: "Headers to add to the ICAP request.",
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"key": schema.StringAttribute{
+														Computed: true,
+													},
+													"value": schema.StringAttribute{
+														Computed: true,
+													},
+												},
+											},
+										},
+										"block_action": schema.Int64Attribute{
+											Computed: true,
+											MarkdownDescription: "Action executed when the ICAP server detects an infected file.\n\n" +
+												"Supported values:\n" +
+												"* `1`: Ignore (allow file)\n" +
+												"* `2`: Delete (reject file)\n" +
+												"* `3`: Quarantine",
+										},
+										"adapt_action": schema.Int64Attribute{
+											Computed: true,
+											MarkdownDescription: "Action executed when the ICAP server returns a modified file.\n\n" +
+												"Supported values:\n" +
+												"* `1`: Ignore (keep original)\n" +
+												"* `2`: Delete (reject)\n" +
+												"* `3`: Quarantine\n" +
+												"* `4`: Overwrite (use modified file)",
+										},
+										"failure_policy": schema.Int64Attribute{
+											Computed: true,
+											MarkdownDescription: "Action executed when the ICAP scan fails (e.g. server unreachable).\n\n" +
+												"Supported values:\n" +
+												"* `1`: Ignore (allow file)\n" +
+												"* `2`: Delete (reject file)\n" +
+												"* `3`: Quarantine",
+										},
+										"quarantine_folder": schema.StringAttribute{
+											Computed:    true,
+											Description: "The name of the virtual folder where quarantined files will be stored.",
+										},
+										"quarantine_path": schema.StringAttribute{
+											Computed:    true,
+											Description: "The virtual path where quarantined files will be stored. Placeholders are supported.",
+										},
+									},
+								},
+								"share_expiration_config": schema.SingleNestedAttribute{
+									Computed:            true,
+									MarkdownDescription: "Automated lifecycle management for shares based on inactivity, expiration, or max tokens. " + enterpriseFeatureNote,
+									Attributes: map[string]schema.Attribute{
+										"advance_notice": schema.Int64Attribute{
+											Computed:    true,
+											Description: "Number of days before the share expiration (real or calculated) to trigger the expiration event. Set to 0 to disable.",
+										},
+										"grace_period": schema.Int64Attribute{
+											Computed:    true,
+											Description: "Number of days a share is kept in the database after it has expired. Set to 0 to disable share deletion.",
+										},
+										"inactivity_threshold": schema.Int64Attribute{
+											Computed:    true,
+											Description: "Validity period (in days) for shares without an explicit expiration date. Checks last use or creation time. Set to 0 to disable.",
+										},
+										"split_events": schema.BoolAttribute{
+											Computed: true,
+											MarkdownDescription: "If true, events are split. " +
+												"For example, email actions will send a separate notification for each share instead of a cumulative report.",
 										},
 									},
 								},

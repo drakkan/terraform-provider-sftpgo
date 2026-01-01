@@ -2004,6 +2004,57 @@ type eventActionHTTPConfig struct {
 	Parts           []httpPart   `tfsdk:"parts"`
 }
 
+type oauth2Config struct {
+	Provider     types.Int64  `tfsdk:"provider"`
+	Tenant       types.String `tfsdk:"tenant"`
+	ClientID     types.String `tfsdk:"client_id"`
+	ClientSecret types.String `tfsdk:"client_secret"`
+	RefreshToken types.String `tfsdk:"refresh_token"`
+}
+
+func (c *oauth2Config) getTFAttributes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"provider":      types.Int64Type,
+		"tenant":        types.StringType,
+		"client_id":     types.StringType,
+		"client_secret": types.StringType,
+		"refresh_token": types.StringType,
+	}
+}
+
+type eventActionIMAPConfig struct {
+	Endpoint          types.String  `tfsdk:"endpoint"`
+	Username          types.String  `tfsdk:"username"`
+	Password          types.String  `tfsdk:"password"`
+	AuthType          types.Int64   `tfsdk:"auth_type"`
+	OAuth2            *oauth2Config `tfsdk:"oauth2"`
+	Mailbox           types.String  `tfsdk:"mailbox"`
+	Path              types.String  `tfsdk:"path"`
+	PostProcessAction types.Int64   `tfsdk:"post_process_action"`
+	TargetFolder      types.String  `tfsdk:"target_folder"`
+}
+
+type eventActionICAPConfig struct {
+	Paths            types.List   `tfsdk:"paths"`
+	URL              types.String `tfsdk:"endpoint"`
+	Timeout          types.Int64  `tfsdk:"timeout"`
+	SkipTLSVerify    types.Bool   `tfsdk:"skip_tls_verify"`
+	Method           types.String `tfsdk:"method"`
+	BlockAction      types.Int64  `tfsdk:"block_action"`
+	AdaptAction      types.Int64  `tfsdk:"adapt_action"`
+	FailurePolicy    types.Int64  `tfsdk:"failure_policy"`
+	QuarantineFolder types.String `tfsdk:"quarantine_folder"`
+	QuarantinePath   types.String `tfsdk:"quarantine_path"`
+	Headers          []keyValue   `tfsdk:"headers"`
+}
+
+type eventActionShareExpiration struct {
+	InactivityThreshold types.Int64 `tfsdk:"inactivity_threshold"`
+	AdvanceNotice       types.Int64 `tfsdk:"advance_notice"`
+	GracePeriod         types.Int64 `tfsdk:"grace_period"`
+	SplitEvents         types.Bool  `tfsdk:"split_events"`
+}
+
 type eventActionCommandConfig struct {
 	Cmd     types.String `tfsdk:"cmd"`
 	Args    types.List   `tfsdk:"args"`
@@ -2097,6 +2148,9 @@ type eventActionOptions struct {
 	PwdExpirationConfig  *eventActionPasswordExpiration  `tfsdk:"pwd_expiration_config"`
 	UserInactivityConfig *eventActionUserInactivity      `tfsdk:"user_inactivity_config"`
 	IDPConfig            *eventActionIDPAccountCheck     `tfsdk:"idp_config"`
+	IMAPConfig           *eventActionIMAPConfig          `tfsdk:"imap_config"`
+	ICAPConfig           *eventActionICAPConfig          `tfsdk:"icap_config"`
+	ShareExpiration      *eventActionShareExpiration     `tfsdk:"share_expiration_config"`
 }
 
 func (o *eventActionOptions) ensureNotNull() {
@@ -2136,10 +2190,23 @@ func (o *eventActionOptions) ensureNotNull() {
 	if o.IDPConfig == nil {
 		o.IDPConfig = &eventActionIDPAccountCheck{}
 	}
+	if o.IMAPConfig == nil {
+		o.IMAPConfig = &eventActionIMAPConfig{}
+	}
+	if o.IMAPConfig.OAuth2 == nil {
+		o.IMAPConfig.OAuth2 = &oauth2Config{}
+	}
+	if o.ICAPConfig == nil {
+		o.ICAPConfig = &eventActionICAPConfig{}
+	}
+	if o.ShareExpiration == nil {
+		o.ShareExpiration = &eventActionShareExpiration{}
+	}
 }
 
 func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 	kv := keyValue{}
+	oauth2Config := oauth2Config{}
 
 	return map[string]attr.Type{
 		"http_config": types.ObjectType{
@@ -2149,10 +2216,7 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 				"password": types.StringType,
 				"headers": types.ListType{
 					ElemType: types.ObjectType{
-						AttrTypes: map[string]attr.Type{
-							"key":   types.StringType,
-							"value": types.StringType,
-						},
+						AttrTypes: kv.getTFAttributes(),
 					},
 				},
 				"timeout":         types.Int64Type,
@@ -2311,6 +2375,50 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 				"template_admin": types.StringType,
 			},
 		},
+		"imap_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"endpoint":  types.StringType,
+				"username":  types.StringType,
+				"password":  types.StringType,
+				"auth_type": types.Int64Type,
+				"oauth2": types.ObjectType{
+					AttrTypes: oauth2Config.getTFAttributes(),
+				},
+				"mailbox":             types.StringType,
+				"path":                types.StringType,
+				"post_process_action": types.Int64Type,
+				"target_folder":       types.StringType,
+			},
+		},
+		"icap_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"paths": types.ListType{
+					ElemType: types.StringType,
+				},
+				"endpoint":          types.StringType,
+				"timeout":           types.Int64Type,
+				"skip_tls_verify":   types.BoolType,
+				"method":            types.StringType,
+				"block_action":      types.Int64Type,
+				"adapt_action":      types.Int64Type,
+				"failure_policy":    types.Int64Type,
+				"quarantine_folder": types.StringType,
+				"quarantine_path":   types.StringType,
+				"headers": types.ListType{
+					ElemType: types.ObjectType{
+						AttrTypes: kv.getTFAttributes(),
+					},
+				},
+			},
+		},
+		"share_expiration_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"inactivity_threshold": types.Int64Type,
+				"advance_notice":       types.Int64Type,
+				"grace_period":         types.Int64Type,
+				"split_events":         types.BoolType,
+			},
+		},
 	}
 }
 
@@ -2374,6 +2482,40 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			Mode:          int(o.IDPConfig.Mode.ValueInt64()),
 			TemplateUser:  o.IDPConfig.TemplateUser.ValueString(),
 			TemplateAdmin: o.IDPConfig.TemplateAdmin.ValueString(),
+		},
+		IMAPConfig: client.EventActionIMAPConfig{
+			Endpoint: o.IMAPConfig.Endpoint.ValueString(),
+			Username: o.IMAPConfig.Username.ValueString(),
+			Password: getSFTPGoSecret(o.IMAPConfig.Password.ValueString()),
+			AuthType: int(o.IMAPConfig.AuthType.ValueInt64()),
+			OAuth2: client.OAuth2Config{
+				Provider:     int(o.IMAPConfig.OAuth2.Provider.ValueInt64()),
+				Tenant:       o.IMAPConfig.OAuth2.Tenant.ValueString(),
+				ClientID:     o.IMAPConfig.OAuth2.ClientID.ValueString(),
+				ClientSecret: getSFTPGoSecret(o.IMAPConfig.OAuth2.ClientSecret.ValueString()),
+				RefreshToken: getSFTPGoSecret(o.IMAPConfig.OAuth2.RefreshToken.ValueString()),
+			},
+			Mailbox:           o.IMAPConfig.Mailbox.ValueString(),
+			Path:              o.IMAPConfig.Path.ValueString(),
+			PostProcessAction: int(o.IMAPConfig.PostProcessAction.ValueInt64()),
+			TargetFolder:      o.IMAPConfig.TargetFolder.ValueString(),
+		},
+		ICAPConfig: client.EventActionICAPConfig{
+			URL:              o.ICAPConfig.URL.ValueString(),
+			Timeout:          int(o.ICAPConfig.Timeout.ValueInt64()),
+			SkipTLSVerify:    o.ICAPConfig.SkipTLSVerify.ValueBool(),
+			Method:           o.ICAPConfig.Method.ValueString(),
+			BlockAction:      int(o.ICAPConfig.BlockAction.ValueInt64()),
+			AdaptAction:      int(o.ICAPConfig.AdaptAction.ValueInt64()),
+			FailurePolicy:    int(o.ICAPConfig.FailurePolicy.ValueInt64()),
+			QuarantineFolder: o.ICAPConfig.QuarantineFolder.ValueString(),
+			QuarantinePath:   o.ICAPConfig.QuarantinePath.ValueString(),
+		},
+		ShareExpiration: client.EventActionShareExpiration{
+			InactivityThreshold: int(o.ShareExpiration.InactivityThreshold.ValueInt64()),
+			AdvanceNotice:       int(o.ShareExpiration.AdvanceNotice.ValueInt64()),
+			GracePeriod:         int(o.ShareExpiration.GracePeriod.ValueInt64()),
+			SplitEvents:         o.ShareExpiration.SplitEvents.ValueBool(),
 		},
 	}
 
@@ -2492,7 +2634,18 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			Value: v.Value.ValueString(),
 		})
 	}
-
+	if !o.ICAPConfig.Paths.IsNull() {
+		diags := o.ICAPConfig.Paths.ElementsAs(ctx, &options.ICAPConfig.Paths, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
+	for _, h := range o.ICAPConfig.Headers {
+		options.ICAPConfig.Headers = append(options.ICAPConfig.Headers, client.KeyValue{
+			Key:   h.Key.ValueString(),
+			Value: h.Value.ValueString(),
+		})
+	}
 	return options, nil
 }
 
@@ -2505,6 +2658,9 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 	o.PwdExpirationConfig = nil
 	o.UserInactivityConfig = nil
 	o.IDPConfig = nil
+	o.IMAPConfig = nil
+	o.ICAPConfig = nil
+	o.ShareExpiration = nil
 
 	switch action.Type {
 	case client.ActionTypeHTTP:
@@ -2690,6 +2846,56 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 			Mode:          types.Int64Value(int64(action.Options.IDPConfig.Mode)),
 			TemplateUser:  getOptionalString(action.Options.IDPConfig.TemplateUser),
 			TemplateAdmin: getOptionalString(action.Options.IDPConfig.TemplateAdmin),
+		}
+	case client.ActionTypeIMAP:
+		o.IMAPConfig = &eventActionIMAPConfig{
+			Endpoint:          types.StringValue(action.Options.IMAPConfig.Endpoint),
+			Username:          getOptionalString(action.Options.IMAPConfig.Username),
+			Password:          getOptionalString(getSecretFromSFTPGo(action.Options.IMAPConfig.Password)),
+			AuthType:          getOptionalInt64(int64(action.Options.IMAPConfig.AuthType)),
+			Mailbox:           getOptionalString(action.Options.IMAPConfig.Mailbox),
+			Path:              getOptionalString(action.Options.IMAPConfig.Path),
+			PostProcessAction: getOptionalInt64(int64(action.Options.IMAPConfig.PostProcessAction)),
+			TargetFolder:      getOptionalString(action.Options.IMAPConfig.TargetFolder),
+		}
+		if action.Options.IMAPConfig.AuthType == 1 {
+			o.IMAPConfig.OAuth2 = &oauth2Config{
+				Provider:     getOptionalInt64(int64(action.Options.IMAPConfig.OAuth2.Provider)),
+				Tenant:       getOptionalString(action.Options.IMAPConfig.OAuth2.Tenant),
+				ClientID:     types.StringValue(action.Options.IMAPConfig.OAuth2.ClientID),
+				ClientSecret: types.StringValue(getSecretFromSFTPGo(action.Options.HTTPConfig.Password)),
+				RefreshToken: types.StringValue(getSecretFromSFTPGo(action.Options.HTTPConfig.Password)),
+			}
+		}
+	case client.ActionTypeICAP:
+		o.ICAPConfig = &eventActionICAPConfig{
+			URL:              types.StringValue(action.Options.ICAPConfig.URL),
+			Timeout:          types.Int64Value(int64(action.Options.ICAPConfig.Timeout)),
+			SkipTLSVerify:    getOptionalBool(action.Options.ICAPConfig.SkipTLSVerify),
+			Method:           getOptionalString(action.Options.ICAPConfig.Method),
+			BlockAction:      types.Int64Value(int64(action.Options.ICAPConfig.BlockAction)),
+			AdaptAction:      types.Int64Value(int64(action.Options.ICAPConfig.AdaptAction)),
+			FailurePolicy:    types.Int64Value(int64(action.Options.ICAPConfig.FailurePolicy)),
+			QuarantineFolder: getOptionalString(action.Options.ICAPConfig.QuarantineFolder),
+			QuarantinePath:   getOptionalString(action.Options.ICAPConfig.QuarantinePath),
+		}
+		paths, diags := types.ListValueFrom(ctx, types.StringType, action.Options.ICAPConfig.Paths)
+		if diags.HasError() {
+			return diags
+		}
+		o.ICAPConfig.Paths = paths
+		for _, h := range action.Options.ICAPConfig.Headers {
+			o.ICAPConfig.Headers = append(o.ICAPConfig.Headers, keyValue{
+				Key:   types.StringValue(h.Key),
+				Value: types.StringValue(h.Value),
+			})
+		}
+	case client.ActionTypeShareExpirationCheck:
+		o.ShareExpiration = &eventActionShareExpiration{
+			InactivityThreshold: getOptionalInt64(int64(action.Options.ShareExpiration.InactivityThreshold)),
+			AdvanceNotice:       getOptionalInt64(int64(action.Options.ShareExpiration.AdvanceNotice)),
+			GracePeriod:         getOptionalInt64(int64(action.Options.ShareExpiration.GracePeriod)),
+			SplitEvents:         getOptionalBool(action.Options.ShareExpiration.SplitEvents),
 		}
 	}
 

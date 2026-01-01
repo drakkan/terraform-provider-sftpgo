@@ -86,12 +86,30 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Description: "Optional description.",
 			},
 			"type": schema.Int64Attribute{
-				Required:    true,
-				Description: "Action type. 1 = HTTP, 2 = Command, 3 = Email, 4 = Backup, 5 = User quota reset, 6 = Folder quota reset, 7 = Transfer quota reset, 8 = Data retention check, 9 = Filesystem, 11 = Password expiration check, 12 = User expiration check, 13 = Identity Provider account check, 14 = User inactivity check, 15 = Rotate log file.",
+				Required: true,
+				MarkdownDescription: "Action type.\n\n" +
+					"Supported values:\n" +
+					"* `1`: HTTP\n" +
+					"* `2`: Command\n" +
+					"* `3`: Email\n" +
+					"* `4`: Backup\n" +
+					"* `5`: User quota reset\n" +
+					"* `6`: Folder quota reset\n" +
+					"* `7`: Transfer quota reset\n" +
+					"* `8`: Data retention check\n" +
+					"* `9`: Filesystem\n" +
+					"* `11`: Password expiration check\n" +
+					"* `12`: User expiration check\n" +
+					"* `13`: Identity Provider account check\n" +
+					"* `14`: User inactivity check\n" +
+					"* `15`: Rotate log file\n" +
+					"* `16`: IMAP\n" +
+					"* `17`: ICAP\n" +
+					"* `18`: Share expiration check",
 				Validators: []validator.Int64{
 					int64validator.Any(
 						int64validator.Between(1, 9),
-						int64validator.Between(11, 15),
+						int64validator.Between(11, 18),
 					),
 				},
 			},
@@ -548,6 +566,205 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							},
 						},
 					},
+					"imap_config": schema.SingleNestedAttribute{
+						Optional:            true,
+						MarkdownDescription: "Enables automatic retrieval of email attachments from IMAP mailboxes. " + enterpriseFeatureNote,
+						Attributes: map[string]schema.Attribute{
+							"endpoint": schema.StringAttribute{
+								Required:            true,
+								MarkdownDescription: "IMAP endpoint in the format `schema://host:port`. Supported schemas: `imap`, `imaps`.",
+							},
+							"username": schema.StringAttribute{
+								Optional: true,
+							},
+							"password": schema.StringAttribute{
+								Optional:    true,
+								Sensitive:   true,
+								Description: computedSecretDescription,
+							},
+							"auth_type": schema.Int64Attribute{
+								Optional: true,
+								MarkdownDescription: "Authentication type.\n\n" +
+									"Supported values:\n" +
+									"* `0`: Login\n" +
+									"* `1`: Plain",
+								Validators: []validator.Int64{
+									int64validator.Between(0, 1),
+								},
+							},
+							"oauth2": schema.SingleNestedAttribute{
+								Optional: true,
+								Attributes: map[string]schema.Attribute{
+									"provider": schema.Int64Attribute{
+										Optional: true,
+										MarkdownDescription: "OAuth2 Provider.\n\n" +
+											"Supported values:\n" +
+											"* `0`: Google\n" +
+											"* `1`: Microsoft",
+										Validators: []validator.Int64{
+											int64validator.Between(0, 1),
+										},
+									},
+									"tenant": schema.StringAttribute{
+										Optional:    true,
+										Description: "OAuth2 Tenant.",
+									},
+									"client_id": schema.StringAttribute{
+										Optional:    true,
+										Description: "OAuth2 Client ID.",
+									},
+									"client_secret": schema.StringAttribute{
+										Optional:    true,
+										Sensitive:   true,
+										Description: computedSecretDescription,
+									},
+									"refresh_token": schema.StringAttribute{
+										Optional:    true,
+										Sensitive:   true,
+										Description: computedSecretDescription,
+									},
+								},
+							},
+							"mailbox": schema.StringAttribute{
+								Optional:            true,
+								MarkdownDescription: "Mailbox to check, e.g. `INBOX`.",
+							},
+							"path": schema.StringAttribute{
+								Optional:    true,
+								Description: "Directory path where downloaded attachments will be stored.",
+							},
+							"post_process_action": schema.Int64Attribute{
+								Optional: true,
+								MarkdownDescription: "Action to perform on the email after processing.\n\n" +
+									"Supported values:\n" +
+									"* `0`: Mark messages as read\n" +
+									"* `1`: Delete messages",
+								Validators: []validator.Int64{
+									int64validator.Between(0, 1),
+								},
+							},
+							"target_folder": schema.StringAttribute{
+								Optional: true,
+								MarkdownDescription: "If specified, attachments are stored directly in this target virtual folder. " +
+									"If not specified, attachments are downloaded to the user account associated with the action.\n\n" +
+									"**Note:** IMAP actions are executed for a single user only, so a target folder or an appropriate filter in the related rule is recommended.",
+							},
+						},
+					},
+					"icap_config": schema.SingleNestedAttribute{
+						Optional:            true,
+						MarkdownDescription: "Enables integration with ICAP servers to perform antivirus scanning and DLP checks. " + enterpriseFeatureNote,
+						Attributes: map[string]schema.Attribute{
+							"endpoint": schema.StringAttribute{
+								Required: true,
+								MarkdownDescription: "ICAP endpoint in the format `schema://host:port`. Supported schemas: `icap`, `icaps`. " +
+									"If the port is omitted, port `1344` is used.",
+							},
+							"timeout": schema.Int64Attribute{
+								Optional:    true,
+								Description: "Timeout in seconds for ICAP requests.",
+							},
+							"skip_tls_verify": schema.BoolAttribute{
+								Optional: true,
+								MarkdownDescription: "If enabled, any certificate presented by the server and any host name in that certificate are accepted. " +
+									"**Warning:** In this mode, TLS is susceptible to machine-in-the-middle attacks.",
+							},
+							"paths": schema.ListAttribute{
+								ElementType:         types.StringType,
+								Required:            true,
+								MarkdownDescription: "List of virtual paths to scan. Placeholders are supported, e.g. `{{.VirtualPath}}`.",
+								Validators: []validator.List{
+									listvalidator.UniqueValues(),
+								},
+							},
+							"method": schema.StringAttribute{
+								Required:            true,
+								MarkdownDescription: "ICAP method to use. Currently `REQMOD` is supported.",
+								Validators: []validator.String{
+									stringvalidator.OneOf("REQMOD"),
+								},
+							},
+							"headers": schema.ListNestedAttribute{
+								Optional:    true,
+								Description: "Headers to add to the ICAP request.",
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"key": schema.StringAttribute{
+											Required: true,
+										},
+										"value": schema.StringAttribute{
+											Required: true,
+										},
+									},
+								},
+							},
+							"block_action": schema.Int64Attribute{
+								Optional: true,
+								MarkdownDescription: "Action executed when the ICAP server detects an infected file.\n\n" +
+									"Supported values:\n" +
+									"* `1`: Ignore (allow file)\n" +
+									"* `2`: Delete (reject file)\n" +
+									"* `3`: Quarantine",
+								Validators: []validator.Int64{
+									int64validator.Between(1, 3),
+								},
+							},
+							"adapt_action": schema.Int64Attribute{
+								Optional: true,
+								MarkdownDescription: "Action executed when the ICAP server returns a modified file.\n\n" +
+									"Supported values:\n" +
+									"* `1`: Ignore (keep original)\n" +
+									"* `2`: Delete (reject)\n" +
+									"* `3`: Quarantine\n" +
+									"* `4`: Overwrite (use modified file)",
+								Validators: []validator.Int64{
+									int64validator.Between(1, 4),
+								},
+							},
+							"failure_policy": schema.Int64Attribute{
+								Optional: true,
+								MarkdownDescription: "Action executed when the ICAP scan fails (e.g. server unreachable).\n\n" +
+									"Supported values:\n" +
+									"* `1`: Ignore (allow file)\n" +
+									"* `2`: Delete (reject file)\n" +
+									"* `3`: Quarantine",
+								Validators: []validator.Int64{
+									int64validator.Between(1, 3),
+								},
+							},
+							"quarantine_folder": schema.StringAttribute{
+								Optional:    true,
+								Description: "The name of the virtual folder where quarantined files will be stored.",
+							},
+							"quarantine_path": schema.StringAttribute{
+								Optional:    true,
+								Description: "The virtual path where quarantined files will be stored. Placeholders are supported.",
+							},
+						},
+					},
+					"share_expiration_config": schema.SingleNestedAttribute{
+						Optional:            true,
+						MarkdownDescription: "Automated lifecycle management for shares based on inactivity, expiration, or max tokens. " + enterpriseFeatureNote,
+						Attributes: map[string]schema.Attribute{
+							"advance_notice": schema.Int64Attribute{
+								Optional:    true,
+								Description: "Number of days before the share expiration (real or calculated) to trigger the expiration event. Set to 0 to disable.",
+							},
+							"grace_period": schema.Int64Attribute{
+								Optional:    true,
+								Description: "Number of days a share is kept in the database after it has expired. Set to 0 to disable share deletion.",
+							},
+							"inactivity_threshold": schema.Int64Attribute{
+								Optional:    true,
+								Description: "Validity period (in days) for shares without an explicit expiration date. Checks last use or creation time. Set to 0 to disable.",
+							},
+							"split_events": schema.BoolAttribute{
+								Optional: true,
+								MarkdownDescription: "If true, events are split. " +
+									"For example, email actions will send a separate notification for each share instead of a cumulative report.",
+							},
+						},
+					},
 				},
 			},
 		},
@@ -730,7 +947,7 @@ func (*actionResource) preservePlanFields(ctx context.Context, plan, state *even
 	}
 	// only HTTP and PGP config have a secret to preserve
 	actionType := plan.Type.ValueInt64()
-	if actionType != 1 && actionType != 9 {
+	if actionType != 1 && actionType != 9 && actionType != 16 {
 		return nil
 	}
 
@@ -759,6 +976,13 @@ func (*actionResource) preservePlanFields(ctx context.Context, plan, state *even
 		optionsState.FsConfig.PGP.Password = optionsPlan.FsConfig.PGP.Password
 		optionsState.FsConfig.PGP.PrivateKey = optionsPlan.FsConfig.PGP.PrivateKey
 		optionsState.FsConfig.PGP.Passphrase = optionsPlan.FsConfig.PGP.Passphrase
+	}
+	if actionType == 16 && optionsPlan.IMAPConfig != nil {
+		optionsState.IMAPConfig.Password = optionsPlan.IMAPConfig.Password
+		if optionsPlan.IMAPConfig.OAuth2 != nil {
+			optionsState.IMAPConfig.OAuth2.ClientSecret = optionsPlan.IMAPConfig.OAuth2.ClientSecret
+			optionsState.IMAPConfig.OAuth2.RefreshToken = optionsPlan.IMAPConfig.OAuth2.RefreshToken
+		}
 	}
 
 	optionsStateObj, diags := types.ObjectValueFrom(ctx, optionsState.getTFAttributes(), optionsState)

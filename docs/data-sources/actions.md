@@ -40,9 +40,12 @@ Read-Only:
 - `email_config` (Attributes) Email action configurations. (see [below for nested schema](#nestedatt--actions--options--email_config))
 - `fs_config` (Attributes) Filesystem action configurations. (see [below for nested schema](#nestedatt--actions--options--fs_config))
 - `http_config` (Attributes) HTTP action configurations. (see [below for nested schema](#nestedatt--actions--options--http_config))
+- `icap_config` (Attributes) Enables integration with ICAP servers to perform antivirus scanning and DLP checks. Available in the Enterprise edition (see [below for nested schema](#nestedatt--actions--options--icap_config))
 - `idp_config` (Attributes) Identity Provider account check action configurations. (see [below for nested schema](#nestedatt--actions--options--idp_config))
+- `imap_config` (Attributes) Enables automatic retrieval of email attachments from IMAP mailboxes. Available in the Enterprise edition (see [below for nested schema](#nestedatt--actions--options--imap_config))
 - `pwd_expiration_config` (Attributes) Password expiration action configurations. (see [below for nested schema](#nestedatt--actions--options--pwd_expiration_config))
 - `retention_config` (Attributes) Data retention action configurations. (see [below for nested schema](#nestedatt--actions--options--retention_config))
+- `share_expiration_config` (Attributes) Automated lifecycle management for shares based on inactivity, expiration, or max tokens. Available in the Enterprise edition (see [below for nested schema](#nestedatt--actions--options--share_expiration_config))
 - `user_inactivity_config` (Attributes) User inactivity check configurations. (see [below for nested schema](#nestedatt--actions--options--user_inactivity_config))
 
 <a id="nestedatt--actions--options--cmd_config"></a>
@@ -168,13 +171,10 @@ Read-Only:
 <a id="nestedatt--actions--options--fs_config--renames"></a>
 ### Nested Schema for `actions.options.fs_config.renames`
 
-Optional:
-
-- `update_modtime` (Boolean) Update modification time. This setting is not recursive and only applies to storage providers that support changing modification times.
-
 Read-Only:
 
 - `key` (String)
+- `update_modtime` (Boolean) Update modification time. This setting is not recursive and only applies to storage providers that support changing modification times.
 - `value` (String)
 
 
@@ -234,6 +234,49 @@ Read-Only:
 
 
 
+<a id="nestedatt--actions--options--icap_config"></a>
+### Nested Schema for `actions.options.icap_config`
+
+Read-Only:
+
+- `adapt_action` (Number) Action executed when the ICAP server returns a modified file.
+
+Supported values:
+* `1`: Ignore (keep original)
+* `2`: Delete (reject)
+* `3`: Quarantine
+* `4`: Overwrite (use modified file)
+- `block_action` (Number) Action executed when the ICAP server detects an infected file.
+
+Supported values:
+* `1`: Ignore (allow file)
+* `2`: Delete (reject file)
+* `3`: Quarantine
+- `endpoint` (String) ICAP endpoint in the format `schema://host:port`. Supported schemas: `icap`, `icaps`. If the port is omitted, port `1344` is used.
+- `failure_policy` (Number) Action executed when the ICAP scan fails (e.g. server unreachable).
+
+Supported values:
+* `1`: Ignore (allow file)
+* `2`: Delete (reject file)
+* `3`: Quarantine
+- `headers` (Attributes List) Headers to add to the ICAP request. (see [below for nested schema](#nestedatt--actions--options--icap_config--headers))
+- `method` (String) ICAP method.
+- `paths` (List of String) List of virtual paths to scan. Placeholders are supported, e.g. `{{.VirtualPath}}`.
+- `quarantine_folder` (String) The name of the virtual folder where quarantined files will be stored.
+- `quarantine_path` (String) The virtual path where quarantined files will be stored. Placeholders are supported.
+- `skip_tls_verify` (Boolean) If enabled, any certificate presented by the server and any host name in that certificate are accepted. **Warning:** In this mode, TLS is susceptible to machine-in-the-middle attacks.
+- `timeout` (Number) Timeout in seconds for ICAP requests.
+
+<a id="nestedatt--actions--options--icap_config--headers"></a>
+### Nested Schema for `actions.options.icap_config.headers`
+
+Read-Only:
+
+- `key` (String)
+- `value` (String)
+
+
+
 <a id="nestedatt--actions--options--idp_config"></a>
 ### Nested Schema for `actions.options.idp_config`
 
@@ -242,6 +285,48 @@ Read-Only:
 - `mode` (Number) 0 means create or update the account, 1 means create the account if it doesn't exist.
 - `template_admin` (String) SFTPGo admin template in JSON format.
 - `template_user` (String) SFTPGo user template in JSON format.
+
+
+<a id="nestedatt--actions--options--imap_config"></a>
+### Nested Schema for `actions.options.imap_config`
+
+Read-Only:
+
+- `auth_type` (Number) Authentication type.
+
+Supported values:
+* `0`: Login
+* `1`: Plain
+- `endpoint` (String) IMAP endpoint in the format `schema://host:port`. Supported schemas: `imap`, `imaps`.
+- `mailbox` (String) Mailbox to check, e.g. `INBOX`.
+- `oauth2` (Attributes) (see [below for nested schema](#nestedatt--actions--options--imap_config--oauth2))
+- `password` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `path` (String) Directory path where downloaded attachments will be stored.
+- `post_process_action` (Number) Action to perform on the email after processing.
+
+Supported values:
+* `0`: Mark messages as read
+* `1`: Delete messages
+- `target_folder` (String) If specified, attachments are stored directly in this target virtual folder. If not specified, attachments are downloaded to the user account associated with the action.
+
+**Note:** IMAP actions are executed for a single user only, so a target folder or an appropriate filter in the related rule is recommended.
+- `username` (String)
+
+<a id="nestedatt--actions--options--imap_config--oauth2"></a>
+### Nested Schema for `actions.options.imap_config.oauth2`
+
+Read-Only:
+
+- `client_id` (String) OAuth2 Client ID.
+- `client_secret` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `provider` (Number) OAuth2 Provider.
+
+Supported values:
+* `0`: Google
+* `1`: Microsoft
+- `refresh_token` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `tenant` (String) OAuth2 Tenant.
+
 
 
 <a id="nestedatt--actions--options--pwd_expiration_config"></a>
@@ -270,6 +355,17 @@ Read-Only:
 - `path` (String) Path for which to apply the retention rules.
 - `retention` (Number) Retention as hours. 0 as retention means excluding the specified path.
 
+
+
+<a id="nestedatt--actions--options--share_expiration_config"></a>
+### Nested Schema for `actions.options.share_expiration_config`
+
+Read-Only:
+
+- `advance_notice` (Number) Number of days before the share expiration (real or calculated) to trigger the expiration event. Set to 0 to disable.
+- `grace_period` (Number) Number of days a share is kept in the database after it has expired. Set to 0 to disable share deletion.
+- `inactivity_threshold` (Number) Validity period (in days) for shares without an explicit expiration date. Checks last use or creation time. Set to 0 to disable.
+- `split_events` (Boolean) If true, events are split. For example, email actions will send a separate notification for each share instead of a cumulative report.
 
 
 <a id="nestedatt--actions--options--user_inactivity_config"></a>
