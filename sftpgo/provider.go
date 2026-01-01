@@ -129,52 +129,9 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	// If practitioner provided a configuration value for any of the
-	// attributes, it must be a known value.
-
-	if config.Host.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("host"),
-			"Unknown SFTPGo API Host",
-			"The provider cannot create the SFTPGo API client as there is an unknown configuration value for the SFTPGo API host. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the SFTPGO_HOST environment variable.",
-		)
-	}
-
-	if config.Username.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("username"),
-			"Unknown SFTPGo API Username",
-			"The provider cannot create the SFTPGo API client as there is an unknown configuration value for the SFTPGo API username. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the SFTPGO_USERNAME environment variable.",
-		)
-	}
-
-	if config.Password.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("password"),
-			"Unknown SFTPGo API Password",
-			"The provider cannot create the SFTPGo API client as there is an unknown configuration value for the SFTPGo API password. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the SFTPGO_PASSWORD environment variable.",
-		)
-	}
-
-	if config.APIKey.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("api_key"),
-			"Unknown SFTPGo API Key",
-			"The provider cannot create the SFTPGo API client as there is an unknown configuration value for the SFTPGo API key. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the SFTPGO_API_KEY environment variable.",
-		)
-	}
-
-	if config.Edition.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("edition"),
-			"Unknown SFTPGo edition",
-			"The provider cannot create the SFTPGo API client as there is an unknown configuration value for the SFTPGo edition. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the SFTPGO_EDITION environment variable.",
-		)
+	if config.Host.IsUnknown() || config.Username.IsUnknown() || config.Password.IsUnknown() || config.APIKey.IsUnknown() || config.Edition.IsUnknown() {
+		tflog.Info(ctx, "Configuration contains unknown values, deferring client creation until Apply phase")
+		return
 	}
 
 	if resp.Diagnostics.HasError() {
