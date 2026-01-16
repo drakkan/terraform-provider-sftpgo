@@ -58,7 +58,8 @@ func TestAccUserResource(t *testing.T) {
     				  email       = "test@test.com"
     				  permissions = {
         				"/" = "*",
-        				"/p1" = "list,download"
+        				"/p1" = "list,download",
+						"/p2" = ""
     				  }
     				  filesystem = {
       					provider = 1
@@ -122,9 +123,10 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "password", "secret pwd"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "home_dir", "/tmp/testuser"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "email", "test@test.com"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "2"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "3"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./", "*"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./p1", "list,download"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./p2", ""),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.provider", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.bucket", "bucket"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.region", "us-west-1"),

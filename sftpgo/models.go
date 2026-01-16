@@ -112,7 +112,12 @@ func (u *userResourceModel) toSFTPGo(ctx context.Context) (*client.User, diag.Di
 	}
 	user.Permissions = make(map[string][]string)
 	for k, v := range permissions {
-		user.Permissions[k] = strings.Split(v, ",")
+		v = strings.TrimSpace(v)
+		if v == "" {
+			user.Permissions[k] = nil
+		} else {
+			user.Permissions[k] = strings.Split(v, ",")
+		}
 	}
 	for _, g := range u.Groups {
 		user.Groups = append(user.Groups, sdk.GroupMapping{
