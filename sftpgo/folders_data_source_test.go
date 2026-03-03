@@ -157,6 +157,7 @@ func TestAccEnterpriseFoldersDataSource(t *testing.T) {
 			GCSConfig: client.GCSFsConfig{
 				BaseGCSFsConfig: client.BaseGCSFsConfig{
 					Bucket:                "bucket",
+					UniverseDomain:        "googleapis.com",
 					AutomaticCredentials:  1,
 					HierarchicalNamespace: 1,
 					UploadPartSize:        10,
@@ -220,6 +221,7 @@ func TestAccEnterpriseFoldersDataSource(t *testing.T) {
 						folder2.FsConfig.GCSConfig.Bucket),
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.gcsconfig.automatic_credentials", "1"),
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.gcsconfig.hns", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.gcsconfig.universe_domain", "googleapis.com"),
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.gcsconfig.upload_part_size", "10"),
 					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.1.filesystem.gcsconfig.upload_part_max_time", "60"),
 					// Verify placeholder id attribute

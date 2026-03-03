@@ -145,6 +145,10 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Computed:    true,
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with this prefix.`,
 					},
+					"universe_domain": schema.StringAttribute{
+						Computed:    true,
+						Description: `The universe domain to use for Google Cloud API requests. If omitted or empty, the default public domain (googleapis.com) is used. Set this value if you need to connect to a custom Google Cloud environment, such as Google Distributed Cloud or a Sovereign Cloud. ` + enterpriseFeatureNote,
+					},
 					"credentials": schema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
@@ -464,6 +468,10 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
 						Required: true,
+					},
+					"universe_domain": schema.StringAttribute{
+						Optional:    true,
+						Description: `The universe domain to use for Google Cloud API requests. If omitted or empty, the default public domain (googleapis.com) is used. Set this value if you need to connect to a custom Google Cloud environment, such as Google Distributed Cloud or a Sovereign Cloud. ` + enterpriseFeatureNote,
 					},
 					"credentials": schema.StringAttribute{
 						Optional:    true,

@@ -508,6 +508,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					    bucket = "gcs_hns"
 					    automatic_credentials = 1
 					    hns = 1
+						universe_domain = "googleapis.com"
 			          }
 				  }
 				  filters = {
@@ -536,6 +537,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.gcsconfig.bucket", "gcs_hns"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.gcsconfig.automatic_credentials", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.gcsconfig.hns", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.gcsconfig.universe_domain", "googleapis.com"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "description"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "additional_info", "info"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "groups"),

@@ -242,6 +242,7 @@ func TestAccEnterpriseFolderResource(t *testing.T) {
 					        bucket = "hns"
 					        automatic_credentials = 1
 					        hns = 1
+							universe_domain = "googleapis.com"
 			            }
 					  }
 				    }`,
@@ -263,6 +264,7 @@ func TestAccEnterpriseFolderResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.gcsconfig.bucket", "hns"),
 					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.gcsconfig.automatic_credentials", "1"),
 					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.gcsconfig.hns", "1"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.gcsconfig.universe_domain", "googleapis.com"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

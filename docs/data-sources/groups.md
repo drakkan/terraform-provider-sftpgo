@@ -120,6 +120,7 @@ Read-Only:
 - `hns` (Number) 1 if Hierarchical namespace support is enabled for the bucket. Available in the Enterprise edition.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
+- `universe_domain` (String) The universe domain to use for Google Cloud API requests. If omitted or empty, the default public domain (googleapis.com) is used. Set this value if you need to connect to a custom Google Cloud environment, such as Google Distributed Cloud or a Sovereign Cloud. Available in the Enterprise edition
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads. The default value is 16MB. Not set means use the default.
 
@@ -365,6 +366,7 @@ Read-Only:
 - `hns` (Number) 1 if Hierarchical namespace support is enabled for the bucket. Available in the Enterprise edition.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String)
+- `universe_domain` (String) The universe domain to use for Google Cloud API requests. If omitted or empty, the default public domain (googleapis.com) is used. Set this value if you need to connect to a custom Google Cloud environment, such as Google Distributed Cloud or a Sovereign Cloud. Available in the Enterprise edition
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads. The default value is 16MB. Not set means use the default.
 

@@ -255,6 +255,7 @@ func TestAccEnterpriseUsersDataSource(t *testing.T) {
 					KeyPrefix:             "users/user2/",
 					AutomaticCredentials:  1,
 					HierarchicalNamespace: 1,
+					UniverseDomain:        "googleapis.com",
 				},
 			},
 		},
@@ -327,6 +328,7 @@ func TestAccEnterpriseUsersDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.filesystem.gcsconfig.key_prefix", user2.FsConfig.GCSConfig.KeyPrefix),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.filesystem.gcsconfig.automatic_credentials", strconv.Itoa(user2.FsConfig.GCSConfig.AutomaticCredentials)),
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.filesystem.gcsconfig.hns", strconv.Itoa(user2.FsConfig.GCSConfig.HierarchicalNamespace)),
+					resource.TestCheckResourceAttr("data.sftpgo_users.test", "users.1.filesystem.gcsconfig.universe_domain", user2.FsConfig.GCSConfig.UniverseDomain),
 					resource.TestCheckNoResourceAttr("data.sftpgo_users.test", "users.1.filters.password_policy"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.sftpgo_users.test", "id", placeholderID),

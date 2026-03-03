@@ -787,6 +787,7 @@ type s3FsConfig struct {
 type gcsFsConfig struct {
 	Bucket                types.String `tfsdk:"bucket"`
 	KeyPrefix             types.String `tfsdk:"key_prefix"`
+	UniverseDomain        types.String `tfsdk:"universe_domain"`
 	Credentials           types.String `tfsdk:"credentials"`
 	AutomaticCredentials  types.Int64  `tfsdk:"automatic_credentials"`
 	HierarchicalNamespace types.Int64  `tfsdk:"hns"`
@@ -925,6 +926,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 			AttrTypes: map[string]attr.Type{
 				"bucket":                types.StringType,
 				"key_prefix":            types.StringType,
+				"universe_domain":       types.StringType,
 				"credentials":           types.StringType,
 				"automatic_credentials": types.Int64Type,
 				"hns":                   types.Int64Type,
@@ -1033,6 +1035,7 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 			BaseGCSFsConfig: client.BaseGCSFsConfig{
 				Bucket:                f.GCSConfig.Bucket.ValueString(),
 				KeyPrefix:             f.GCSConfig.KeyPrefix.ValueString(),
+				UniverseDomain:        f.GCSConfig.UniverseDomain.ValueString(),
 				AutomaticCredentials:  int(f.GCSConfig.AutomaticCredentials.ValueInt64()),
 				HierarchicalNamespace: int(f.GCSConfig.HierarchicalNamespace.ValueInt64()),
 				StorageClass:          f.GCSConfig.StorageClass.ValueString(),
@@ -1153,6 +1156,7 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *client.Filesystem) diag
 		f.GCSConfig = &gcsFsConfig{
 			Bucket:                getOptionalString(fs.GCSConfig.Bucket),
 			KeyPrefix:             getOptionalString(fs.GCSConfig.KeyPrefix),
+			UniverseDomain:        getOptionalString(fs.GCSConfig.UniverseDomain),
 			Credentials:           getOptionalString(getSecretFromSFTPGo(fs.GCSConfig.Credentials)),
 			AutomaticCredentials:  getOptionalInt64(int64(fs.GCSConfig.AutomaticCredentials)),
 			HierarchicalNamespace: getOptionalInt64(int64(fs.GCSConfig.HierarchicalNamespace)),

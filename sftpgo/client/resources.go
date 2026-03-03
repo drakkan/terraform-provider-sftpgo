@@ -68,6 +68,7 @@ type SFTPFsConfig struct {
 type BaseGCSFsConfig struct {
 	Bucket                string `json:"bucket,omitempty"`
 	KeyPrefix             string `json:"key_prefix,omitempty"`
+	UniverseDomain        string `json:"universe_domain,omitempty"`
 	CredentialFile        string `json:"-"`
 	AutomaticCredentials  int    `json:"automatic_credentials,omitempty"`
 	HierarchicalNamespace int    `json:"hns,omitempty"`
