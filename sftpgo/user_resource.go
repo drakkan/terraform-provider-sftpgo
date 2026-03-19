@@ -78,6 +78,9 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"username": schema.StringAttribute{
 				Required:    true,
 				Description: "Unique username.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"status": schema.Int64Attribute{
 				Required:    true,
