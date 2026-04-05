@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -94,6 +95,22 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Optional:    true,
 				Sensitive:   true,
 				Description: "Plain text password or hash format supported by SFTPGo. Set to empty to remove the password.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("password_wo")),
+				},
+			},
+			"password_wo": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
+				Description: "Write-only plain text password or hash format supported by SFTPGo. Set to empty to remove the password. " + writeOnlyNote,
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("password")),
+				},
+			},
+			"password_wo_version": schema.Int64Attribute{
+				Optional:    true,
+				Description: "Version for the write-only password. Increment this value to trigger a password update if password_wo is not changed but should be updated.",
 			},
 			"public_keys": schema.ListAttribute{
 				ElementType: types.StringType,
@@ -411,6 +428,7 @@ func (*userResource) preservePlanFields(ctx context.Context, plan, state *userRe
 	if !plan.Password.IsNull() {
 		state.Password = plan.Password
 	}
+	state.PasswordWoVersion = plan.PasswordWoVersion
 
 	if plan.FsConfig.IsNull() {
 		return nil

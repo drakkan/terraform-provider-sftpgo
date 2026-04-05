@@ -188,8 +188,14 @@ Required:
 Optional:
 
 - `passphrase` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `passphrase_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text passphrase. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `passphrase_wo_version` (Number) Version for the write-only passphrase.
 - `password` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text password. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `password_wo_version` (Number) Version for the write-only password.
 - `private_key` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `private_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text private key. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `private_key_wo_version` (Number) Version for the write-only private key.
 - `profile` (Number) Algorithms to use. 0 = Default (widely implemented algorithms), 1 = RFC 4880, 2 = RFC 9580. Don't set to use the default.
 - `public_key` (String)
 
@@ -230,7 +236,15 @@ Optional:
 - `body` (String) Request body for POST/PUT.
 - `headers` (Attributes List) Headers to add to the HTTP request. (see [below for nested schema](#nestedatt--options--http_config--headers))
 - `parts` (Attributes List) Multipart requests allow to combine one or more sets of data into a single body. For each part, you can set a file path or a body as text. Placeholders are supported in file path, body, header values. (see [below for nested schema](#nestedatt--options--http_config--parts))
+- `passphrase` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `passphrase_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text passphrase. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `passphrase_wo_version` (Number) Version for the write-only passphrase.
 - `password` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text password. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `password_wo_version` (Number) Version for the write-only password.
+- `private_key` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `private_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text private key. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `private_key_wo_version` (Number) Version for the write-only private key.
 - `query_parameters` (Attributes List) Query parameters to add to the HTTP request. (see [below for nested schema](#nestedatt--options--http_config--query_parameters))
 - `skip_tls_verify` (Boolean) If enabled any certificate presented by the server and any host name in that certificate are accepted. In this mode, TLS is susceptible to machine-in-the-middle attacks.
 - `timeout` (Number) Time limit for the request in seconds. Ignored for multipart requests with files as attachments. For non multipart requests is required Ignored for multipart requests with files as attachments otherwise required and must be between 1 and 120
@@ -354,6 +368,8 @@ Supported values:
 - `mailbox` (String) Mailbox to check, e.g. `INBOX`.
 - `oauth2` (Attributes) (see [below for nested schema](#nestedatt--options--imap_config--oauth2))
 - `password` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text password. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `password_wo_version` (Number) Version for the write-only password.
 - `path` (String) Directory path where downloaded attachments will be stored.
 - `post_process_action` (Number) Action to perform on the email after processing.
 
@@ -372,12 +388,16 @@ Optional:
 
 - `client_id` (String) OAuth2 Client ID.
 - `client_secret` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `client_secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text client secret. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `client_secret_wo_version` (Number) Version for the write-only client secret.
 - `provider` (Number) OAuth2 Provider.
 
 Supported values:
 * `0`: Google
 * `1`: Microsoft
 - `refresh_token` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `refresh_token_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text refresh token. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `refresh_token_wo_version` (Number) Version for the write-only refresh token.
 - `tenant` (String) OAuth2 Tenant.
 
 

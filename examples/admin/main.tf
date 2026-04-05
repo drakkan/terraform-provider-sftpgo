@@ -13,20 +13,23 @@ provider "sftpgo" {
 }
 
 resource "sftpgo_admin" "test" {
-    username    = "test"
-    status = 1
-    password = "password"
-    email = "admin@sftpgo.com"
-    permissions = ["add_users", "edit_users","del_users"]
-    filters = {
-        allow_list = ["192.168.1.0/24"]
-    }
-    preferences = {
-      hide_user_page_sections = 5
-    }
+  username = "test"
+  status   = 1
+  # password = "password"
+  # or use the write-only attribute for ephemeral values
+  password_wo         = "password"
+  password_wo_version = 1
+  email               = "admin@sftpgo.com"
+  permissions         = ["add_users", "edit_users", "del_users"]
+  filters = {
+    allow_list = ["192.168.1.0/24"]
+  }
+  preferences = {
+    hide_user_page_sections = 5
+  }
 }
 
 output "sftpgo_admin" {
-  value = sftpgo_admin.test
+  value     = sftpgo_admin.test
   sensitive = true
 }

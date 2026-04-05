@@ -176,6 +176,33 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "role", testRole.Name),
 				),
 			},
+			// Test write-only filesystem secrets
+			{
+				Config: `
+					resource "sftpgo_user" "test_fs_wo" {
+					  username = "test user fs wo"
+					  status      = 1
+					  home_dir    = "/tmp/testuserfswo"
+					  permissions = {
+						"/" = "*"
+					  }
+					  filesystem = {
+						provider = 1
+						s3config = {
+						  bucket = "bucket"
+						  access_key = "key"
+						  access_secret_wo = "secret payload wo"
+						  access_secret_wo_version = 2
+						}
+					  }
+					}
+				`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.test_fs_wo", "username", "test user fs wo"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test_fs_wo", "filesystem.s3config.access_secret"),
+					resource.TestCheckResourceAttr("sftpgo_user.test_fs_wo", "filesystem.s3config.access_secret_wo_version", "2"),
+				),
+			},
 			// ImportState testing
 			{
 				ResourceName:      "sftpgo_user.test",
@@ -618,6 +645,26 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 				ResourceName:      "sftpgo_user.test",
 				ImportState:       true,
 				ImportStateVerify: false, // SFTPGo will not return plain text password/secrets
+			},
+			// Test write-only password
+			{
+				Config: `
+					resource "sftpgo_user" "test_wo" {
+  					  username = "test user wo"
+  					  status      = 1
+    				  password_wo = "secret pwd wo"
+					  password_wo_version = 1
+                      home_dir    = "/tmp/testuserwo"
+    				  permissions = {
+        				"/" = "*"
+    				  }
+					}
+				`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.test_wo", "username", "test user wo"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test_wo", "password"),
+					resource.TestCheckResourceAttr("sftpgo_user.test_wo", "password_wo_version", "1"),
+				),
 			},
 			// Delete testing automatically occurs in TestCase
 		},

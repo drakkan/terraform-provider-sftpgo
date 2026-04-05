@@ -25,6 +25,8 @@ User
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `additional_info` (String) Free form text field.
 - `description` (String) Optional description.
 - `download_bandwidth` (Number) Maximum download bandwidth as KB/s. Not set means unlimited. This is the default if no per-source limit match.
@@ -36,6 +38,8 @@ User
 - `groups` (Attributes List) Groups. (see [below for nested schema](#nestedatt--groups))
 - `max_sessions` (Number) Maximum concurrent sessions. Not set means no limit.
 - `password` (String, Sensitive) Plain text password or hash format supported by SFTPGo. Set to empty to remove the password.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text password or hash format supported by SFTPGo. Set to empty to remove the password. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `password_wo_version` (Number) Version for the write-only password. Increment this value to trigger a password update if password_wo is not changed but should be updated.
 - `public_keys` (List of String) List of public keys in OpenSSH format.
 - `quota_files` (Number) Maximum number of files allowed. Not set means no limit.
 - `quota_size` (Number) Maximum size allowed as bytes. Not set means no limit.
@@ -86,6 +90,8 @@ Optional:
 
 - `access_tier` (String) Blob Access Tier. Not set means the container default.
 - `account_key` (String, Sensitive) Plain text account key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `account_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text account key. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `account_key_wo_version` (Number) Version for the write-only account key.
 - `account_name` (String)
 - `container` (String)
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Default: 5.
@@ -93,6 +99,8 @@ Optional:
 - `endpoint` (String) Optional endpoint. Default is "blob.core.windows.net". If you use the emulator the endpoint must include the protocol, for example "http://127.0.0.1:10000".
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"
 - `sas_url` (String, Sensitive) Plain text SAS URL. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `sas_url_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text SAS URL. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `sas_url_wo_version` (Number) Version for the write-only SAS URL.
 - `upload_concurrency` (Number) How many parts are uploaded in parallel. Default: 5.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads. If this value is not set, the default value (5MB) will be used.
 - `use_emulator` (Boolean)
@@ -104,6 +112,8 @@ Optional:
 Optional:
 
 - `passphrase` (String, Sensitive) Plain text passphrase. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `passphrase_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text passphrase. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `passphrase_wo_version` (Number) Version for the write-only passphrase.
 - `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads. Omit to disable buffering, that's fine in most use cases.
 - `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads. Omit to disable buffering, that's fine in most use cases.
 
@@ -119,6 +129,8 @@ Required:
 Optional:
 
 - `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text password. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `password_wo_version` (Number) Version for the write-only password.
 - `skip_tls_verify` (Boolean)
 - `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
 
@@ -135,6 +147,8 @@ Optional:
 - `acl` (String) The ACL to apply to uploaded objects. Not set means the bucket default.
 - `automatic_credentials` (Number)
 - `credentials` (String, Sensitive) Plain text credentials. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `credentials_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text credentials. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `credentials_wo_version` (Number) Version for the write-only credentials.
 - `hns` (Number) Set to 1 if Hierarchical namespace is enabled for the bucket. Available in the Enterprise edition.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"
 - `storage_class` (String) The storage class to use when storing objects. Leave not set for default.
@@ -153,8 +167,12 @@ Required:
 Optional:
 
 - `api_key` (String, Sensitive) Plain text API key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `api_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text API key. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `api_key_wo_version` (Number) Version for the write-only API key.
 - `equality_check_mode` (Number)
 - `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text password. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `password_wo_version` (Number) Version for the write-only password.
 - `skip_tls_verify` (Boolean)
 - `username` (String)
 
@@ -179,6 +197,8 @@ Optional:
 
 - `access_key` (String)
 - `access_secret` (String, Sensitive) Plain text access secret. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `access_secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text access secret. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `access_secret_wo_version` (Number) Version for the write-only access secret.
 - `acl` (String) The canned ACL to apply to uploaded objects. Not set means the bucket default.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Not set means the default (5). Ignored for partial downloads.
 - `download_part_max_time` (Number) The maximum time allowed, in seconds, to download a single chunk. Not set means no timeout. Ignored for partial downloads.
@@ -191,6 +211,8 @@ Optional:
 - `session_token` (String) Optional Session token that is a part of temporary security credentials provisioned by AWS STS.
 - `skip_tls_verify` (Boolean) If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.
 - `sse_customer_key` (String, Sensitive) Plain text Server-Side encryption key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `sse_customer_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text Server-Side encryption key. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `sse_customer_key_wo_version` (Number) Version for the write-only Server-Side encryption key.
 - `storage_class` (String) The storage class to use when storing objects. Leave not set for default.
 - `upload_concurrency` (Number) How many parts are uploaded in parallel. Not set means the default (5).
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.
@@ -213,9 +235,17 @@ Optional:
 - `equality_check_mode` (Number) Defines how to check if this config points to the same server as another config. By default both the endpoint and the username must match. 1 means that only the endpoint must match. If different configs point to the same server the renaming between the fs configs is allowed.
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server. If not set any host key will be accepted: this is a security risk.
 - `key_passphrase` (String, Sensitive) Plain text passphrase for the private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `key_passphrase_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text passphrase for the private key. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `key_passphrase_wo_version` (Number) Version for the write-only passphrase for the private key.
 - `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text password. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `password_wo_version` (Number) Version for the write-only password.
 - `private_key` (String, Sensitive) Plain text private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `private_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text private key. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `private_key_wo_version` (Number) Version for the write-only private key.
 - `socks_password` (String, Sensitive) Plain text SOCKS password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Available in the Enterprise edition.
+- `socks_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text SOCKS password. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values. Available in the Enterprise edition.
+- `socks_password_wo_version` (Number) Version for the write-only SOCKS password. Available in the Enterprise edition.
 - `socks_proxy` (String) The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. Available in the Enterprise edition.
 - `socks_username` (String) The optional SOCKS username. Available in the Enterprise edition.
 

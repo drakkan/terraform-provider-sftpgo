@@ -78,6 +78,8 @@ type EventActionHTTPConfig struct {
 	Endpoint        string         `json:"endpoint,omitempty"`
 	Username        string         `json:"username,omitempty"`
 	Password        kms.BaseSecret `json:"password,omitempty"`
+	PrivateKey      kms.BaseSecret `json:"private_key,omitempty"`
+	Passphrase      kms.BaseSecret `json:"passphrase,omitempty"`
 	Headers         []KeyValue     `json:"headers,omitempty"`
 	Timeout         int            `json:"timeout,omitempty"`
 	SkipTLSVerify   bool           `json:"skip_tls_verify,omitempty"`

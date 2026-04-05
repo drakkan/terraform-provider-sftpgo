@@ -115,7 +115,6 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			},
 			"options": schema.SingleNestedAttribute{
 				Optional:    true,
-				Computed:    true,
 				Description: "Configuration options specific for the action type.",
 				Attributes: map[string]schema.Attribute{
 					"http_config": schema.SingleNestedAttribute{
@@ -133,7 +132,66 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								Optional:    true,
 								Sensitive:   true,
 								Description: computedSecretDescription,
+								Validators: []validator.String{
+									stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password_wo")),
+								},
 							},
+							"password_wo": schema.StringAttribute{
+								Optional:    true,
+								Sensitive:   true,
+								WriteOnly:   true,
+								Description: "Write-only plain text password. " + writeOnlyNote,
+								Validators: []validator.String{
+									stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password")),
+								},
+							},
+							"password_wo_version": schema.Int64Attribute{
+								Optional:    true,
+								Description: "Version for the write-only password.",
+							},
+							"private_key": schema.StringAttribute{
+								Optional:    true,
+								Sensitive:   true,
+								Description: computedSecretDescription,
+								Validators: []validator.String{
+									stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("private_key_wo")),
+								},
+							},
+							"private_key_wo": schema.StringAttribute{
+								Optional:    true,
+								Sensitive:   true,
+								WriteOnly:   true,
+								Description: "Write-only plain text private key. " + writeOnlyNote,
+								Validators: []validator.String{
+									stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("private_key")),
+								},
+							},
+							"private_key_wo_version": schema.Int64Attribute{
+								Optional:    true,
+								Description: "Version for the write-only private key.",
+							},
+							"passphrase": schema.StringAttribute{
+								Optional:    true,
+								Sensitive:   true,
+								Description: computedSecretDescription,
+								Validators: []validator.String{
+									stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("passphrase_wo")),
+								},
+							},
+							"passphrase_wo": schema.StringAttribute{
+								Optional:    true,
+								Sensitive:   true,
+								WriteOnly:   true,
+								Description: "Write-only plain text passphrase. " + writeOnlyNote,
+								Validators: []validator.String{
+									stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("passphrase")),
+								},
+							},
+							"passphrase_wo_version": schema.Int64Attribute{
+								Optional:    true,
+								Description: "Version for the write-only passphrase.",
+							},
+
 							"headers": schema.ListNestedAttribute{
 								Optional:    true,
 								Description: `Headers to add to the HTTP request.`,
@@ -463,16 +521,65 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 										Optional:    true,
 										Sensitive:   true,
 										Description: computedSecretDescription,
+										Validators: []validator.String{
+											stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password_wo")),
+										},
 									},
+									"password_wo": schema.StringAttribute{
+										Optional:    true,
+										Sensitive:   true,
+										WriteOnly:   true,
+										Description: "Write-only plain text password. " + writeOnlyNote,
+										Validators: []validator.String{
+											stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password")),
+										},
+									},
+									"password_wo_version": schema.Int64Attribute{
+										Optional:    true,
+										Description: "Version for the write-only password.",
+									},
+
 									"private_key": schema.StringAttribute{
 										Optional:    true,
 										Sensitive:   true,
 										Description: computedSecretDescription,
+										Validators: []validator.String{
+											stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("private_key_wo")),
+										},
+									},
+									"private_key_wo": schema.StringAttribute{
+										Optional:    true,
+										Sensitive:   true,
+										WriteOnly:   true,
+										Description: "Write-only plain text private key. " + writeOnlyNote,
+										Validators: []validator.String{
+											stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("private_key")),
+										},
+									},
+									"private_key_wo_version": schema.Int64Attribute{
+										Optional:    true,
+										Description: "Version for the write-only private key.",
 									},
 									"passphrase": schema.StringAttribute{
 										Optional:    true,
 										Sensitive:   true,
 										Description: computedSecretDescription,
+										Validators: []validator.String{
+											stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("passphrase_wo")),
+										},
+									},
+									"passphrase_wo": schema.StringAttribute{
+										Optional:    true,
+										Sensitive:   true,
+										WriteOnly:   true,
+										Description: "Write-only plain text passphrase. " + writeOnlyNote,
+										Validators: []validator.String{
+											stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("passphrase")),
+										},
+									},
+									"passphrase_wo_version": schema.Int64Attribute{
+										Optional:    true,
+										Description: "Version for the write-only passphrase.",
 									},
 									"public_key": schema.StringAttribute{
 										Optional: true,
@@ -581,6 +688,22 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								Optional:    true,
 								Sensitive:   true,
 								Description: computedSecretDescription,
+								Validators: []validator.String{
+									stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password_wo")),
+								},
+							},
+							"password_wo": schema.StringAttribute{
+								Optional:    true,
+								Sensitive:   true,
+								WriteOnly:   true,
+								Description: "Write-only plain text password. " + writeOnlyNote,
+								Validators: []validator.String{
+									stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password")),
+								},
+							},
+							"password_wo_version": schema.Int64Attribute{
+								Optional:    true,
+								Description: "Version for the write-only password.",
 							},
 							"auth_type": schema.Int64Attribute{
 								Optional: true,
@@ -617,11 +740,43 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 										Optional:    true,
 										Sensitive:   true,
 										Description: computedSecretDescription,
+										Validators: []validator.String{
+											stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("client_secret_wo")),
+										},
+									},
+									"client_secret_wo": schema.StringAttribute{
+										Optional:    true,
+										Sensitive:   true,
+										WriteOnly:   true,
+										Description: "Write-only plain text client secret. " + writeOnlyNote,
+										Validators: []validator.String{
+											stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("client_secret")),
+										},
+									},
+									"client_secret_wo_version": schema.Int64Attribute{
+										Optional:    true,
+										Description: "Version for the write-only client secret.",
 									},
 									"refresh_token": schema.StringAttribute{
 										Optional:    true,
 										Sensitive:   true,
 										Description: computedSecretDescription,
+										Validators: []validator.String{
+											stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("refresh_token_wo")),
+										},
+									},
+									"refresh_token_wo": schema.StringAttribute{
+										Optional:    true,
+										Sensitive:   true,
+										WriteOnly:   true,
+										Description: "Write-only plain text refresh token. " + writeOnlyNote,
+										Validators: []validator.String{
+											stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("refresh_token")),
+										},
+									},
+									"refresh_token_wo_version": schema.Int64Attribute{
+										Optional:    true,
+										Description: "Version for the write-only refresh token.",
 									},
 								},
 							},
@@ -971,17 +1126,28 @@ func (*actionResource) preservePlanFields(ctx context.Context, plan, state *even
 
 	if actionType == 1 && optionsPlan.HTTPConfig != nil {
 		optionsState.HTTPConfig.Password = optionsPlan.HTTPConfig.Password
+		optionsState.HTTPConfig.PasswordWoVersion = optionsPlan.HTTPConfig.PasswordWoVersion
+		optionsState.HTTPConfig.PrivateKey = optionsPlan.HTTPConfig.PrivateKey
+		optionsState.HTTPConfig.PrivateKeyWoVersion = optionsPlan.HTTPConfig.PrivateKeyWoVersion
+		optionsState.HTTPConfig.Passphrase = optionsPlan.HTTPConfig.Passphrase
+		optionsState.HTTPConfig.PassphraseWoVersion = optionsPlan.HTTPConfig.PassphraseWoVersion
 	}
 	if actionType == 9 && optionsPlan.FsConfig != nil && optionsPlan.FsConfig.Type.ValueInt64() == 7 {
 		optionsState.FsConfig.PGP.Password = optionsPlan.FsConfig.PGP.Password
+		optionsState.FsConfig.PGP.PasswordWoVersion = optionsPlan.FsConfig.PGP.PasswordWoVersion
 		optionsState.FsConfig.PGP.PrivateKey = optionsPlan.FsConfig.PGP.PrivateKey
+		optionsState.FsConfig.PGP.PrivateKeyWoVersion = optionsPlan.FsConfig.PGP.PrivateKeyWoVersion
 		optionsState.FsConfig.PGP.Passphrase = optionsPlan.FsConfig.PGP.Passphrase
+		optionsState.FsConfig.PGP.PassphraseWoVersion = optionsPlan.FsConfig.PGP.PassphraseWoVersion
 	}
 	if actionType == 16 && optionsPlan.IMAPConfig != nil {
 		optionsState.IMAPConfig.Password = optionsPlan.IMAPConfig.Password
+		optionsState.IMAPConfig.PasswordWoVersion = optionsPlan.IMAPConfig.PasswordWoVersion
 		if optionsPlan.IMAPConfig.OAuth2 != nil {
 			optionsState.IMAPConfig.OAuth2.ClientSecret = optionsPlan.IMAPConfig.OAuth2.ClientSecret
+			optionsState.IMAPConfig.OAuth2.ClientSecretWoVersion = optionsPlan.IMAPConfig.OAuth2.ClientSecretWoVersion
 			optionsState.IMAPConfig.OAuth2.RefreshToken = optionsPlan.IMAPConfig.OAuth2.RefreshToken
+			optionsState.IMAPConfig.OAuth2.RefreshTokenWoVersion = optionsPlan.IMAPConfig.OAuth2.RefreshTokenWoVersion
 		}
 	}
 

@@ -20,7 +20,11 @@ Note: This resource cannot be deleted. Running `terraform destroy` will remove i
 
 ### Optional
 
-- `key` (String) License key. Required to add or update a license key.
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `key` (String, Sensitive) License key. Required to add or update a license key.
+- `key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only license key. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `key_wo_version` (Number) Version for the write-only license key.
 
 ### Read-Only
 

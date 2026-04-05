@@ -94,7 +94,6 @@ func (r *groupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"user_settings": schema.SingleNestedAttribute{
 				Optional:    true,
-				Computed:    true,
 				Description: "Settings to apply to users",
 				Attributes: map[string]schema.Attribute{
 					"home_dir": schema.StringAttribute{

@@ -87,9 +87,25 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				},
 			},
 			"password": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
 				Description: "Plain text password or hash format supported by SFTPGo.",
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRoot("password"), path.MatchRoot("password_wo")),
+				},
+			},
+			"password_wo": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
+				Description: "Write-only plain text password or hash format supported by SFTPGo. " + writeOnlyNote,
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRoot("password"), path.MatchRoot("password_wo")),
+				},
+			},
+			"password_wo_version": schema.Int64Attribute{
+				Optional:    true,
+				Description: "Version for the write-only password. Increment this value to trigger a password update if password_wo is not changed but should be updated.",
 			},
 			"email": schema.StringAttribute{
 				Optional: true,
@@ -233,7 +249,7 @@ func (r *adminResource) Create(ctx context.Context, req resource.CreateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	state.Password = plan.Password
+	r.preservePlanFields(ctx, &plan, &state)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -273,8 +289,7 @@ func (r *adminResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	newState.Password = state.Password
+	r.preservePlanFields(ctx, &state, &newState)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &newState)
@@ -323,7 +338,7 @@ func (r *adminResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	state.Password = plan.Password
+	r.preservePlanFields(ctx, &plan, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -360,4 +375,11 @@ func (r *adminResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 func (*adminResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import username and save to username attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("username"), req, resp)
+}
+
+func (*adminResource) preservePlanFields(_ context.Context, plan, state *adminResourceModel) {
+	if !plan.Password.IsNull() {
+		state.Password = plan.Password
+	}
+	state.PasswordWoVersion = plan.PasswordWoVersion
 }

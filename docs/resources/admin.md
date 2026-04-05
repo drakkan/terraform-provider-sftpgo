@@ -17,18 +17,22 @@ Admin
 
 ### Required
 
-- `password` (String, Sensitive) Plain text password or hash format supported by SFTPGo.
 - `permissions` (List of String) Granted permissions.
 - `status` (Number) 1 enabled, 0 disabled (login is not allowed).
 - `username` (String) Unique username.
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `additional_info` (String) Free form text field.
 - `description` (String) Optional description.
 - `email` (String)
 - `filters` (Attributes) Additional restrictions. (see [below for nested schema](#nestedatt--filters))
 - `groups` (Attributes List) Groups automatically selected for new users created by this admin. (see [below for nested schema](#nestedatt--groups))
+- `password` (String, Sensitive) Plain text password or hash format supported by SFTPGo.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only plain text password or hash format supported by SFTPGo. This is a write-only attribute, it will not be stored in the state. It is intended to be used with ephemeral values.
+- `password_wo_version` (Number) Version for the write-only password. Increment this value to trigger a password update if password_wo is not changed but should be updated.
 - `preferences` (Attributes) Admin preferences. (see [below for nested schema](#nestedatt--preferences))
 - `role` (String) Role name. If set the admin can only administer users with the same role.
 

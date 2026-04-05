@@ -13,21 +13,24 @@ provider "sftpgo" {
 }
 
 resource "sftpgo_action" "test" {
-    name = "http action"
-    description = "created from Terraform"
-    type = 1
-    options = {
-        http_config = {
-            endpoint = "http://127.0.0.1:8082/notify"
-            username = "myuser"
-            password = "mypassword"
-            timeout = 10
-            method = "GET"
-        }
+  name        = "http action"
+  description = "created from Terraform"
+  type        = 1
+  options = {
+    http_config = {
+      endpoint = "http://127.0.0.1:8082/notify"
+      username = "myuser"
+      # password = "mypassword"
+      # or use the write-only attribute for ephemeral values
+      password_wo         = "mypassword"
+      password_wo_version = 1
+      timeout             = 10
+      method              = "GET"
     }
+  }
 }
 
 output "sftpgo_action" {
-  value = sftpgo_action.test
+  value     = sftpgo_action.test
   sensitive = true
 }

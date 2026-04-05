@@ -17,11 +17,13 @@ package sftpgo
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 )
@@ -74,7 +76,24 @@ func (r *licenseResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"key": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "License key. Required to add or update a license key.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("key_wo")),
+				},
+			},
+			"key_wo": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
+				Description: "Write-only license key. " + writeOnlyNote,
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("key")),
+				},
+			},
+			"key_wo_version": schema.Int64Attribute{
+				Optional:    true,
+				Description: "Version for the write-only license key.",
 			},
 			"type": schema.Int64Attribute{
 				Computed:    true,
@@ -126,6 +145,7 @@ func (r *licenseResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	r.preservePlanFields(ctx, &plan, &state)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -159,6 +179,7 @@ func (r *licenseResource) Read(ctx context.Context, req resource.ReadRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	r.preservePlanFields(ctx, &state, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -178,8 +199,8 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	if plan.Key.ValueString() == "" {
-		resp.Diagnostics.AddError("Missing license key", "The 'key' attribute is required to add or update the license.")
+	if plan.Key.ValueString() == "" && plan.KeyWo.ValueString() == "" {
+		resp.Diagnostics.AddError("Missing license key", "The 'key' or 'key_wo' attribute is required to add or update the license.")
 		return
 	}
 
@@ -204,6 +225,7 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	r.preservePlanFields(ctx, &plan, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -211,6 +233,13 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
+}
+
+func (r *licenseResource) preservePlanFields(_ context.Context, plan, state *licenseResourceModel) {
+	if !plan.Key.IsNull() {
+		state.Key = plan.Key
+	}
+	state.KeyWoVersion = plan.KeyWoVersion
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
