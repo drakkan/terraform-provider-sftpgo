@@ -18,7 +18,7 @@ Virtual folder
 ### Required
 
 - `filesystem` (Attributes) Filesystem configuration. (see [below for nested schema](#nestedatt--filesystem))
-- `name` (String) Unique name
+- `name` (String) Unique name. Changing the name after creation forces replacement because the SFTPGo API does not support renaming.
 
 ### Optional
 

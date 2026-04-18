@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccAllowListResource(t *testing.T) {
@@ -64,6 +65,37 @@ func TestAccAllowListResource(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccAllowListResource_renameForcesReplace(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_allowlist_entry" "test" {
+					  ipornet = "198.51.100.0/24"
+					  protocols = 0
+					}`,
+			},
+			{
+				Config: `
+					resource "sftpgo_allowlist_entry" "test" {
+					  ipornet = "198.51.100.1/32"
+					  protocols = 0
+					}`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("sftpgo_allowlist_entry.test", plancheck.ResourceActionReplace),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_allowlist_entry.test", "ipornet", "198.51.100.1/32"),
+					resource.TestCheckResourceAttr("sftpgo_allowlist_entry.test", "id", "198.51.100.1/32"),
+				),
+			},
 		},
 	})
 }

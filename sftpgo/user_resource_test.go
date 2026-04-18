@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/require"
 )
 
@@ -628,6 +629,45 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 				ImportStateVerify: false, // SFTPGo will not return plain text password/secrets
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccUserResource_renameForcesReplace(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_user" "test" {
+					  username    = "rename_test_initial"
+					  status      = 1
+					  password    = "password"
+					  home_dir    = "/tmp/rename_test_user"
+					  permissions = { "/" = "*" }
+					  filesystem  = { provider = 0 }
+					}`,
+			},
+			{
+				Config: `
+					resource "sftpgo_user" "test" {
+					  username    = "rename_test_renamed"
+					  status      = 1
+					  password    = "password"
+					  home_dir    = "/tmp/rename_test_user"
+					  permissions = { "/" = "*" }
+					  filesystem  = { provider = 0 }
+					}`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("sftpgo_user.test", plancheck.ResourceActionReplace),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.test", "username", "rename_test_renamed"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "id", "rename_test_renamed"),
+				),
+			},
 		},
 	})
 }

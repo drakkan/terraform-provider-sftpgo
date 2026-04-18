@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/require"
 
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
@@ -589,5 +590,56 @@ func TestAccRuleResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps:                    steps,
+	})
+}
+
+func TestAccRuleResource_renameForcesReplace(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	action := client.BaseEventAction{
+		Name: "rename_test_action",
+		Type: 4,
+	}
+	_, err = c.CreateAction(action)
+	require.NoError(t, err)
+	defer func() {
+		err = c.DeleteAction(action.Name)
+		require.NoError(t, err)
+	}()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_rule" "test" {
+					  name    = "rename_test_initial"
+					  status  = 1
+					  trigger = 4
+					  actions = [{ name = "rename_test_action" }]
+					}`,
+			},
+			{
+				Config: `
+					resource "sftpgo_rule" "test" {
+					  name    = "rename_test_renamed"
+					  status  = 1
+					  trigger = 4
+					  actions = [{ name = "rename_test_action" }]
+					}`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("sftpgo_rule.test", plancheck.ResourceActionReplace),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "name", "rename_test_renamed"),
+					resource.TestCheckResourceAttr("sftpgo_rule.test", "id", "rename_test_renamed"),
+				),
+			},
+		},
 	})
 }

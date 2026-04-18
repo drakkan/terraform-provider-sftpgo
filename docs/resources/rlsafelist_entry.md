@@ -17,7 +17,7 @@ Rate limiters safe list entry
 
 ### Required
 
-- `ipornet` (String) IP address or network in CIDR format, for example "192.168.1.2/32", "192.168.0.0/24", "2001:db8::/32"
+- `ipornet` (String) IP address or network in CIDR format, for example "192.168.1.2/32", "192.168.0.0/24", "2001:db8::/32". Changing this value after creation forces replacement because the SFTPGo API does not support renaming.
 - `protocols` (Number) Defines the protocol the entry applies to. 0 means all the supported protocols, 1 SSH, 2 FTP, 4 WebDAV, 8 HTTP. Protocols can be combined, for example 3 means SSH and FTP.
 
 ### Optional

@@ -20,7 +20,7 @@ User
 - `filesystem` (Attributes) Filesystem configuration. (see [below for nested schema](#nestedatt--filesystem))
 - `permissions` (Map of String) Comma separated, per-directory, permissions.
 - `status` (Number) 1 enabled, 0 disabled (login is not allowed).
-- `username` (String) Unique username.
+- `username` (String) Unique username. Changing the username after creation forces replacement because the SFTPGo API does not support renaming.
 
 ### Optional
 

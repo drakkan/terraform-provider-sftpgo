@@ -72,7 +72,10 @@ func (r *allowListEntryResource) Schema(_ context.Context, _ resource.SchemaRequ
 			},
 			"ipornet": schema.StringAttribute{
 				Required:    true,
-				Description: `IP address or network in CIDR format, for example "192.168.1.2/32", "192.168.0.0/24", "2001:db8::/32"`,
+				Description: `IP address or network in CIDR format, for example "192.168.1.2/32", "192.168.0.0/24", "2001:db8::/32". Changing this value after creation forces replacement because the SFTPGo API does not support renaming.`,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,

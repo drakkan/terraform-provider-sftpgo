@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -91,6 +92,35 @@ func TestAccRoleResource(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccRoleResource_renameForcesReplace(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_role" "test" {
+					  name = "rename_test_initial"
+					}`,
+			},
+			{
+				Config: `
+					resource "sftpgo_role" "test" {
+					  name = "rename_test_renamed"
+					}`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("sftpgo_role.test", plancheck.ResourceActionReplace),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_role.test", "name", "rename_test_renamed"),
+					resource.TestCheckResourceAttr("sftpgo_role.test", "id", "rename_test_renamed"),
+				),
+			},
 		},
 	})
 }

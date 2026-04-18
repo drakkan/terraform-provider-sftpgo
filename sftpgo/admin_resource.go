@@ -77,7 +77,10 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"username": schema.StringAttribute{
 				Required:    true,
-				Description: "Unique username.",
+				Description: "Unique username. Changing the username after creation forces replacement because the SFTPGo API does not support renaming.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"status": schema.Int64Attribute{
 				Required:    true,

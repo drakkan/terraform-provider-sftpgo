@@ -17,7 +17,7 @@ Event action
 
 ### Required
 
-- `name` (String) Unique name.
+- `name` (String) Unique name. Changing the name after creation forces replacement because the SFTPGo API does not support renaming.
 - `type` (Number) Action type.
 
 Supported values:

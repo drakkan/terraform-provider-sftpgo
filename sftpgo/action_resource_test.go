@@ -21,6 +21,7 @@ import (
 
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/sftpgo/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -1456,6 +1457,37 @@ EOF
 				ImportStateVerify: true,
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccActionResource_renameForcesReplace(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+					  name = "rename_test_initial"
+					  type = 4
+					}`,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+					  name = "rename_test_renamed"
+					  type = 4
+					}`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("sftpgo_action.test", plancheck.ResourceActionReplace),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "rename_test_renamed"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "rename_test_renamed"),
+				),
+			},
 		},
 	})
 }

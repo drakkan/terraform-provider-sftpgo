@@ -18,7 +18,7 @@ Event rule
 ### Required
 
 - `actions` (Attributes List) List of actions to execute. (see [below for nested schema](#nestedatt--actions))
-- `name` (String) Unique name.
+- `name` (String) Unique name. Changing the name after creation forces replacement because the SFTPGo API does not support renaming.
 - `status` (Number) 1 enabled, 0 disabled.
 - `trigger` (Number) Event trigger. 1 = Filesystem event, 2 = Provider event, 3 = Schedule, 4 = IP Blocked, 5 = Certificate renewal, 6 = On demand, 7 = Identity Provider login.
 

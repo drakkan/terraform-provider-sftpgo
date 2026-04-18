@@ -79,7 +79,10 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
-				Description: "Unique name.",
+				Description: "Unique name. Changing the name after creation forces replacement because the SFTPGo API does not support renaming.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,

@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/require"
 )
 
@@ -145,6 +146,41 @@ func TestAccAdminResource(t *testing.T) {
 				),
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccAdminResource_renameForcesReplace(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_admin" "test" {
+					  username    = "rename_test_initial"
+					  status      = 1
+					  password    = "password"
+					  permissions = ["*"]
+					}`,
+			},
+			{
+				Config: `
+					resource "sftpgo_admin" "test" {
+					  username    = "rename_test_renamed"
+					  status      = 1
+					  password    = "password"
+					  permissions = ["*"]
+					}`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("sftpgo_admin.test", plancheck.ResourceActionReplace),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_admin.test", "username", "rename_test_renamed"),
+					resource.TestCheckResourceAttr("sftpgo_admin.test", "id", "rename_test_renamed"),
+				),
+			},
 		},
 	})
 }
