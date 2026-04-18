@@ -79,6 +79,7 @@ Read-Only:
 Read-Only:
 
 - `inverse_match` (Boolean)
+- `match_fs_path` (Boolean) If enabled, the pattern is matched against the filesystem path instead of the virtual path. Available in the Enterprise edition.
 - `pattern` (String)
 
 

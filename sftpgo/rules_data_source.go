@@ -184,6 +184,10 @@ func (d *rulesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 													"inverse_match": schema.BoolAttribute{
 														Computed: true,
 													},
+													"match_fs_path": schema.BoolAttribute{
+														Computed:    true,
+														Description: "If enabled, the pattern is matched against the filesystem path instead of the virtual path. " + enterpriseFeatureNote + ".",
+													},
 												},
 											},
 										},

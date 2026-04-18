@@ -176,10 +176,67 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 	_, err = c.CreateAction(action1)
 	require.NoError(t, err)
 
+	action2 := client.BaseEventAction{
+		Name: "z_copy_extended",
+		Type: client.ActionTypeFilesystem,
+		Options: client.EventActionOptions{
+			FsConfig: client.EventActionFilesystemConfig{
+				Type: client.FilesystemActionCopy,
+				Copy: []client.CopyConfig{
+					{
+						KeyValue:               client.KeyValue{Key: "/src", Value: "/dst"},
+						OnSourceCopied:         2,
+						OnSourceCopiedMovePath: "/archive",
+						MaxRetries:             4,
+					},
+				},
+				ContinueOnError: true,
+			},
+		},
+	}
+	_, err = c.CreateAction(action2)
+	require.NoError(t, err)
+
+	action3 := client.BaseEventAction{
+		Name: "z_event_report",
+		Type: client.ActionTypeEventReport,
+		Options: client.EventActionOptions{
+			EventReportConfig: client.EventActionEventReportConfig{
+				TimeWindow:   30,
+				FsActions:    []string{"upload", "download"},
+				Statuses:     []int32{1, 2},
+				SplitReports: true,
+			},
+		},
+	}
+	_, err = c.CreateAction(action3)
+	require.NoError(t, err)
+
+	action4 := client.BaseEventAction{
+		Name: "z_email_report",
+		Type: client.ActionTypeEmail,
+		Options: client.EventActionOptions{
+			EmailConfig: client.EventActionEmailConfig{
+				Recipients:        []string{"ops@example.com"},
+				Subject:           "s",
+				Body:              "b",
+				AttachEventReport: true,
+			},
+		},
+	}
+	_, err = c.CreateAction(action4)
+	require.NoError(t, err)
+
 	defer func() {
 		err = c.DeleteAction(action.Name)
 		require.NoError(t, err)
 		err = c.DeleteAction(action1.Name)
+		require.NoError(t, err)
+		err = c.DeleteAction(action2.Name)
+		require.NoError(t, err)
+		err = c.DeleteAction(action3.Name)
+		require.NoError(t, err)
+		err = c.DeleteAction(action4.Name)
 		require.NoError(t, err)
 		err = c.DeleteFolder(folder.Name)
 		require.NoError(t, err)
@@ -195,7 +252,7 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 				Config: `data "sftpgo_actions" "test" {}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify number of actions returned
-					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.#", "2"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.#", "5"),
 					// Check the created action
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.name", action.Name),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.id", action.Name),
@@ -233,6 +290,32 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.1.options.fs_config.metadata_check.metadata.key", "k"),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.1.options.fs_config.metadata_check.metadata.value", "v"),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.1.options.fs_config.metadata_check.timeout", "10"),
+
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.2.name", action2.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.2.type", fmt.Sprintf("%d", action2.Type)),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.2.options.fs_config.type", "6"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.2.options.fs_config.copy.#", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.2.options.fs_config.copy.0.key", "/src"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.2.options.fs_config.copy.0.value", "/dst"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.2.options.fs_config.copy.0.on_source_copied", "2"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.2.options.fs_config.copy.0.on_source_copied_move_path", "/archive"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.2.options.fs_config.copy.0.max_retries", "4"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.2.options.fs_config.continue_on_error", "true"),
+
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.3.name", action3.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.3.type", fmt.Sprintf("%d", action3.Type)),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.3.options.event_report_config.time_window", "30"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.3.options.event_report_config.fs_actions.#", "2"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.3.options.event_report_config.fs_actions.0", "upload"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.3.options.event_report_config.fs_actions.1", "download"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.3.options.event_report_config.statuses.#", "2"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.3.options.event_report_config.statuses.0", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.3.options.event_report_config.statuses.1", "2"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.3.options.event_report_config.split_reports", "true"),
+
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.4.name", action4.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.4.type", fmt.Sprintf("%d", action4.Type)),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.4.options.email_config.attach_event_report", "true"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "id", placeholderID),
 				),

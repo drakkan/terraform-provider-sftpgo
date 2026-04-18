@@ -223,6 +223,10 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 										"inverse_match": schema.BoolAttribute{
 											Optional: true,
 										},
+										"match_fs_path": schema.BoolAttribute{
+											Optional:    true,
+											Description: "If enabled, the pattern is matched against the filesystem path instead of the virtual path. Filesystem paths are backend-dependent (local paths use the OS format; cloud storage paths have no leading slash). " + enterpriseFeatureNote + ".",
+										},
 									},
 								},
 							},

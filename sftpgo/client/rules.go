@@ -35,6 +35,9 @@ type Schedule struct {
 type ConditionPattern struct {
 	Pattern      string `json:"pattern,omitempty"`
 	InverseMatch bool   `json:"inverse_match,omitempty"`
+	// If enabled, the pattern is matched against the filesystem path instead of the
+	// virtual path. Only applicable to fs_paths condition patterns
+	MatchFsPath bool `json:"match_fs_path,omitempty"`
 }
 
 // ConditionOptions defines options for event conditions

@@ -238,6 +238,8 @@ Optional:
 - `denied_ip` (List of String) Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.
 - `denied_login_methods` (List of String) Disabled login methods. Valid values: "publickey", "password", "password-over-SSH", "keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "TLSCertificate", "TLSCertificate+password"
 - `denied_protocols` (List of String) Disabled protocols. Valid values: SSH, FTP, DAV, HTTP
+- `denied_share_paths` (List of String) Virtual paths that cannot be shared. If a path is denied, shares for that path and any sub-path are rejected. Available in the Enterprise edition.
+- `denied_share_scopes` (List of String) Share scopes that users are not allowed to use. Valid values: read, write, read_write. If all scopes are denied, sharing is completely disabled. Available in the Enterprise edition.
 - `disable_fs_checks` (Boolean) Disable checks for existence and automatic creation of home directory and virtual folders after user login.
 - `enforce_secure_algorithms` (Boolean) If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. Available in the Enterprise edition.
 - `external_auth_cache_time` (Number) Defines the cache time, in seconds, for users authenticated using an external auth hook. Not set means no cache.
@@ -257,7 +259,7 @@ Optional:
 - `tls_username` (String) TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command. For WebDAV, if no username is provided, the CN will be used as username. For WebDAV clients it must match the implicit or provided username.
 - `two_factor_protocols` (List of String) Defines protocols that require two factor authentication. Valid values: SSH, FTP, HTTP
 - `user_type` (String) Hint for authentication plugins. Valid values: LDAPUser, OSUser
-- `web_client` (List of String) Web Client/user REST API restrictions. Valid values: write-disabled, password-change-disabled, password-reset-disabled, publickey-change-disabled, tls-cert-change-disabled, mfa-disabled, api-key-auth-change-disabled, info-change-disabled, shares-disabled, shares-without-password-disabled, shares-require-email-auth, wopi-disabled, rest-api-disabled. Only available in the Enterprise version: shares-require-email-auth, wopi-disabled, rest-api-disabled
+- `web_client` (List of String) Web Client/user REST API restrictions. Valid values: write-disabled, password-change-disabled, password-reset-disabled, publickey-change-disabled, tls-cert-change-disabled, mfa-disabled, api-key-auth-change-disabled, info-change-disabled, shares-disabled, shares-without-password-disabled, shares-require-email-auth, shares-policy-change-disabled, wopi-disabled, rest-api-disabled. Only available in the Enterprise version: shares-require-email-auth, shares-policy-change-disabled, wopi-disabled, rest-api-disabled
 
 <a id="nestedatt--filters--access_time"></a>
 ### Nested Schema for `filters.access_time`

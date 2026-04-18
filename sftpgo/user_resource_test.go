@@ -432,9 +432,11 @@ func TestAccEnterpriseUserResource(t *testing.T) {
       				    }
     				  }
     				  filters = {
-      					web_client = ["shares-require-email-auth", "wopi-disabled", "rest-api-disabled"]
+      					web_client = ["shares-require-email-auth", "wopi-disabled", "rest-api-disabled","shares-policy-change-disabled"]
 						custom1 = "testvalue"
 						custom_placeholders = ["testvalue","testvalue1"]
+						denied_share_paths = ["/private", "/logs"]
+						denied_share_scopes = ["write"]
 						password_policy = {
 						  length = 12
 						  uppers = 1
@@ -469,13 +471,19 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.osconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "description"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "additional_info"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.#", "3"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.#", "4"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.0", "shares-require-email-auth"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.1", "wopi-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.2", "rest-api-disabled"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.3", "shares-policy-change-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom1", "testvalue"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom_placeholders.0", "testvalue"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom_placeholders.1", "testvalue1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_share_paths.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_share_paths.0", "/private"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_share_paths.1", "/logs"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_share_scopes.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_share_scopes.0", "write"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.length", "12"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.uppers", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.lowers", "1"),

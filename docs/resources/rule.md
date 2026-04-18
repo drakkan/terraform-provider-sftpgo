@@ -84,6 +84,7 @@ Required:
 Optional:
 
 - `inverse_match` (Boolean)
+- `match_fs_path` (Boolean) If enabled, the pattern is matched against the filesystem path instead of the virtual path. Filesystem paths are backend-dependent (local paths use the OS format; cloud storage paths have no leading slash). Available in the Enterprise edition.
 
 
 <a id="nestedatt--conditions--options--group_names"></a>

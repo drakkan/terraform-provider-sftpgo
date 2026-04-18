@@ -25,8 +25,9 @@ const (
 
 var (
 	// EnterpriseWebClientOptions defines the additional WebClientOptions available in the Enterprise version.
-	EnterpriseWebClientOptions = []string{"shares-require-email-auth", "wopi-disabled", "rest-api-disabled"}
-	WebClientOptions           = append(sdk.WebClientOptions, EnterpriseWebClientOptions...)
+	EnterpriseWebClientOptions = []string{"shares-require-email-auth", "shares-policy-change-disabled", "wopi-disabled",
+		"rest-api-disabled"}
+	WebClientOptions = append(sdk.WebClientOptions, EnterpriseWebClientOptions...)
 )
 
 // Filesystem defines filesystem details
@@ -260,6 +261,12 @@ type BaseUserFilters struct {
 	AccessTime []sdk.TimePeriod `json:"access_time,omitempty"`
 	// If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP
 	EnforceSecureAlgorithms bool `json:"enforce_secure_algorithms"`
+	// Virtual paths that cannot be shared. If a path is denied, shares for that path and
+	// any sub-path are rejected
+	DeniedSharePaths []string `json:"denied_share_paths,omitempty"`
+	// Share scopes that users are not allowed to use. Valid values: read, write, read_write.
+	// If all scopes are denied, sharing is completely disabled
+	DeniedShareScopes []string `json:"denied_share_scopes,omitempty"`
 }
 
 type UserFilters struct {

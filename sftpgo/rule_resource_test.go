@@ -220,6 +220,42 @@ func TestAccRuleResource(t *testing.T) {
 				resource.TestCheckResourceAttrSet("sftpgo_rule.test", "updated_at"),
 			),
 		})
+		steps = append(steps, resource.TestStep{
+			// match_fs_path is Enterprise-only
+			Config: `
+					resource "sftpgo_rule" "test" {
+						name = "test rule"
+						status = 1
+						trigger = 1
+						conditions = {
+							fs_events = ["upload"]
+							options = {
+								fs_paths = [
+									{
+										pattern = "/data/**"
+										match_fs_path = true
+									},
+									{
+										pattern = "/tmp/*"
+									}
+								]
+							}
+						}
+						actions = [
+							{
+								name = "action2"
+							}
+						]
+					}`,
+			Check: resource.ComposeAggregateTestCheckFunc(
+				resource.TestCheckResourceAttr("sftpgo_rule.test", "conditions.options.fs_paths.#", "2"),
+				resource.TestCheckResourceAttr("sftpgo_rule.test", "conditions.options.fs_paths.0.pattern", "/data/**"),
+				resource.TestCheckResourceAttr("sftpgo_rule.test", "conditions.options.fs_paths.0.match_fs_path", "true"),
+				resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.fs_paths.0.inverse_match"),
+				resource.TestCheckResourceAttr("sftpgo_rule.test", "conditions.options.fs_paths.1.pattern", "/tmp/*"),
+				resource.TestCheckNoResourceAttr("sftpgo_rule.test", "conditions.options.fs_paths.1.match_fs_path"),
+			),
+		})
 	} else {
 		steps = append(steps, resource.TestStep{
 			// Update and Read testing

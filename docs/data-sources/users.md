@@ -222,6 +222,8 @@ Read-Only:
 - `denied_ip` (List of String) Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.
 - `denied_login_methods` (List of String) Disabled login methods.
 - `denied_protocols` (List of String) Disabled protocols.
+- `denied_share_paths` (List of String) Virtual paths that cannot be shared. Shares for any listed path and its sub-paths are rejected. Available in the Enterprise edition.
+- `denied_share_scopes` (List of String) Share scopes that users are not allowed to use. Valid values: read, write, read_write. If all scopes are denied, sharing is completely disabled. Available in the Enterprise edition.
 - `disable_fs_checks` (Boolean) Disable checks for existence and automatic creation of home directory and virtual folders after user login.
 - `enforce_secure_algorithms` (Boolean) If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. Available in the Enterprise edition.
 - `external_auth_cache_time` (Number) Defines the cache time, in seconds, for users authenticated using an external auth hook. Not set means no cache.

@@ -993,6 +993,16 @@ func getComputedSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute 
 				Computed:    true,
 				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote + ".",
 			},
+			"denied_share_paths": schema.ListAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+				Description: "Virtual paths that cannot be shared. Shares for any listed path and its sub-paths are rejected. " + enterpriseFeatureNote + ".",
+			},
+			"denied_share_scopes": schema.ListAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+				Description: "Share scopes that users are not allowed to use. Valid values: read, write, read_write. If all scopes are denied, sharing is completely disabled. " + enterpriseFeatureNote + ".",
+			},
 		},
 	}
 	if isGroup {
@@ -1252,6 +1262,23 @@ func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 			"enforce_secure_algorithms": schema.BoolAttribute{
 				Optional:    true,
 				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote + ".",
+			},
+			"denied_share_paths": schema.ListAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Description: "Virtual paths that cannot be shared. If a path is denied, shares for that path and any sub-path are rejected. " + enterpriseFeatureNote + ".",
+				Validators: []validator.List{
+					listvalidator.UniqueValues(),
+				},
+			},
+			"denied_share_scopes": schema.ListAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Description: "Share scopes that users are not allowed to use. Valid values: read, write, read_write. If all scopes are denied, sharing is completely disabled. " + enterpriseFeatureNote + ".",
+				Validators: []validator.List{
+					listvalidator.UniqueValues(),
+					listvalidator.ValueStringsAre(stringvalidator.OneOf("read", "write", "read_write")),
+				},
 			},
 		},
 	}

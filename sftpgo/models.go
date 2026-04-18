@@ -312,6 +312,8 @@ type baseUserFilters struct {
 	PasswordPolicy          *passwordPolicy  `tfsdk:"password_policy"`
 	AccessTime              []timePeriod     `tfsdk:"access_time"`
 	EnforceSecureAlgorithms types.Bool       `tfsdk:"enforce_secure_algorithms"`
+	DeniedSharePaths        types.List       `tfsdk:"denied_share_paths"`
+	DeniedShareScopes       types.List       `tfsdk:"denied_share_scopes"`
 }
 
 func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
@@ -394,6 +396,12 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 			},
 		},
 		"enforce_secure_algorithms": types.BoolType,
+		"denied_share_paths": types.ListType{
+			ElemType: types.StringType,
+		},
+		"denied_share_scopes": types.ListType{
+			ElemType: types.StringType,
+		},
 	}
 }
 
@@ -505,6 +513,18 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (client.BaseUserFilters,
 			return filters, diags
 		}
 	}
+	if !f.DeniedSharePaths.IsNull() {
+		diags := f.DeniedSharePaths.ElementsAs(ctx, &filters.DeniedSharePaths, false)
+		if diags.HasError() {
+			return filters, diags
+		}
+	}
+	if !f.DeniedShareScopes.IsNull() {
+		diags := f.DeniedShareScopes.ElementsAs(ctx, &filters.DeniedShareScopes, false)
+		if diags.HasError() {
+			return filters, diags
+		}
+	}
 
 	return filters, nil
 }
@@ -584,6 +604,16 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *client.BaseUs
 		})
 	}
 	f.EnforceSecureAlgorithms = getOptionalBool(filters.EnforceSecureAlgorithms)
+	deniedSharePaths, diags := types.ListValueFrom(ctx, types.StringType, filters.DeniedSharePaths)
+	if diags.HasError() {
+		return diags
+	}
+	f.DeniedSharePaths = deniedSharePaths
+	deniedShareScopes, diags := types.ListValueFrom(ctx, types.StringType, filters.DeniedShareScopes)
+	if diags.HasError() {
+		return diags
+	}
+	f.DeniedShareScopes = deniedShareScopes
 	f.ExternalAuthCacheTime = getOptionalInt64(filters.ExternalAuthCacheTime)
 	f.StartDirectory = getOptionalString(filters.StartDirectory)
 	twoFactorProtos, diags := types.ListValueFrom(ctx, types.StringType, filters.TwoFactorAuthProtocols)
@@ -1993,6 +2023,24 @@ type renameConfig struct {
 	UpdateModTime types.Bool   `tfsdk:"update_modtime"`
 }
 
+type copyConfig struct {
+	Key                    types.String `tfsdk:"key"`
+	Value                  types.String `tfsdk:"value"`
+	OnSourceCopied         types.Int64  `tfsdk:"on_source_copied"`
+	OnSourceCopiedMovePath types.String `tfsdk:"on_source_copied_move_path"`
+	MaxRetries             types.Int64  `tfsdk:"max_retries"`
+}
+
+func (*copyConfig) getTFAttributes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"key":                        types.StringType,
+		"value":                      types.StringType,
+		"on_source_copied":           types.Int64Type,
+		"on_source_copied_move_path": types.StringType,
+		"max_retries":                types.Int64Type,
+	}
+}
+
 type httpPart struct {
 	Name     types.String `tfsdk:"name"`
 	Filepath types.String `tfsdk:"filepath"`
@@ -2072,12 +2120,20 @@ type eventActionCommandConfig struct {
 }
 
 type eventActionEmailConfig struct {
-	Recipients  types.List   `tfsdk:"recipients"`
-	Bcc         types.List   `tfsdk:"bcc"`
-	Subject     types.String `tfsdk:"subject"`
-	Body        types.String `tfsdk:"body"`
-	Attachments types.List   `tfsdk:"attachments"`
-	ContentType types.Int64  `tfsdk:"content_type"`
+	Recipients        types.List   `tfsdk:"recipients"`
+	Bcc               types.List   `tfsdk:"bcc"`
+	Subject           types.String `tfsdk:"subject"`
+	Body              types.String `tfsdk:"body"`
+	Attachments       types.List   `tfsdk:"attachments"`
+	ContentType       types.Int64  `tfsdk:"content_type"`
+	AttachEventReport types.Bool   `tfsdk:"attach_event_report"`
+}
+
+type eventActionEventReportConfig struct {
+	TimeWindow   types.Int64 `tfsdk:"time_window"`
+	FsActions    types.List  `tfsdk:"fs_actions"`
+	Statuses     types.List  `tfsdk:"statuses"`
+	SplitReports types.Bool  `tfsdk:"split_reports"`
 }
 
 type folderRetention struct {
@@ -2119,18 +2175,19 @@ type eventActionMetadataCheck struct {
 }
 
 type eventActionFilesystemConfig struct {
-	Type          types.Int64               `tfsdk:"type"`
-	Renames       []renameConfig            `tfsdk:"renames"`
-	MkDirs        types.List                `tfsdk:"mkdirs"`
-	Deletes       types.List                `tfsdk:"deletes"`
-	Exist         types.List                `tfsdk:"exist"`
-	Copy          []keyValue                `tfsdk:"copy"`
-	Compress      *eventActionFsCompress    `tfsdk:"compress"`
-	Decompress    *eventActionFsDecompress  `tfsdk:"decompress"`
-	PGP           *eventActionPGPConfig     `tfsdk:"pgp"`
-	MetadataCheck *eventActionMetadataCheck `tfsdk:"metadata_check"`
-	Folder        types.String              `tfsdk:"folder"`
-	TargetFolder  types.String              `tfsdk:"target_folder"`
+	Type            types.Int64               `tfsdk:"type"`
+	Renames         []renameConfig            `tfsdk:"renames"`
+	MkDirs          types.List                `tfsdk:"mkdirs"`
+	Deletes         types.List                `tfsdk:"deletes"`
+	Exist           types.List                `tfsdk:"exist"`
+	Copy            []copyConfig              `tfsdk:"copy"`
+	ContinueOnError types.Bool                `tfsdk:"continue_on_error"`
+	Compress        *eventActionFsCompress    `tfsdk:"compress"`
+	Decompress      *eventActionFsDecompress  `tfsdk:"decompress"`
+	PGP             *eventActionPGPConfig     `tfsdk:"pgp"`
+	MetadataCheck   *eventActionMetadataCheck `tfsdk:"metadata_check"`
+	Folder          types.String              `tfsdk:"folder"`
+	TargetFolder    types.String              `tfsdk:"target_folder"`
 }
 
 type eventActionPasswordExpiration struct {
@@ -2160,6 +2217,7 @@ type eventActionOptions struct {
 	IMAPConfig           *eventActionIMAPConfig          `tfsdk:"imap_config"`
 	ICAPConfig           *eventActionICAPConfig          `tfsdk:"icap_config"`
 	ShareExpiration      *eventActionShareExpiration     `tfsdk:"share_expiration_config"`
+	EventReportConfig    *eventActionEventReportConfig   `tfsdk:"event_report_config"`
 }
 
 func (o *eventActionOptions) ensureNotNull() {
@@ -2210,6 +2268,9 @@ func (o *eventActionOptions) ensureNotNull() {
 	}
 	if o.ShareExpiration == nil {
 		o.ShareExpiration = &eventActionShareExpiration{}
+	}
+	if o.EventReportConfig == nil {
+		o.EventReportConfig = &eventActionEventReportConfig{}
 	}
 }
 
@@ -2281,6 +2342,7 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 				"attachments": types.ListType{
 					ElemType: types.StringType,
 				},
+				"attach_event_report": types.BoolType,
 			},
 		},
 		"retention_config": types.ObjectType{
@@ -2321,9 +2383,10 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 				},
 				"copy": types.ListType{
 					ElemType: types.ObjectType{
-						AttrTypes: kv.getTFAttributes(),
+						AttrTypes: (&copyConfig{}).getTFAttributes(),
 					},
 				},
+				"continue_on_error": types.BoolType,
 				"compress": types.ObjectType{
 					AttrTypes: map[string]attr.Type{
 						"name": types.StringType,
@@ -2428,6 +2491,18 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 				"split_events":         types.BoolType,
 			},
 		},
+		"event_report_config": types.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"time_window": types.Int64Type,
+				"fs_actions": types.ListType{
+					ElemType: types.StringType,
+				},
+				"statuses": types.ListType{
+					ElemType: types.Int64Type,
+				},
+				"split_reports": types.BoolType,
+			},
+		},
 	}
 }
 
@@ -2448,9 +2523,10 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			Timeout: int(o.CmdConfig.Timeout.ValueInt64()),
 		},
 		EmailConfig: client.EventActionEmailConfig{
-			Subject:     o.EmailConfig.Subject.ValueString(),
-			Body:        o.EmailConfig.Body.ValueString(),
-			ContentType: int(o.EmailConfig.ContentType.ValueInt64()),
+			Subject:           o.EmailConfig.Subject.ValueString(),
+			Body:              o.EmailConfig.Body.ValueString(),
+			ContentType:       int(o.EmailConfig.ContentType.ValueInt64()),
+			AttachEventReport: o.EmailConfig.AttachEventReport.ValueBool(),
 		},
 		FsConfig: client.EventActionFilesystemConfig{
 			Type: int(o.FsConfig.Type.ValueInt64()),
@@ -2525,6 +2601,10 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			AdvanceNotice:       int(o.ShareExpiration.AdvanceNotice.ValueInt64()),
 			GracePeriod:         int(o.ShareExpiration.GracePeriod.ValueInt64()),
 			SplitEvents:         o.ShareExpiration.SplitEvents.ValueBool(),
+		},
+		EventReportConfig: client.EventActionEventReportConfig{
+			TimeWindow:   int(o.EventReportConfig.TimeWindow.ValueInt64()),
+			SplitReports: o.EventReportConfig.SplitReports.ValueBool(),
 		},
 	}
 
@@ -2608,11 +2688,17 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 		})
 	}
 	for _, v := range o.FsConfig.Copy {
-		options.FsConfig.Copy = append(options.FsConfig.Copy, client.KeyValue{
-			Key:   v.Key.ValueString(),
-			Value: v.Value.ValueString(),
+		options.FsConfig.Copy = append(options.FsConfig.Copy, client.CopyConfig{
+			KeyValue: client.KeyValue{
+				Key:   v.Key.ValueString(),
+				Value: v.Value.ValueString(),
+			},
+			OnSourceCopied:         int(v.OnSourceCopied.ValueInt64()),
+			OnSourceCopiedMovePath: v.OnSourceCopiedMovePath.ValueString(),
+			MaxRetries:             int(v.MaxRetries.ValueInt64()),
 		})
 	}
+	options.FsConfig.ContinueOnError = o.FsConfig.ContinueOnError.ValueBool()
 	if !o.FsConfig.MkDirs.IsNull() {
 		diags := o.FsConfig.MkDirs.ElementsAs(ctx, &options.FsConfig.MkDirs, false)
 		if diags.HasError() {
@@ -2655,6 +2741,18 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			Value: h.Value.ValueString(),
 		})
 	}
+	if !o.EventReportConfig.FsActions.IsNull() {
+		diags := o.EventReportConfig.FsActions.ElementsAs(ctx, &options.EventReportConfig.FsActions, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
+	if !o.EventReportConfig.Statuses.IsNull() {
+		diags := o.EventReportConfig.Statuses.ElementsAs(ctx, &options.EventReportConfig.Statuses, false)
+		if diags.HasError() {
+			return options, diags
+		}
+	}
 	return options, nil
 }
 
@@ -2670,6 +2768,7 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 	o.IMAPConfig = nil
 	o.ICAPConfig = nil
 	o.ShareExpiration = nil
+	o.EventReportConfig = nil
 
 	switch action.Type {
 	case client.ActionTypeHTTP:
@@ -2727,9 +2826,10 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 		}
 	case client.ActionTypeEmail:
 		o.EmailConfig = &eventActionEmailConfig{
-			Subject:     types.StringValue(action.Options.EmailConfig.Subject),
-			Body:        types.StringValue(action.Options.EmailConfig.Body),
-			ContentType: getOptionalInt64(int64(action.Options.EmailConfig.ContentType)),
+			Subject:           types.StringValue(action.Options.EmailConfig.Subject),
+			Body:              types.StringValue(action.Options.EmailConfig.Body),
+			ContentType:       getOptionalInt64(int64(action.Options.EmailConfig.ContentType)),
+			AttachEventReport: getOptionalBool(action.Options.EmailConfig.AttachEventReport),
 		}
 		recipients, diags := types.ListValueFrom(ctx, types.StringType, action.Options.EmailConfig.Recipients)
 		if diags.HasError() {
@@ -2811,11 +2911,15 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 			}
 		case client.FilesystemActionCopy:
 			for _, v := range action.Options.FsConfig.Copy {
-				o.FsConfig.Copy = append(o.FsConfig.Copy, keyValue{
-					Key:   types.StringValue(v.Key),
-					Value: types.StringValue(v.Value),
+				o.FsConfig.Copy = append(o.FsConfig.Copy, copyConfig{
+					Key:                    types.StringValue(v.Key),
+					Value:                  types.StringValue(v.Value),
+					OnSourceCopied:         getOptionalInt64(int64(v.OnSourceCopied)),
+					OnSourceCopiedMovePath: getOptionalString(v.OnSourceCopiedMovePath),
+					MaxRetries:             getOptionalInt64(int64(v.MaxRetries)),
 				})
 			}
+			o.FsConfig.ContinueOnError = getOptionalBool(action.Options.FsConfig.ContinueOnError)
 		case client.FilesystemActionPGP:
 			o.FsConfig.PGP = &eventActionPGPConfig{
 				Mode:       types.Int64Value(int64(action.Options.FsConfig.PGP.Mode)),
@@ -2906,6 +3010,21 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 			GracePeriod:         getOptionalInt64(int64(action.Options.ShareExpiration.GracePeriod)),
 			SplitEvents:         getOptionalBool(action.Options.ShareExpiration.SplitEvents),
 		}
+	case client.ActionTypeEventReport:
+		o.EventReportConfig = &eventActionEventReportConfig{
+			TimeWindow:   getOptionalInt64(int64(action.Options.EventReportConfig.TimeWindow)),
+			SplitReports: getOptionalBool(action.Options.EventReportConfig.SplitReports),
+		}
+		fsActions, diags := types.ListValueFrom(ctx, types.StringType, action.Options.EventReportConfig.FsActions)
+		if diags.HasError() {
+			return diags
+		}
+		o.EventReportConfig.FsActions = fsActions
+		statuses, diags := types.ListValueFrom(ctx, types.Int64Type, action.Options.EventReportConfig.Statuses)
+		if diags.HasError() {
+			return diags
+		}
+		o.EventReportConfig.Statuses = statuses
 	}
 
 	return nil
@@ -2980,17 +3099,31 @@ func (*ruleConditionPattern) getTFAttributes() map[string]attr.Type {
 	}
 }
 
+type ruleConditionFsPathPattern struct {
+	Pattern      types.String `tfsdk:"pattern"`
+	InverseMatch types.Bool   `tfsdk:"inverse_match"`
+	MatchFsPath  types.Bool   `tfsdk:"match_fs_path"`
+}
+
+func (*ruleConditionFsPathPattern) getTFAttributes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"pattern":       types.StringType,
+		"inverse_match": types.BoolType,
+		"match_fs_path": types.BoolType,
+	}
+}
+
 type ruleConditionOptions struct {
-	Names               []ruleConditionPattern `tfsdk:"names"`
-	GroupNames          []ruleConditionPattern `tfsdk:"group_names"`
-	RoleNames           []ruleConditionPattern `tfsdk:"role_names"`
-	FsPaths             []ruleConditionPattern `tfsdk:"fs_paths"`
-	Protocols           types.List             `tfsdk:"protocols"`
-	ProviderObjects     types.List             `tfsdk:"provider_objects"`
-	MinFileSize         types.Int64            `tfsdk:"min_size"`
-	MaxFileSize         types.Int64            `tfsdk:"max_size"`
-	EventStatuses       types.List             `tfsdk:"event_statuses"`
-	ConcurrentExecution types.Bool             `tfsdk:"concurrent_execution"`
+	Names               []ruleConditionPattern       `tfsdk:"names"`
+	GroupNames          []ruleConditionPattern       `tfsdk:"group_names"`
+	RoleNames           []ruleConditionPattern       `tfsdk:"role_names"`
+	FsPaths             []ruleConditionFsPathPattern `tfsdk:"fs_paths"`
+	Protocols           types.List                   `tfsdk:"protocols"`
+	ProviderObjects     types.List                   `tfsdk:"provider_objects"`
+	MinFileSize         types.Int64                  `tfsdk:"min_size"`
+	MaxFileSize         types.Int64                  `tfsdk:"max_size"`
+	EventStatuses       types.List                   `tfsdk:"event_statuses"`
+	ConcurrentExecution types.Bool                   `tfsdk:"concurrent_execution"`
 }
 
 type ruleConditions struct {
@@ -3042,7 +3175,7 @@ func (*ruleConditions) getTFAttributes() map[string]attr.Type {
 				},
 				"fs_paths": types.ListType{
 					ElemType: types.ObjectType{
-						AttrTypes: p.getTFAttributes(),
+						AttrTypes: (&ruleConditionFsPathPattern{}).getTFAttributes(),
 					},
 				},
 				"protocols": types.ListType{
@@ -3115,6 +3248,7 @@ func (c *ruleConditions) toSFTPGo(ctx context.Context) (client.EventRuleConditio
 			conditions.Options.FsPaths = append(conditions.Options.FsPaths, client.ConditionPattern{
 				Pattern:      val.Pattern.ValueString(),
 				InverseMatch: val.InverseMatch.ValueBool(),
+				MatchFsPath:  val.MatchFsPath.ValueBool(),
 			})
 		}
 		if !c.Options.Protocols.IsNull() {
@@ -3192,9 +3326,10 @@ func (c *ruleConditions) fromSFTPGo(ctx context.Context, conditions *client.Even
 		})
 	}
 	for _, val := range conditions.Options.FsPaths {
-		c.Options.FsPaths = append(c.Options.FsPaths, ruleConditionPattern{
+		c.Options.FsPaths = append(c.Options.FsPaths, ruleConditionFsPathPattern{
 			Pattern:      types.StringValue(val.Pattern),
 			InverseMatch: getOptionalBool(val.InverseMatch),
+			MatchFsPath:  getOptionalBool(val.MatchFsPath),
 		})
 	}
 	protocols, diags := types.ListValueFrom(ctx, types.StringType, conditions.Options.Protocols)

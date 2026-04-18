@@ -114,3 +114,71 @@ func TestAccRulesDataSource(t *testing.T) {
 		},
 	})
 }
+
+func TestAccEnterpriseRulesDataSource(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+	action1 := client.BaseEventAction{
+		Name: "action1_ent_rules_ds",
+		Type: 4,
+	}
+	_, err = c.CreateAction(action1)
+	require.NoError(t, err)
+	rule := client.EventRule{
+		Name:    "test rule enterprise ds",
+		Status:  0,
+		Trigger: 1,
+		Conditions: client.EventRuleConditions{
+			FsEvents: []string{"upload"},
+			Options: client.ConditionOptions{
+				FsPaths: []client.ConditionPattern{
+					{Pattern: "/data/**", MatchFsPath: true},
+					{Pattern: "/tmp/*", InverseMatch: true},
+				},
+			},
+		},
+		Actions: []client.EventAction{
+			{
+				Name: action1.Name,
+				Options: client.EventActionRelationOptions{
+					StopOnFailure: true,
+				},
+			},
+		},
+	}
+	_, err = c.CreateRule(rule)
+	require.NoError(t, err)
+
+	defer func() {
+		err = c.DeleteRule(rule.Name)
+		require.NoError(t, err)
+		err = c.DeleteAction(action1.Name)
+		require.NoError(t, err)
+	}()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `data "sftpgo_rules" "test" {}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.sftpgo_rules.test", "rules.#", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_rules.test", "rules.0.name", rule.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.fs_paths.#", "2"),
+					resource.TestCheckResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.fs_paths.0.pattern", "/data/**"),
+					resource.TestCheckResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.fs_paths.0.match_fs_path", "true"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.fs_paths.0.inverse_match"),
+					resource.TestCheckResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.fs_paths.1.pattern", "/tmp/*"),
+					resource.TestCheckResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.fs_paths.1.inverse_match", "true"),
+					resource.TestCheckNoResourceAttr("data.sftpgo_rules.test", "rules.0.conditions.options.fs_paths.1.match_fs_path"),
+				),
+			},
+		},
+	})
+}

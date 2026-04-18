@@ -609,8 +609,15 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.#", "2"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.0.key", "/source1"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.0.value", "/target1"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.copy.0.on_source_copied"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.copy.0.on_source_copied_move_path"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.copy.0.max_retries"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.1.key", "/source2"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.1.value", "/target2"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.copy.1.on_source_copied"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.copy.1.on_source_copied_move_path"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.copy.1.max_retries"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.continue_on_error"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.compress"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.pwd_expiration_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.user_inactivity_config"),
@@ -1338,6 +1345,109 @@ EOF
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.share_expiration_config.grace_period", "10"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.share_expiration_config.inactivity_threshold", "15"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.share_expiration_config.split_events", "true"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 9
+						options = {
+							fs_config = {
+								type = 6
+								copy = [
+									{
+										key = "/source1"
+										value = "/target1"
+										on_source_copied = 1
+										max_retries = 3
+									},
+									{
+										key = "/source2"
+										value = "/target2"
+										on_source_copied = 2
+										on_source_copied_move_path = "/archive"
+									}
+								]
+								continue_on_error = true
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "9"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.type", "6"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.0.key", "/source1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.0.value", "/target1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.0.on_source_copied", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.0.max_retries", "3"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.copy.0.on_source_copied_move_path"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.1.key", "/source2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.1.value", "/target2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.1.on_source_copied", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.copy.1.on_source_copied_move_path", "/archive"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.copy.1.max_retries"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.continue_on_error", "true"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 19
+						options = {
+							event_report_config = {
+								time_window = 60
+								fs_actions = ["upload", "delete"]
+								statuses = [1, 2]
+								split_reports = true
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "19"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.event_report_config.time_window", "60"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.event_report_config.fs_actions.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.event_report_config.fs_actions.0", "upload"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.event_report_config.fs_actions.1", "delete"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.event_report_config.statuses.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.event_report_config.statuses.0", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.event_report_config.statuses.1", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.event_report_config.split_reports", "true"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 3
+						options = {
+							email_config = {
+								recipients = ["ops@example.com"]
+								subject = "weekly report"
+								body = "see attachment"
+								attach_event_report = true
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "3"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.email_config.attach_event_report", "true"),
 				),
 			},
 			{
