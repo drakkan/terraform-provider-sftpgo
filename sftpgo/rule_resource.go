@@ -144,16 +144,20 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 									Description: enterpriseFeatureNote,
 								},
 								"hour": schema.StringAttribute{
-									Required: true,
+									Required:    true,
+									Description: "Hour in cron format, 0-23. Use * to match every hour.",
 								},
 								"day_of_week": schema.StringAttribute{
-									Required: true,
+									Required:    true,
+									Description: "Day of week in cron format, 0-6 (Sunday-Saturday). Use * to match every day.",
 								},
 								"day_of_month": schema.StringAttribute{
-									Required: true,
+									Required:    true,
+									Description: "Day of month in cron format, 1-31. Use * to match every day.",
 								},
 								"month": schema.StringAttribute{
-									Required: true,
+									Required:    true,
+									Description: "Month in cron format, 1-12. Use * to match every month.",
 								},
 							},
 						},
@@ -176,10 +180,12 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"pattern": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: `Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").`,
 										},
 										"inverse_match": schema.BoolAttribute{
-											Optional: true,
+											Optional:    true,
+											Description: "If true, the condition matches when the pattern does NOT match.",
 										},
 									},
 								},
@@ -190,10 +196,12 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"pattern": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: `Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").`,
 										},
 										"inverse_match": schema.BoolAttribute{
-											Optional: true,
+											Optional:    true,
+											Description: "If true, the condition matches when the pattern does NOT match.",
 										},
 									},
 								},
@@ -204,10 +212,12 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"pattern": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: `Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").`,
 										},
 										"inverse_match": schema.BoolAttribute{
-											Optional: true,
+											Optional:    true,
+											Description: "If true, the condition matches when the pattern does NOT match.",
 										},
 									},
 								},
@@ -218,10 +228,12 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"pattern": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: `Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").`,
 										},
 										"inverse_match": schema.BoolAttribute{
-											Optional: true,
+											Optional:    true,
+											Description: "If true, the condition matches when the pattern does NOT match.",
 										},
 										"match_fs_path": schema.BoolAttribute{
 											Optional:    true,
@@ -287,13 +299,16 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
-							Required: true,
+							Required:    true,
+							Description: "Name of the event action to execute.",
 						},
 						"is_failure_action": schema.BoolAttribute{
-							Optional: true,
+							Optional:    true,
+							Description: "If true, this action executes only when a previous action in the rule has failed.",
 						},
 						"stop_on_failure": schema.BoolAttribute{
-							Optional: true,
+							Optional:    true,
+							Description: "If true, no further actions in the rule will execute if this action fails.",
 						},
 						"execute_sync": schema.BoolAttribute{
 							Optional:    true,

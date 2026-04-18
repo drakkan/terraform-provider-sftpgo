@@ -105,7 +105,8 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Description: "The user cannot upload or download files outside this directory. Must be an absolute path.",
 			},
 			"email": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "User email address.",
 			},
 			"uid": schema.Int64Attribute{
 				Optional:    true,

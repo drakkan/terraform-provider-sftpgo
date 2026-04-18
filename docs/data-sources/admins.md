@@ -28,10 +28,10 @@ Read-Only:
 - `additional_info` (String) Free form text field.
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
 - `description` (String) Optional description.
-- `email` (String)
+- `email` (String) Admin email address.
 - `filters` (Attributes) Additional restrictions. (see [below for nested schema](#nestedatt--admins--filters))
 - `groups` (Attributes List) Groups automatically selected for new users created by this admin. (see [below for nested schema](#nestedatt--admins--groups))
-- `id` (String)
+- `id` (String) Matches the `username` attribute.
 - `last_login` (Number) Last login as unix timestamp in milliseconds.
 - `password` (String) Password hash saved in the SFTPGo data provider.
 - `permissions` (List of String) Granted permissions.

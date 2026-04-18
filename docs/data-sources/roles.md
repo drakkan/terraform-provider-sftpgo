@@ -27,6 +27,6 @@ Read-Only:
 
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
 - `description` (String) Optional description.
-- `id` (String)
+- `id` (String) Matches the `name` attribute.
 - `name` (String) Unique name.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.

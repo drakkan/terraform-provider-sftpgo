@@ -128,7 +128,8 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								Description: "HTTP endpoint to invoke.",
 							},
 							"username": schema.StringAttribute{
-								Optional: true,
+								Optional:    true,
+								Description: "Username for HTTP basic authentication.",
 							},
 							"password": schema.StringAttribute{
 								Optional:    true,
@@ -141,10 +142,12 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"key": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Header name.",
 										},
 										"value": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Header value. Placeholders are supported.",
 										},
 									},
 								},
@@ -170,10 +173,12 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"key": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Query parameter name.",
 										},
 										"value": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Query parameter value. Placeholders are supported.",
 										},
 									},
 								},
@@ -188,17 +193,21 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"name": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Name of the multipart form field.",
 										},
 										"headers": schema.ListNestedAttribute{
-											Optional: true,
+											Optional:    true,
+											Description: "Additional headers for this part. Content-Disposition is set automatically and Content-Type is detected automatically for file attachments.",
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"key": schema.StringAttribute{
-														Required: true,
+														Required:    true,
+														Description: "Header name.",
 													},
 													"value": schema.StringAttribute{
-														Required: true,
+														Required:    true,
+														Description: "Header value. Placeholders are supported.",
 													},
 												},
 											},
@@ -208,7 +217,8 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 											Description: `Path to the file to be sent as an attachment.`,
 										},
 										"body": schema.StringAttribute{
-											Optional: true,
+											Optional:    true,
+											Description: "Body content as text. Placeholders are supported. Mutually exclusive with `filepath`.",
 										},
 									},
 								},
@@ -241,10 +251,12 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"key": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Environment variable name.",
 										},
 										"value": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Environment variable value. Placeholders are supported.",
 										},
 									},
 								},
@@ -258,6 +270,7 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							"recipients": schema.ListAttribute{
 								ElementType: types.StringType,
 								Required:    true,
+								Description: "List of recipient email addresses. Placeholders are supported.",
 								Validators: []validator.List{
 									listvalidator.UniqueValues(),
 								},
@@ -265,12 +278,14 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							"bcc": schema.ListAttribute{
 								ElementType: types.StringType,
 								Optional:    true,
+								Description: "List of BCC email addresses. Placeholders are supported.",
 								Validators: []validator.List{
 									listvalidator.UniqueValues(),
 								},
 							},
 							"subject": schema.StringAttribute{
-								Required: true,
+								Required:    true,
+								Description: "Subject of the email. Placeholders are supported.",
 							},
 							"content_type": schema.Int64Attribute{
 								Optional:    true,
@@ -280,7 +295,8 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								},
 							},
 							"body": schema.StringAttribute{
-								Required: true,
+								Required:    true,
+								Description: "Body of the email. Placeholders are supported.",
 							},
 							"attachments": schema.ListAttribute{
 								ElementType: types.StringType,
@@ -350,10 +366,12 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"key": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Source path. Placeholders are supported.",
 										},
 										"value": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Target path. Placeholders are supported.",
 										},
 										"update_modtime": schema.BoolAttribute{
 											Optional:    true,
@@ -392,10 +410,12 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"key": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Source path. Placeholders are supported.",
 										},
 										"value": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Target path. Placeholders are supported.",
 										},
 										"on_source_copied": schema.Int64Attribute{
 											Optional:    true,
@@ -478,10 +498,12 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 										NestedObject: schema.NestedAttributeObject{
 											Attributes: map[string]schema.Attribute{
 												"key": schema.StringAttribute{
-													Required: true,
+													Required:    true,
+													Description: "Source path. Placeholders are supported.",
 												},
 												"value": schema.StringAttribute{
-													Required: true,
+													Required:    true,
+													Description: "Target path. Placeholders are supported.",
 												},
 											},
 										},
@@ -502,7 +524,8 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 										Description: computedSecretDescription,
 									},
 									"public_key": schema.StringAttribute{
-										Optional: true,
+										Optional:    true,
+										Description: "PGP public key in ASCII-armored format.",
 									},
 								},
 							},
@@ -511,21 +534,26 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								Description: "This action verifies whether the metadata key matches the configured value or is absent for the specified path. Optionally, it can retry periodically until the specified timeout (in seconds) is reached. " + enterpriseFeatureNote + ".",
 								Attributes: map[string]schema.Attribute{
 									"path": schema.StringAttribute{
-										Required: true,
+										Required:    true,
+										Description: "Virtual path to check.",
 									},
 									"metadata": schema.SingleNestedAttribute{
-										Required: true,
+										Required:    true,
+										Description: "Metadata key/value pair to verify. If `value` is empty, the action passes when the key is absent.",
 										Attributes: map[string]schema.Attribute{
 											"key": schema.StringAttribute{
-												Required: true,
+												Required:    true,
+												Description: "Metadata key name.",
 											},
 											"value": schema.StringAttribute{
-												Optional: true,
+												Optional:    true,
+												Description: "Expected metadata value. If empty, the key is expected to be absent.",
 											},
 										},
 									},
 									"timeout": schema.Int64Attribute{
-										Optional: true,
+										Optional:    true,
+										Description: "Timeout in seconds. If set, the check is retried periodically until the value matches or the timeout is reached.",
 									},
 								},
 							},
@@ -594,15 +622,16 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 						},
 					},
 					"imap_config": schema.SingleNestedAttribute{
-						Optional:            true,
-						MarkdownDescription: "Enables automatic retrieval of email attachments from IMAP mailboxes. " + enterpriseFeatureNote,
+						Optional:    true,
+						Description: "Enables automatic retrieval of email attachments from IMAP mailboxes. " + enterpriseFeatureNote,
 						Attributes: map[string]schema.Attribute{
 							"endpoint": schema.StringAttribute{
-								Required:            true,
-								MarkdownDescription: "IMAP endpoint in the format `schema://host:port`. Supported schemas: `imap`, `imaps`.",
+								Required:    true,
+								Description: "IMAP endpoint in the format `schema://host:port`. Supported schemas: `imap`, `imaps`.",
 							},
 							"username": schema.StringAttribute{
-								Optional: true,
+								Optional:    true,
+								Description: "IMAP username.",
 							},
 							"password": schema.StringAttribute{
 								Optional:    true,
@@ -653,8 +682,8 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								},
 							},
 							"mailbox": schema.StringAttribute{
-								Optional:            true,
-								MarkdownDescription: "Mailbox to check, e.g. `INBOX`.",
+								Optional:    true,
+								Description: "Mailbox to check, e.g. `INBOX`.",
 							},
 							"path": schema.StringAttribute{
 								Optional:    true,
@@ -679,12 +708,12 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 						},
 					},
 					"icap_config": schema.SingleNestedAttribute{
-						Optional:            true,
-						MarkdownDescription: "Enables integration with ICAP servers to perform antivirus scanning and DLP checks. " + enterpriseFeatureNote,
+						Optional:    true,
+						Description: "Enables integration with ICAP servers to perform antivirus scanning and DLP checks. " + enterpriseFeatureNote,
 						Attributes: map[string]schema.Attribute{
 							"endpoint": schema.StringAttribute{
 								Required: true,
-								MarkdownDescription: "ICAP endpoint in the format `schema://host:port`. Supported schemas: `icap`, `icaps`. " +
+								Description: "ICAP endpoint in the format `schema://host:port`. Supported schemas: `icap`, `icaps`. " +
 									"If the port is omitted, port `1344` is used.",
 							},
 							"timeout": schema.Int64Attribute{
@@ -697,16 +726,16 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 									"**Warning:** In this mode, TLS is susceptible to machine-in-the-middle attacks.",
 							},
 							"paths": schema.ListAttribute{
-								ElementType:         types.StringType,
-								Required:            true,
-								MarkdownDescription: "List of virtual paths to scan. Placeholders are supported, e.g. `{{.VirtualPath}}`.",
+								ElementType: types.StringType,
+								Required:    true,
+								Description: "List of virtual paths to scan. Placeholders are supported, e.g. `{{.VirtualPath}}`.",
 								Validators: []validator.List{
 									listvalidator.UniqueValues(),
 								},
 							},
 							"method": schema.StringAttribute{
-								Required:            true,
-								MarkdownDescription: "ICAP method to use. Currently `REQMOD` is supported.",
+								Required:    true,
+								Description: "ICAP method to use. Currently `REQMOD` is supported.",
 								Validators: []validator.String{
 									stringvalidator.OneOf("REQMOD"),
 								},
@@ -717,10 +746,12 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"key": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Header name.",
 										},
 										"value": schema.StringAttribute{
-											Required: true,
+											Required:    true,
+											Description: "Header value.",
 										},
 									},
 								},
@@ -770,8 +801,8 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 						},
 					},
 					"share_expiration_config": schema.SingleNestedAttribute{
-						Optional:            true,
-						MarkdownDescription: "Automated lifecycle management for shares based on inactivity, expiration, or max tokens. " + enterpriseFeatureNote,
+						Optional:    true,
+						Description: "Automated lifecycle management for shares based on inactivity, expiration, or max tokens. " + enterpriseFeatureNote,
 						Attributes: map[string]schema.Attribute{
 							"advance_notice": schema.Int64Attribute{
 								Optional:    true,
@@ -787,7 +818,7 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							},
 							"split_events": schema.BoolAttribute{
 								Optional: true,
-								MarkdownDescription: "If true, events are split. " +
+								Description: "If true, events are split. " +
 									"For example, email actions will send a separate notification for each share instead of a cumulative report.",
 							},
 						},

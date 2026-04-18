@@ -60,7 +60,8 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "Matches the `name` attribute.",
 						},
 						"name": schema.StringAttribute{
 							Computed:    true,
@@ -87,7 +88,8 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											Description: "HTTP endpoint to invoke.",
 										},
 										"username": schema.StringAttribute{
-											Computed: true,
+											Computed:    true,
+											Description: "Username for HTTP basic authentication.",
 										},
 										"password": schema.StringAttribute{
 											Computed:    true,
@@ -99,10 +101,12 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"key": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Header name.",
 													},
 													"value": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Header value.",
 													},
 												},
 											},
@@ -125,10 +129,12 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"key": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Query parameter name.",
 													},
 													"value": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Query parameter value.",
 													},
 												},
 											},
@@ -143,17 +149,21 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"name": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Name of the multipart form field.",
 													},
 													"headers": schema.ListNestedAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Additional headers for this part.",
 														NestedObject: schema.NestedAttributeObject{
 															Attributes: map[string]schema.Attribute{
 																"key": schema.StringAttribute{
-																	Computed: true,
+																	Computed:    true,
+																	Description: "Header name.",
 																},
 																"value": schema.StringAttribute{
-																	Computed: true,
+																	Computed:    true,
+																	Description: "Header value.",
 																},
 															},
 														},
@@ -163,7 +173,8 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 														Description: `Path to the file to be sent as an attachment.`,
 													},
 													"body": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Body content as text for this multipart part.",
 													},
 												},
 											},
@@ -193,10 +204,12 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"key": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Environment variable name.",
 													},
 													"value": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Environment variable value.",
 													},
 												},
 											},
@@ -210,16 +223,20 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 										"recipients": schema.ListAttribute{
 											ElementType: types.StringType,
 											Computed:    true,
+											Description: "List of recipient email addresses.",
 										},
 										"bcc": schema.ListAttribute{
 											ElementType: types.StringType,
 											Computed:    true,
+											Description: "List of BCC email addresses.",
 										},
 										"subject": schema.StringAttribute{
-											Computed: true,
+											Computed:    true,
+											Description: "Subject of the email.",
 										},
 										"body": schema.StringAttribute{
-											Computed: true,
+											Computed:    true,
+											Description: "Body of the email.",
 										},
 										"content_type": schema.Int64Attribute{
 											Computed:    true,
@@ -284,10 +301,12 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"key": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Source path.",
 													},
 													"value": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Target path.",
 													},
 													"update_modtime": schema.BoolAttribute{
 														Computed:    true,
@@ -317,10 +336,12 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"key": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Source path.",
 													},
 													"value": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Target path.",
 													},
 													"on_source_copied": schema.Int64Attribute{
 														Computed:    true,
@@ -388,10 +409,12 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 													NestedObject: schema.NestedAttributeObject{
 														Attributes: map[string]schema.Attribute{
 															"key": schema.StringAttribute{
-																Computed: true,
+																Computed:    true,
+																Description: "Source path.",
 															},
 															"value": schema.StringAttribute{
-																Computed: true,
+																Computed:    true,
+																Description: "Target path.",
 															},
 														},
 													},
@@ -409,7 +432,8 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 													Description: computedSecretDescription,
 												},
 												"public_key": schema.StringAttribute{
-													Computed: true,
+													Computed:    true,
+													Description: "PGP public key in ASCII-armored format.",
 												},
 											},
 										},
@@ -418,21 +442,26 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											Description: "Configuration for Metadata Check actions. " + enterpriseFeatureNote + ".",
 											Attributes: map[string]schema.Attribute{
 												"path": schema.StringAttribute{
-													Computed: true,
+													Computed:    true,
+													Description: "Virtual path to check.",
 												},
 												"metadata": schema.SingleNestedAttribute{
-													Computed: true,
+													Computed:    true,
+													Description: "Metadata key/value pair to verify.",
 													Attributes: map[string]schema.Attribute{
 														"key": schema.StringAttribute{
-															Computed: true,
+															Computed:    true,
+															Description: "Metadata key name.",
 														},
 														"value": schema.StringAttribute{
-															Computed: true,
+															Computed:    true,
+															Description: "Expected metadata value. If empty, the key is expected to be absent.",
 														},
 													},
 												},
 												"timeout": schema.Int64Attribute{
-													Computed: true,
+													Computed:    true,
+													Description: "Timeout in seconds for periodic retry.",
 												},
 											},
 										},
@@ -489,15 +518,16 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 									},
 								},
 								"imap_config": schema.SingleNestedAttribute{
-									Computed:            true,
-									MarkdownDescription: "Enables automatic retrieval of email attachments from IMAP mailboxes. " + enterpriseFeatureNote,
+									Computed:    true,
+									Description: "Enables automatic retrieval of email attachments from IMAP mailboxes. " + enterpriseFeatureNote,
 									Attributes: map[string]schema.Attribute{
 										"endpoint": schema.StringAttribute{
-											Computed:            true,
-											MarkdownDescription: "IMAP endpoint in the format `schema://host:port`. Supported schemas: `imap`, `imaps`.",
+											Computed:    true,
+											Description: "IMAP endpoint in the format `schema://host:port`. Supported schemas: `imap`, `imaps`.",
 										},
 										"username": schema.StringAttribute{
-											Computed: true,
+											Computed:    true,
+											Description: "IMAP username.",
 										},
 										"password": schema.StringAttribute{
 											Computed:    true,
@@ -542,8 +572,8 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											},
 										},
 										"mailbox": schema.StringAttribute{
-											Computed:            true,
-											MarkdownDescription: "Mailbox to check, e.g. `INBOX`.",
+											Computed:    true,
+											Description: "Mailbox to check, e.g. `INBOX`.",
 										},
 										"path": schema.StringAttribute{
 											Computed:    true,
@@ -565,12 +595,12 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 									},
 								},
 								"icap_config": schema.SingleNestedAttribute{
-									Computed:            true,
-									MarkdownDescription: "Enables integration with ICAP servers to perform antivirus scanning and DLP checks. " + enterpriseFeatureNote,
+									Computed:    true,
+									Description: "Enables integration with ICAP servers to perform antivirus scanning and DLP checks. " + enterpriseFeatureNote,
 									Attributes: map[string]schema.Attribute{
 										"endpoint": schema.StringAttribute{
 											Computed: true,
-											MarkdownDescription: "ICAP endpoint in the format `schema://host:port`. Supported schemas: `icap`, `icaps`. " +
+											Description: "ICAP endpoint in the format `schema://host:port`. Supported schemas: `icap`, `icaps`. " +
 												"If the port is omitted, port `1344` is used.",
 										},
 										"timeout": schema.Int64Attribute{
@@ -583,13 +613,13 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 												"**Warning:** In this mode, TLS is susceptible to machine-in-the-middle attacks.",
 										},
 										"paths": schema.ListAttribute{
-											ElementType:         types.StringType,
-											Computed:            true,
-											MarkdownDescription: "List of virtual paths to scan. Placeholders are supported, e.g. `{{.VirtualPath}}`.",
+											ElementType: types.StringType,
+											Computed:    true,
+											Description: "List of virtual paths to scan. Placeholders are supported, e.g. `{{.VirtualPath}}`.",
 										},
 										"method": schema.StringAttribute{
-											Computed:            true,
-											MarkdownDescription: "ICAP method.",
+											Computed:    true,
+											Description: "ICAP method.",
 										},
 										"headers": schema.ListNestedAttribute{
 											Computed:    true,
@@ -597,10 +627,12 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"key": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Header name.",
 													},
 													"value": schema.StringAttribute{
-														Computed: true,
+														Computed:    true,
+														Description: "Header value.",
 													},
 												},
 											},
@@ -641,8 +673,8 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 									},
 								},
 								"share_expiration_config": schema.SingleNestedAttribute{
-									Computed:            true,
-									MarkdownDescription: "Automated lifecycle management for shares based on inactivity, expiration, or max tokens. " + enterpriseFeatureNote,
+									Computed:    true,
+									Description: "Automated lifecycle management for shares based on inactivity, expiration, or max tokens. " + enterpriseFeatureNote,
 									Attributes: map[string]schema.Attribute{
 										"advance_notice": schema.Int64Attribute{
 											Computed:    true,
@@ -658,7 +690,7 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 										},
 										"split_events": schema.BoolAttribute{
 											Computed: true,
-											MarkdownDescription: "If true, events are split. " +
+											Description: "If true, events are split. " +
 												"For example, email actions will send a separate notification for each share instead of a cumulative report.",
 										},
 									},

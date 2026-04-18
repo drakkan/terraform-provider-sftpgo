@@ -38,13 +38,13 @@ Event rule
 
 Required:
 
-- `name` (String)
+- `name` (String) Name of the event action to execute.
 
 Optional:
 
 - `execute_sync` (Boolean) Supported for upload events and required for pre-* events and Identity provider login events if the action checks the account.
-- `is_failure_action` (Boolean)
-- `stop_on_failure` (Boolean)
+- `is_failure_action` (Boolean) If true, this action executes only when a previous action in the rule has failed.
+- `stop_on_failure` (Boolean) If true, no further actions in the rule will execute if this action fails.
 
 
 <a id="nestedatt--conditions"></a>
@@ -79,11 +79,11 @@ Optional:
 
 Required:
 
-- `pattern` (String)
+- `pattern` (String) Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").
 
 Optional:
 
-- `inverse_match` (Boolean)
+- `inverse_match` (Boolean) If true, the condition matches when the pattern does NOT match.
 - `match_fs_path` (Boolean) If enabled, the pattern is matched against the filesystem path instead of the virtual path. Filesystem paths are backend-dependent (local paths use the OS format; cloud storage paths have no leading slash). Available in the Enterprise edition.
 
 
@@ -92,11 +92,11 @@ Optional:
 
 Required:
 
-- `pattern` (String)
+- `pattern` (String) Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").
 
 Optional:
 
-- `inverse_match` (Boolean)
+- `inverse_match` (Boolean) If true, the condition matches when the pattern does NOT match.
 
 
 <a id="nestedatt--conditions--options--names"></a>
@@ -104,11 +104,11 @@ Optional:
 
 Required:
 
-- `pattern` (String)
+- `pattern` (String) Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").
 
 Optional:
 
-- `inverse_match` (Boolean)
+- `inverse_match` (Boolean) If true, the condition matches when the pattern does NOT match.
 
 
 <a id="nestedatt--conditions--options--role_names"></a>
@@ -116,11 +116,11 @@ Optional:
 
 Required:
 
-- `pattern` (String)
+- `pattern` (String) Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").
 
 Optional:
 
-- `inverse_match` (Boolean)
+- `inverse_match` (Boolean) If true, the condition matches when the pattern does NOT match.
 
 
 
@@ -129,10 +129,10 @@ Optional:
 
 Required:
 
-- `day_of_month` (String)
-- `day_of_week` (String)
-- `hour` (String)
-- `month` (String)
+- `day_of_month` (String) Day of month in cron format, 1-31. Use * to match every day.
+- `day_of_week` (String) Day of week in cron format, 0-6 (Sunday-Saturday). Use * to match every day.
+- `hour` (String) Hour in cron format, 0-23. Use * to match every hour.
+- `month` (String) Month in cron format, 1-12. Use * to match every month.
 
 Optional:
 

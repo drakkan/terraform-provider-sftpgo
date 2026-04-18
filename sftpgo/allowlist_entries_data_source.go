@@ -60,7 +60,8 @@ func (d *allowListEntriesDataSource) Schema(_ context.Context, _ datasource.Sche
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "Matches the `ipornet` attribute.",
 						},
 						"ipornet": schema.StringAttribute{
 							Computed:    true,

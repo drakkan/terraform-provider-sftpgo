@@ -59,7 +59,8 @@ func (d *licenseDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				Description: "License details.",
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Unique license identifier.",
 					},
 					"key": schema.StringAttribute{
 						Computed:    true,

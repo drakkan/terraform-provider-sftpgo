@@ -92,7 +92,8 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Description: "Plain text password or hash format supported by SFTPGo.",
 			},
 			"email": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "Admin email address.",
 			},
 			"permissions": schema.ListAttribute{
 				ElementType: types.StringType,

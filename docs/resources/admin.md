@@ -26,7 +26,7 @@ Admin
 
 - `additional_info` (String) Free form text field.
 - `description` (String) Optional description.
-- `email` (String)
+- `email` (String) Admin email address.
 - `filters` (Attributes) Additional restrictions. (see [below for nested schema](#nestedatt--filters))
 - `groups` (Attributes List) Groups automatically selected for new users created by this admin. (see [below for nested schema](#nestedatt--groups))
 - `preferences` (Attributes) Admin preferences. (see [below for nested schema](#nestedatt--preferences))

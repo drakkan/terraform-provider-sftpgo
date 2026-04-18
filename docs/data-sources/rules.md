@@ -29,7 +29,7 @@ Read-Only:
 - `conditions` (Attributes) Defines the conditions that trigger the rule. (see [below for nested schema](#nestedatt--rules--conditions))
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
 - `description` (String) Optional description.
-- `id` (String)
+- `id` (String) Matches the `name` attribute.
 - `name` (String) Unique name.
 - `status` (Number) 1 enabled, 0 disabled.
 - `trigger` (Number) Event trigger. 1 = Filesystem event, 2 = Provider event, 3 = Schedule, 4 = IP Blocked, 5 = Certificate renewal, 6 = On demand, 7 = Identity Provider login.
@@ -41,9 +41,9 @@ Read-Only:
 Read-Only:
 
 - `execute_sync` (Boolean) Supported for upload events and required for pre-* events and Identity provider login events if the action checks the account.
-- `is_failure_action` (Boolean)
-- `name` (String)
-- `stop_on_failure` (Boolean)
+- `is_failure_action` (Boolean) If true, this action executes only when a previous action in the rule has failed.
+- `name` (String) Name of the event action to execute.
+- `stop_on_failure` (Boolean) If true, no further actions in the rule will execute if this action fails.
 
 
 <a id="nestedatt--rules--conditions"></a>
@@ -78,9 +78,9 @@ Read-Only:
 
 Read-Only:
 
-- `inverse_match` (Boolean)
+- `inverse_match` (Boolean) If true, the condition matches when the pattern does NOT match.
 - `match_fs_path` (Boolean) If enabled, the pattern is matched against the filesystem path instead of the virtual path. Available in the Enterprise edition.
-- `pattern` (String)
+- `pattern` (String) Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").
 
 
 <a id="nestedatt--rules--conditions--options--group_names"></a>
@@ -88,8 +88,8 @@ Read-Only:
 
 Read-Only:
 
-- `inverse_match` (Boolean)
-- `pattern` (String)
+- `inverse_match` (Boolean) If true, the condition matches when the pattern does NOT match.
+- `pattern` (String) Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").
 
 
 <a id="nestedatt--rules--conditions--options--names"></a>
@@ -97,8 +97,8 @@ Read-Only:
 
 Read-Only:
 
-- `inverse_match` (Boolean)
-- `pattern` (String)
+- `inverse_match` (Boolean) If true, the condition matches when the pattern does NOT match.
+- `pattern` (String) Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").
 
 
 <a id="nestedatt--rules--conditions--options--role_names"></a>
@@ -106,8 +106,8 @@ Read-Only:
 
 Read-Only:
 
-- `inverse_match` (Boolean)
-- `pattern` (String)
+- `inverse_match` (Boolean) If true, the condition matches when the pattern does NOT match.
+- `pattern` (String) Shell-like glob pattern to match against (e.g. "*.txt", "user_*", "/uploads/**").
 
 
 
@@ -116,8 +116,8 @@ Read-Only:
 
 Read-Only:
 
-- `day_of_month` (String)
-- `day_of_week` (String)
-- `hour` (String)
-- `minute` (String)
-- `month` (String)
+- `day_of_month` (String) Day of month in cron format, 1-31. Use * to match every day.
+- `day_of_week` (String) Day of week in cron format, 0-6 (Sunday-Saturday). Use * to match every day.
+- `hour` (String) Hour in cron format, 0-23. Use * to match every hour.
+- `minute` (String) Minute in cron format, 0-59. Use * to match every minute. Available in the Enterprise edition.
+- `month` (String) Month in cron format, 1-12. Use * to match every month.

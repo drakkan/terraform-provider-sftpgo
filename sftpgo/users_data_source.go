@@ -60,7 +60,8 @@ func (d *usersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "Matches the `username` attribute.",
 						},
 						"username": schema.StringAttribute{
 							Computed:    true,
@@ -71,7 +72,8 @@ func (d *usersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 							Description: "1 enabled, 0 disabled (login is not allowed).",
 						},
 						"email": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "User email address.",
 						},
 						"expiration_date": schema.Int64Attribute{
 							Computed:    true,

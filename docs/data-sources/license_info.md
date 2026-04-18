@@ -25,7 +25,7 @@ Fetches License Information. Available in the Enterprise edition.
 
 Read-Only:
 
-- `id` (String)
+- `id` (String) Unique license identifier.
 - `key` (String) License key
 - `type` (Number) License type: 0 = Disabled, 1 = Subscription, 2 = Lifetime
 - `valid_from` (Number) Validity start time in Unix timestamp (milliseconds).

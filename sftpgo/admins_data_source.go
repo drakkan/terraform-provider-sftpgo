@@ -60,7 +60,8 @@ func (d *adminsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "Matches the `username` attribute.",
 						},
 						"username": schema.StringAttribute{
 							Computed:    true,
@@ -75,7 +76,8 @@ func (d *adminsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 							Description: "Password hash saved in the SFTPGo data provider.",
 						},
 						"email": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "Admin email address.",
 						},
 						"permissions": schema.ListAttribute{
 							ElementType: types.StringType,

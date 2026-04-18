@@ -59,16 +59,20 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 				},
 			},
 			"s3config": schema.SingleNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "S3 compatible object storage configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "S3 bucket name.",
 					},
 					"region": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "S3 region.",
 					},
 					"access_key": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "AWS Access Key ID for authentication. Leave blank when using IAM roles or instance profiles.",
 					},
 					"access_secret": schema.StringAttribute{
 						Computed:    true,
@@ -95,7 +99,8 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "The endpoint is generally required for S3 compatible backends.",
 					},
 					"storage_class": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "S3 storage class for uploaded objects (e.g. STANDARD, STANDARD_IA, GLACIER). Leave empty for the default storage class.",
 					},
 					"acl": schema.StringAttribute{
 						Computed:    true,
@@ -136,10 +141,12 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 				},
 			},
 			"gcsconfig": schema.SingleNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Google Cloud Storage configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "GCS bucket name.",
 					},
 					"key_prefix": schema.StringAttribute{
 						Computed:    true,
@@ -162,7 +169,8 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "1 if Hierarchical namespace support is enabled for the bucket. " + enterpriseFeatureNote + ".",
 					},
 					"storage_class": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Google Cloud Storage class for uploaded objects (e.g. STANDARD, NEARLINE, COLDLINE, ARCHIVE). Leave empty for the default storage class.",
 					},
 					"acl": schema.StringAttribute{
 						Computed:    true,
@@ -179,13 +187,16 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 				},
 			},
 			"azblobconfig": schema.SingleNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Azure Blob Storage configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"container": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Azure Blob Storage container name.",
 					},
 					"account_name": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Storage account name. Leave blank to use SAS URL.",
 					},
 					"account_key": schema.StringAttribute{
 						Computed:    true,
@@ -220,15 +231,18 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "How many parts are downloaded in parallel.",
 					},
 					"use_emulator": schema.BoolAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "If true, the Azure Storage Emulator (Azurite) is used instead of the cloud service.",
 					},
 					"access_tier": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Blob access tier. Valid values: empty, Archive, Hot, Cool.",
 					},
 				},
 			},
 			"cryptconfig": schema.SingleNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Encrypted local filesystem configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"passphrase": schema.StringAttribute{
 						Computed:    true,
@@ -245,14 +259,16 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 				},
 			},
 			"sftpconfig": schema.SingleNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Remote SFTP server configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
 						Computed:    true,
 						Description: "SFTP endpoint as host:port.",
 					},
 					"username": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Username for SFTP authentication.",
 					},
 					"password": schema.StringAttribute{
 						Computed:    true,
@@ -276,14 +292,16 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "Restrict access to this path.",
 					},
 					"disable_concurrent_reads": schema.BoolAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Concurrent reads are safe to use and disabling them will degrade performance. Some servers automatically delete files once they are downloaded; disable concurrent reads for such servers.",
 					},
 					"buffer_size": schema.Int64Attribute{
 						Computed:    true,
 						Description: "The buffer size (in MB) to use for uploads/downloads.",
 					},
 					"equality_check_mode": schema.Int64Attribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.",
 					},
 					"socks_proxy": schema.StringAttribute{
 						Computed:    true,
@@ -301,14 +319,15 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"ftpconfig": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: enterpriseFeatureNote,
+				Description: "Remote FTP server configuration details. " + enterpriseFeatureNote,
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
 						Computed:    true,
 						Description: "FTP endpoint as host:port.",
 					},
 					"username": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Username for FTP authentication.",
 					},
 					"password": schema.StringAttribute{
 						Computed:    true,
@@ -319,18 +338,22 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "0 disabled, 1 Explicit, 2 Implicit.",
 					},
 					"skip_tls_verify": schema.BoolAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "If true, the TLS certificate of the FTP server is not verified.",
 					},
 				},
 			},
 			"httpconfig": schema.SingleNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "HTTP/S remote filesystem configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "HTTP/S endpoint URL. SFTPGo uses this URL as base; for example for the `stat` API, SFTPGo appends `/stat/{name}`.",
 					},
 					"username": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Username for HTTP basic authentication.",
 					},
 					"password": schema.StringAttribute{
 						Computed:    true,
@@ -341,10 +364,12 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: computedSecretDescription,
 					},
 					"skip_tls_verify": schema.BoolAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.",
 					},
 					"equality_check_mode": schema.Int64Attribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.",
 					},
 				},
 			},
@@ -384,16 +409,20 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 				},
 			},
 			"s3config": schema.SingleNestedAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "S3 compatible object storage configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
-						Required: true,
+						Required:    true,
+						Description: "S3 bucket name.",
 					},
 					"region": schema.StringAttribute{
-						Optional: true,
+						Optional:    true,
+						Description: "S3 region.",
 					},
 					"access_key": schema.StringAttribute{
-						Optional: true,
+						Optional:    true,
+						Description: "AWS Access Key ID for authentication. Leave blank when using IAM roles or instance profiles.",
 					},
 					"access_secret": schema.StringAttribute{
 						Optional:    true,
@@ -464,10 +493,12 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 				},
 			},
 			"gcsconfig": schema.SingleNestedAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "Google Cloud Storage configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
-						Required: true,
+						Required:    true,
+						Description: "GCS bucket name.",
 					},
 					"universe_domain": schema.StringAttribute{
 						Optional:    true,
@@ -479,7 +510,8 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "Plain text credentials. " + secretDescriptionGeneric,
 					},
 					"automatic_credentials": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "0 = disabled, explicit JSON credentials must be provided (default); 1 = enabled, use Application Default Credentials (ADC) to find credentials.",
 					},
 					"hns": schema.Int64Attribute{
 						Optional:    true,
@@ -508,13 +540,16 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 				},
 			},
 			"azblobconfig": schema.SingleNestedAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "Azure Blob Storage configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"container": schema.StringAttribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Azure Blob Storage container name.",
 					},
 					"account_name": schema.StringAttribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Storage account name. Leave blank to use SAS URL.",
 					},
 					"account_key": schema.StringAttribute{
 						Optional:    true,
@@ -551,7 +586,8 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "How many parts are downloaded in parallel. Default: 5.",
 					},
 					"use_emulator": schema.BoolAttribute{
-						Optional: true,
+						Optional:    true,
+						Description: "If true, the Azure Storage Emulator (Azurite) is used instead of the cloud service.",
 					},
 					"access_tier": schema.StringAttribute{
 						Optional:    true,
@@ -584,7 +620,8 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 				},
 			},
 			"sftpconfig": schema.SingleNestedAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "Remote SFTP server configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
 						Required:    true,
@@ -594,7 +631,8 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						},
 					},
 					"username": schema.StringAttribute{
-						Required: true,
+						Required:    true,
+						Description: "Username for SFTP authentication.",
 					},
 					"password": schema.StringAttribute{
 						Optional:    true,
@@ -649,14 +687,15 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 			},
 			"ftpconfig": schema.SingleNestedAttribute{
 				Optional:    true,
-				Description: enterpriseFeatureNote,
+				Description: "Remote FTP server configuration details. " + enterpriseFeatureNote,
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
 						Required:    true,
 						Description: "FTP endpoint as host:port.",
 					},
 					"username": schema.StringAttribute{
-						Required: true,
+						Required:    true,
+						Description: "Username for FTP authentication.",
 					},
 					"password": schema.StringAttribute{
 						Optional:    true,
@@ -668,18 +707,22 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "0 disabled, 1 Explicit, 2 Implicit.",
 					},
 					"skip_tls_verify": schema.BoolAttribute{
-						Optional: true,
+						Optional:    true,
+						Description: "If true, the TLS certificate of the FTP server is not verified.",
 					},
 				},
 			},
 			"httpconfig": schema.SingleNestedAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: "HTTP/S remote filesystem configuration details.",
 				Attributes: map[string]schema.Attribute{
 					"endpoint": schema.StringAttribute{
-						Required: true,
+						Required:    true,
+						Description: "HTTP/S endpoint URL. SFTPGo uses this URL as base; for example for the `stat` API, SFTPGo appends `/stat/{name}`.",
 					},
 					"username": schema.StringAttribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Username for HTTP basic authentication.",
 					},
 					"password": schema.StringAttribute{
 						Optional:    true,
@@ -692,10 +735,12 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "Plain text API key. " + secretDescriptionGeneric,
 					},
 					"skip_tls_verify": schema.BoolAttribute{
-						Optional: true,
+						Optional:    true,
+						Description: "If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.",
 					},
 					"equality_check_mode": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.",
 					},
 				},
 			},
@@ -953,19 +998,24 @@ func getComputedSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute 
 				Description: "Static password complexity requirements. Whenever possible, prefer using the entropy-based approach provided by password_strength. " + enterpriseFeatureNote,
 				Attributes: map[string]schema.Attribute{
 					"length": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Minimum password length.",
 					},
 					"uppers": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Minimum number of uppercase characters required.",
 					},
 					"lowers": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Minimum number of lowercase characters required.",
 					},
 					"digits": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Minimum number of digit characters required.",
 					},
 					"specials": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Minimum number of special characters required.",
 					},
 				},
 			},
@@ -1011,10 +1061,12 @@ func getComputedSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute 
 			Description: "Share access rules. " + enterpriseFeatureNote,
 			Attributes: map[string]schema.Attribute{
 				"permissions": schema.Int64Attribute{
-					Computed: true,
+					Computed:    true,
+					Description: "Bitmask representing the share permissions. 1 = Read, 2 = Write, 4 = Delete. Example: Read + Write is 3 (1 + 2).",
 				},
 				"mode": schema.Int64Attribute{
-					Computed: true,
+					Computed:    true,
+					Description: "Policy mode. 1 = suggested (the group policy is pre-selected but can be removed by the user), 2 = enforced (the group policy is mandatory and cannot be changed by the user).",
 				},
 			},
 		}
@@ -1220,19 +1272,24 @@ func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 				Description: "Static password complexity requirements. Whenever possible, prefer using the entropy-based approach provided by password_strength. " + enterpriseFeatureNote,
 				Attributes: map[string]schema.Attribute{
 					"length": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Minimum password length.",
 					},
 					"uppers": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Minimum number of uppercase characters required.",
 					},
 					"lowers": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Minimum number of lowercase characters required.",
 					},
 					"digits": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Minimum number of digit characters required.",
 					},
 					"specials": schema.Int64Attribute{
-						Optional: true,
+						Optional:    true,
+						Description: "Minimum number of special characters required.",
 					},
 				},
 			},
