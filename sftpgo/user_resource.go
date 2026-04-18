@@ -103,7 +103,7 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"home_dir": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The user cannot upload or download files outside this directory. Must be an absolute path.",
+				Description: "Absolute path. Optional if the server has `users_base_dir` configured: in that case SFTPGo auto-assigns `<users_base_dir>/<username>`.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

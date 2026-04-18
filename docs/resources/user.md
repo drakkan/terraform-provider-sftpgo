@@ -18,7 +18,6 @@ User
 ### Required
 
 - `filesystem` (Attributes) Filesystem configuration. (see [below for nested schema](#nestedatt--filesystem))
-- `home_dir` (String) The user cannot upload or download files outside this directory. Must be an absolute path.
 - `permissions` (Map of String) Comma separated, per-directory, permissions.
 - `status` (Number) 1 enabled, 0 disabled (login is not allowed).
 - `username` (String) Unique username.
@@ -34,6 +33,7 @@ User
 - `filters` (Attributes) (see [below for nested schema](#nestedatt--filters))
 - `gid` (Number) If SFTPGo runs as root system user then the created files and directories will be assigned to this system GID. Default not set.
 - `groups` (Attributes List) Groups. (see [below for nested schema](#nestedatt--groups))
+- `home_dir` (String) Absolute path. Optional if the server has `users_base_dir` configured: in that case SFTPGo auto-assigns `<users_base_dir>/<username>`.
 - `max_sessions` (Number) Maximum concurrent sessions. Not set means no limit.
 - `password` (String, Sensitive) Plain text password or hash format supported by SFTPGo. Set to empty to remove the password.
 - `public_keys` (List of String) List of public keys in OpenSSH format.
