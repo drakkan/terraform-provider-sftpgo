@@ -34,10 +34,15 @@ jobs:
         with:
           go-version: '1.26'
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
       - name: Run tests
         run: |
           make test
-          make testacc
+          TF_ACC_TERRAFORM_PATH="$(command -v terraform)" make testacc
         env:
           SFTPGO_HOST: http://127.0.0.1:8080
           SFTPGO_USERNAME: admin
