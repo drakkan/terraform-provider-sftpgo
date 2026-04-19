@@ -279,12 +279,15 @@ type UserFilters struct {
 	CustomPlaceholders    []string           `json:"custom_placeholders,omitempty"`
 }
 
-// User defines a SFTPGo user
+// User defines a SFTPGo user.
+//
+// Password has no omitempty so that CreateUser always materializes the field:
+// server-side, an empty "password" on create means "no password set", and an
+// empty "password" on update means "clear the password". UpdateUser does not
+// use this field directly — it wraps User in a payload with an explicit
+// `Password *string` so a nil pointer omits the field entirely (preserve).
 type User struct {
 	sdk.User
-	// we remove the omitempty attribute from the password
-	// otherwise setting an empty password will preserve the current one
-	// on update
 	Password       string          `json:"password"`
 	Filters        UserFilters     `json:"filters"`
 	VirtualFolders []VirtualFolder `json:"virtual_folders,omitempty"`

@@ -267,6 +267,13 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+	var prevState groupResourceModel
+	diags = req.State.Get(ctx, &prevState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -274,6 +281,11 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	group, diags := plan.toSFTPGo(ctx)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = preserveGroupFsSecrets(ctx, group, plan, prevState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -347,6 +359,31 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 func (*groupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import name and save to name attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
+}
+
+// preserveGroupFsSecrets substitutes the "preserve" sentinel for filesystem
+// secrets whose rotation was not requested by the plan. No-op when
+// user_settings (or the nested filesystem) is not set on either side.
+func preserveGroupFsSecrets(ctx context.Context, group *client.Group, plan, prev groupResourceModel) diag.Diagnostics {
+	if plan.UserSettings.IsNull() || prev.UserSettings.IsNull() {
+		return nil
+	}
+	var settingsPlan, settingsPrev groupUserSettings
+	diags := plan.UserSettings.As(ctx, &settingsPlan, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	diags = prev.UserSettings.As(ctx, &settingsPrev, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	return preserveUnchangedFsSecrets(ctx, &group.UserSettings.FsConfig, settingsPlan.FsConfig, settingsPrev.FsConfig)
 }
 
 func (*groupResource) preservePlanFields(ctx context.Context, plan, state *groupResourceModel) diag.Diagnostics {

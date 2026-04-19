@@ -82,9 +82,17 @@ func (c *Client) GetUser(username string) (*User, error) {
 	return &user, err
 }
 
-// UpdateUser - Updates an existing user
-func (c *Client) UpdateUser(user User) error {
-	rb, err := json.Marshal(user)
+// UpdateUser - Updates an existing user. When password is nil the field is
+// omitted from the JSON payload and the server keeps the current password;
+// pass a pointer to an empty string to explicitly clear it, or a pointer to a
+// non-empty string to set a new value. See User.Password for the rationale
+// behind the string-not-omitempty tag on the base struct.
+func (c *Client) UpdateUser(user User, password *string) error {
+	payload := struct {
+		User
+		Password *string `json:"password,omitempty"`
+	}{User: user, Password: password}
+	rb, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}

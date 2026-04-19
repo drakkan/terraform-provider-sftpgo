@@ -208,6 +208,13 @@ func (r *folderResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	var prevState virtualFolderResourceModel
+	diags = req.State.Get(ctx, &prevState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -215,6 +222,11 @@ func (r *folderResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	folder, diags := plan.toSFTPGo(ctx)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = preserveUnchangedFsSecrets(ctx, &folder.FsConfig, plan.FsConfig, prevState.FsConfig)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

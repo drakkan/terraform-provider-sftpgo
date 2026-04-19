@@ -29,7 +29,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/sftpgo/sdk"
+	"github.com/sftpgo/sdk/kms"
 )
 
 const (
@@ -1503,13 +1505,19 @@ func computedWOPlaceholder(isVersion bool) dsschema.Attribute {
 	}
 }
 
-// writeOnlyAttr builds the `<name>_wo` write-only schema attribute.
+// writeOnlyAttr builds the `<name>_wo` write-only schema attribute. The
+// write-only value and its sibling `<name>_wo_version` are mutually required:
+// the version attribute is the only thing that lives in state, so setting the
+// secret without the version would leave rotations undetectable.
 func writeOnlyAttr(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Optional:    true,
 		Sensitive:   true,
 		WriteOnly:   true,
 		Description: "Write-only variant of `" + name + "`. " + writeOnlyDescriptionGeneric,
+		Validators: []validator.String{
+			stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName(name + "_wo_version")),
+		},
 	}
 }
 
@@ -1518,6 +1526,9 @@ func writeOnlyVersionAttr(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Optional:    true,
 		Description: "Trigger attribute for `" + name + "_wo`. " + writeOnlyVersionDescGeneric,
+		Validators: []validator.String{
+			stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName(name + "_wo")),
+		},
 	}
 }
 
@@ -1614,6 +1625,140 @@ func applyFsConfigWriteOnly(ctx context.Context, fsConfig, fsPlan filesystem) (t
 		fsPlan.HTTPConfig.APIKeyWO = fsConfig.HTTPConfig.APIKeyWO
 	}
 	return types.ObjectValueFrom(ctx, fsPlan.getTFAttributes(), fsPlan)
+}
+
+// preserveUnchangedFsSecrets mutates fsOut — a client.Filesystem already
+// populated by the resource's toSFTPGo — to substitute a "preserve" sentinel
+// for every secret whose rotation was not requested (i.e. both the legacy
+// field and the corresponding write-only version in plan equal the ones in
+// the previous state). The sentinel has Status=Redacted which SFTPGo's
+// updateEncryptedSecrets treats as IsNotPlainAndNotEmpty → keep current
+// server-side value. No-op when the provider is local (no secrets to
+// preserve).
+func preserveUnchangedFsSecrets(ctx context.Context, fsOut *client.Filesystem, planFs, prevFs types.Object) diag.Diagnostics {
+	var plan, prev filesystem
+	diags := planFs.As(ctx, &plan, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	diags = prevFs.As(ctx, &prev, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+
+	switch sdk.FilesystemProvider(plan.Provider.ValueInt64()) {
+	case sdk.S3FilesystemProvider:
+		if plan.S3Config == nil || prev.S3Config == nil {
+			return nil
+		}
+		if shouldPreserveSecret(plan.S3Config.AccessSecret, prev.S3Config.AccessSecret,
+			plan.S3Config.AccessSecretWOVersion, prev.S3Config.AccessSecretWOVersion) {
+			fsOut.S3Config.AccessSecret = preserveSecretSentinel()
+		}
+		if shouldPreserveSecret(plan.S3Config.SSECustomerKey, prev.S3Config.SSECustomerKey,
+			plan.S3Config.SSECustomerKeyWOVersion, prev.S3Config.SSECustomerKeyWOVersion) {
+			fsOut.S3Config.SSECustomerKey = preserveSecretSentinel()
+		}
+	case sdk.GCSFilesystemProvider:
+		if plan.GCSConfig == nil || prev.GCSConfig == nil {
+			return nil
+		}
+		if shouldPreserveSecret(plan.GCSConfig.Credentials, prev.GCSConfig.Credentials,
+			plan.GCSConfig.CredentialsWOVersion, prev.GCSConfig.CredentialsWOVersion) {
+			fsOut.GCSConfig.Credentials = preserveSecretSentinel()
+		}
+	case sdk.AzureBlobFilesystemProvider:
+		if plan.AzBlobConfig == nil || prev.AzBlobConfig == nil {
+			return nil
+		}
+		if shouldPreserveSecret(plan.AzBlobConfig.AccountKey, prev.AzBlobConfig.AccountKey,
+			plan.AzBlobConfig.AccountKeyWOVersion, prev.AzBlobConfig.AccountKeyWOVersion) {
+			fsOut.AzBlobConfig.AccountKey = preserveSecretSentinel()
+		}
+		if shouldPreserveSecret(plan.AzBlobConfig.SASURL, prev.AzBlobConfig.SASURL,
+			plan.AzBlobConfig.SASURLWOVersion, prev.AzBlobConfig.SASURLWOVersion) {
+			fsOut.AzBlobConfig.SASURL = preserveSecretSentinel()
+		}
+	case sdk.CryptedFilesystemProvider:
+		if plan.CryptConfig == nil || prev.CryptConfig == nil {
+			return nil
+		}
+		if shouldPreserveSecret(plan.CryptConfig.Passphrase, prev.CryptConfig.Passphrase,
+			plan.CryptConfig.PassphraseWOVersion, prev.CryptConfig.PassphraseWOVersion) {
+			fsOut.CryptConfig.Passphrase = preserveSecretSentinel()
+		}
+	case sdk.SFTPFilesystemProvider:
+		if plan.SFTPConfig == nil || prev.SFTPConfig == nil {
+			return nil
+		}
+		if shouldPreserveSecret(plan.SFTPConfig.Password, prev.SFTPConfig.Password,
+			plan.SFTPConfig.PasswordWOVersion, prev.SFTPConfig.PasswordWOVersion) {
+			fsOut.SFTPConfig.Password = preserveSecretSentinel()
+		}
+		if shouldPreserveSecret(plan.SFTPConfig.PrivateKey, prev.SFTPConfig.PrivateKey,
+			plan.SFTPConfig.PrivateKeyWOVersion, prev.SFTPConfig.PrivateKeyWOVersion) {
+			fsOut.SFTPConfig.PrivateKey = preserveSecretSentinel()
+		}
+		if shouldPreserveSecret(plan.SFTPConfig.KeyPassphrase, prev.SFTPConfig.KeyPassphrase,
+			plan.SFTPConfig.KeyPassphraseWOVersion, prev.SFTPConfig.KeyPassphraseWOVersion) {
+			fsOut.SFTPConfig.KeyPassphrase = preserveSecretSentinel()
+		}
+		if shouldPreserveSecret(plan.SFTPConfig.SocksPassword, prev.SFTPConfig.SocksPassword,
+			plan.SFTPConfig.SocksPasswordWOVersion, prev.SFTPConfig.SocksPasswordWOVersion) {
+			fsOut.SFTPConfig.SocksPassword = preserveSecretSentinel()
+		}
+	case sdk.HTTPFilesystemProvider:
+		if plan.HTTPConfig == nil || prev.HTTPConfig == nil {
+			return nil
+		}
+		if shouldPreserveSecret(plan.HTTPConfig.Password, prev.HTTPConfig.Password,
+			plan.HTTPConfig.PasswordWOVersion, prev.HTTPConfig.PasswordWOVersion) {
+			fsOut.HTTPConfig.Password = preserveSecretSentinel()
+		}
+		if shouldPreserveSecret(plan.HTTPConfig.APIKey, prev.HTTPConfig.APIKey,
+			plan.HTTPConfig.APIKeyWOVersion, prev.HTTPConfig.APIKeyWOVersion) {
+			fsOut.HTTPConfig.APIKey = preserveSecretSentinel()
+		}
+	case client.FTPFilesystemProvider:
+		if plan.FTPConfig == nil || prev.FTPConfig == nil {
+			return nil
+		}
+		if shouldPreserveSecret(plan.FTPConfig.Password, prev.FTPConfig.Password,
+			plan.FTPConfig.PasswordWOVersion, prev.FTPConfig.PasswordWOVersion) {
+			fsOut.FTPConfig.Password = preserveSecretSentinel()
+		}
+	}
+	return nil
+}
+
+// shouldPreserveSecret reports whether a rotation was not requested for a
+// secret attribute pair. The active channel in the current config drives the
+// decision: if `<name>_wo_version` is set in plan, only its change triggers
+// rotation; else if the legacy attribute is set in plan, its change triggers
+// rotation; otherwise (neither in current config) the server-side value is
+// preserved. This keeps WO↔legacy transitions correct — the side present in
+// the new config is the authoritative one.
+func shouldPreserveSecret(planLegacy, prevLegacy, planWOVersion, prevWOVersion types.String) bool {
+	if !planWOVersion.IsNull() {
+		return planWOVersion.Equal(prevWOVersion)
+	}
+	if !planLegacy.IsNull() {
+		return planLegacy.Equal(prevLegacy)
+	}
+	return true
+}
+
+// preserveSecretSentinel returns a BaseSecret that SFTPGo's server-side
+// updateEncryptedSecrets treats as "keep current" (IsNotPlainAndNotEmpty).
+// Using Redacted avoids shipping any real secret material in the payload.
+func preserveSecretSentinel() kms.BaseSecret {
+	return kms.BaseSecret{Status: kms.SecretStatusRedacted}
 }
 
 // contains reports whether v is present in elems.

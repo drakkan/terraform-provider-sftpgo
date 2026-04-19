@@ -16,6 +16,7 @@ package sftpgo
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -672,6 +673,37 @@ func TestAccUserResource_writeOnly(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.wo", "filesystem.s3config.access_secret_wo_version", "1"),
 				),
 			},
+			// Update an unrelated attribute while keeping password_wo_version
+			// and access_secret_wo_version pinned to "1". The server side
+			// must preserve both secrets — the apply must succeed without
+			// rotation and the versions in state must remain at 1.
+			{
+				Config: `
+					resource "sftpgo_user" "wo" {
+					  username            = "wo_user"
+					  status              = 1
+					  password_wo         = "initial_pwd"
+					  password_wo_version = "1"
+					  home_dir            = "/tmp/wo_user"
+					  email               = "wo@example.com"
+					  permissions         = { "/" = "*" }
+					  filesystem = {
+					    provider = 1
+					    s3config = {
+					      bucket                      = "mybucket"
+					      region                      = "us-east-1"
+					      access_key                  = "AKIA"
+					      access_secret_wo            = "s3_secret_v1"
+					      access_secret_wo_version    = "1"
+					    }
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.wo", "email", "wo@example.com"),
+					resource.TestCheckResourceAttr("sftpgo_user.wo", "password_wo_version", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.wo", "filesystem.s3config.access_secret_wo_version", "1"),
+				),
+			},
 			// Rotate both secrets by bumping their versions.
 			{
 				Config: `
@@ -681,6 +713,7 @@ func TestAccUserResource_writeOnly(t *testing.T) {
 					  password_wo         = "rotated_pwd"
 					  password_wo_version = "2"
 					  home_dir            = "/tmp/wo_user"
+					  email               = "wo@example.com"
 					  permissions         = { "/" = "*" }
 					  filesystem = {
 					    provider = 1
@@ -699,6 +732,45 @@ func TestAccUserResource_writeOnly(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_user.wo", "password_wo"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.wo", "filesystem.s3config.access_secret_wo"),
 				),
+			},
+		},
+	})
+}
+
+// TestAccUserResource_writeOnlyValidator verifies that the AlsoRequires
+// validator refuses a configuration where only one of password_wo /
+// password_wo_version is set.
+func TestAccUserResource_writeOnlyValidator(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_user" "bad" {
+					  username    = "bad_user"
+					  status      = 1
+					  password_wo = "x"
+					  home_dir    = "/tmp/bad_user"
+					  permissions = { "/" = "*" }
+					  filesystem  = { provider = 0 }
+					}`,
+				ExpectError: regexp.MustCompile(`(?is)password_wo.*password_wo_version`),
+			},
+			{
+				Config: `
+					resource "sftpgo_user" "bad" {
+					  username            = "bad_user"
+					  status              = 1
+					  password_wo_version = "1"
+					  home_dir            = "/tmp/bad_user"
+					  permissions         = { "/" = "*" }
+					  filesystem          = { provider = 0 }
+					}`,
+				ExpectError: regexp.MustCompile(`(?is)password_wo_version.*password_wo`),
 			},
 		},
 	})

@@ -102,10 +102,16 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Sensitive:   true,
 				WriteOnly:   true,
 				Description: "Write-only variant of `password`. " + writeOnlyDescriptionGeneric,
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRoot("password_wo_version")),
+				},
 			},
 			"password_wo_version": schema.StringAttribute{
 				Optional:    true,
 				Description: "Trigger attribute for `password_wo`. " + writeOnlyVersionDescGeneric,
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRoot("password_wo")),
+				},
 			},
 			"email": schema.StringAttribute{
 				Optional:    true,
@@ -322,6 +328,13 @@ func (r *adminResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+	var prevState adminResourceModel
+	diags = req.State.Get(ctx, &prevState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Write-only attributes are not in the plan: read them from the config.
 	var config adminResourceModel
 	diags = req.Config.Get(ctx, &config)
@@ -335,6 +348,13 @@ func (r *adminResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	// Preserve the existing admin password unless a rotation was requested:
+	// the client.Admin struct already has `json:"password,omitempty"` so an
+	// empty value is dropped from the JSON payload and SFTPGo keeps the
+	// current one.
+	if shouldPreserveSecret(plan.Password, prevState.Password, plan.PasswordWOVersion, prevState.PasswordWOVersion) {
+		admin.Password = ""
 	}
 
 	err := r.client.UpdateAdmin(*admin)

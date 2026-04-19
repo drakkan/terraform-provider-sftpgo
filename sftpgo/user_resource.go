@@ -108,10 +108,16 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Sensitive:   true,
 				WriteOnly:   true,
 				Description: "Write-only variant of `password`. " + writeOnlyDescriptionGeneric,
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRoot("password_wo_version")),
+				},
 			},
 			"password_wo_version": schema.StringAttribute{
 				Optional:    true,
 				Description: "Trigger attribute for `password_wo`. " + writeOnlyVersionDescGeneric,
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRoot("password_wo")),
+				},
 			},
 			"public_keys": schema.ListAttribute{
 				ElementType: types.StringType,
@@ -365,6 +371,13 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
+	var prevState userResourceModel
+	diags = req.State.Get(ctx, &prevState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Write-only attributes are not in the plan: read them from the config.
 	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -377,8 +390,16 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	// Filesystem secret preservation: when the user did not ask to rotate a
+	// secret (no WO version bump and no legacy change), send a sentinel that
+	// SFTPGo's updateEncryptedSecrets treats as "keep current".
+	diags = preserveUnchangedFsSecrets(ctx, &user.FsConfig, plan.FsConfig, prevState.FsConfig)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	err := r.client.UpdateUser(*user)
+	err := r.client.UpdateUser(*user, computePasswordForUpdate(plan, prevState))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating user",
@@ -443,6 +464,25 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 func (*userResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import username and save to username attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("username"), req, resp)
+}
+
+// computePasswordForUpdate returns the password pointer to send in the
+// UpdateUser payload. A nil pointer makes the client omit the `password`
+// field entirely, so SFTPGo preserves the current password. A non-nil empty
+// string clears the password; any other value sets it. Rotation follows
+// shouldPreserveSecret: the channel present in the current config (WO or
+// legacy) is authoritative, which also handles WO↔legacy transitions.
+func computePasswordForUpdate(plan, prev userResourceModel) *string {
+	if shouldPreserveSecret(plan.Password, prev.Password, plan.PasswordWOVersion, prev.PasswordWOVersion) {
+		return nil
+	}
+	var p string
+	if !plan.PasswordWOVersion.IsNull() {
+		p = plan.PasswordWO.ValueString()
+	} else {
+		p = plan.Password.ValueString()
+	}
+	return &p
 }
 
 func (*userResource) preservePlanFields(ctx context.Context, plan, state *userResourceModel) diag.Diagnostics {

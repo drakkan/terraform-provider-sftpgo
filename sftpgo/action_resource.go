@@ -1004,6 +1004,13 @@ func (r *actionResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	var prevState eventActionResourceModel
+	diags = req.State.Get(ctx, &prevState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -1011,6 +1018,11 @@ func (r *actionResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	action, diags := plan.toSFTPGo(ctx)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = preserveUnchangedActionSecrets(ctx, action, plan, prevState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -1084,6 +1096,88 @@ func (r *actionResource) Delete(ctx context.Context, req resource.DeleteRequest,
 func (*actionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import name and save to name attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
+}
+
+// preserveUnchangedActionSecrets substitutes the "preserve" sentinel into
+// every event-action secret whose rotation was not requested by the plan.
+// Applies to HTTP (type 1), IMAP (16) and Filesystem PGP (9 with PGP sub-type).
+// No-op for action types that carry no secrets, or when Options is null on
+// either side.
+func preserveUnchangedActionSecrets(ctx context.Context, action *client.BaseEventAction, plan, prev eventActionResourceModel) diag.Diagnostics {
+	actionType := plan.Type.ValueInt64()
+	if actionType != 1 && actionType != 9 && actionType != 16 {
+		return nil
+	}
+	if plan.Options.IsNull() || prev.Options.IsNull() {
+		return nil
+	}
+	var planOpts, prevOpts eventActionOptions
+	diags := plan.Options.As(ctx, &planOpts, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	diags = prev.Options.As(ctx, &prevOpts, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+
+	switch actionType {
+	case 1: // HTTP
+		if planOpts.HTTPConfig == nil || prevOpts.HTTPConfig == nil {
+			return nil
+		}
+		if shouldPreserveSecret(planOpts.HTTPConfig.Password, prevOpts.HTTPConfig.Password,
+			planOpts.HTTPConfig.PasswordWOVersion, prevOpts.HTTPConfig.PasswordWOVersion) {
+			action.Options.HTTPConfig.Password = preserveSecretSentinel()
+		}
+	case 9: // Filesystem — only PGP sub-type has secrets
+		if planOpts.FsConfig == nil || prevOpts.FsConfig == nil {
+			return nil
+		}
+		if planOpts.FsConfig.Type.ValueInt64() != 7 {
+			return nil
+		}
+		if planOpts.FsConfig.PGP == nil || prevOpts.FsConfig.PGP == nil {
+			return nil
+		}
+		if shouldPreserveSecret(planOpts.FsConfig.PGP.Password, prevOpts.FsConfig.PGP.Password,
+			planOpts.FsConfig.PGP.PasswordWOVersion, prevOpts.FsConfig.PGP.PasswordWOVersion) {
+			action.Options.FsConfig.PGP.Password = preserveSecretSentinel()
+		}
+		if shouldPreserveSecret(planOpts.FsConfig.PGP.PrivateKey, prevOpts.FsConfig.PGP.PrivateKey,
+			planOpts.FsConfig.PGP.PrivateKeyWOVersion, prevOpts.FsConfig.PGP.PrivateKeyWOVersion) {
+			action.Options.FsConfig.PGP.PrivateKey = preserveSecretSentinel()
+		}
+		if shouldPreserveSecret(planOpts.FsConfig.PGP.Passphrase, prevOpts.FsConfig.PGP.Passphrase,
+			planOpts.FsConfig.PGP.PassphraseWOVersion, prevOpts.FsConfig.PGP.PassphraseWOVersion) {
+			action.Options.FsConfig.PGP.Passphrase = preserveSecretSentinel()
+		}
+	case 16: // IMAP
+		if planOpts.IMAPConfig == nil || prevOpts.IMAPConfig == nil {
+			return nil
+		}
+		if shouldPreserveSecret(planOpts.IMAPConfig.Password, prevOpts.IMAPConfig.Password,
+			planOpts.IMAPConfig.PasswordWOVersion, prevOpts.IMAPConfig.PasswordWOVersion) {
+			action.Options.IMAPConfig.Password = preserveSecretSentinel()
+		}
+		if planOpts.IMAPConfig.OAuth2 != nil && prevOpts.IMAPConfig.OAuth2 != nil {
+			if shouldPreserveSecret(planOpts.IMAPConfig.OAuth2.ClientSecret, prevOpts.IMAPConfig.OAuth2.ClientSecret,
+				planOpts.IMAPConfig.OAuth2.ClientSecretWOVersion, prevOpts.IMAPConfig.OAuth2.ClientSecretWOVersion) {
+				action.Options.IMAPConfig.OAuth2.ClientSecret = preserveSecretSentinel()
+			}
+			if shouldPreserveSecret(planOpts.IMAPConfig.OAuth2.RefreshToken, prevOpts.IMAPConfig.OAuth2.RefreshToken,
+				planOpts.IMAPConfig.OAuth2.RefreshTokenWOVersion, prevOpts.IMAPConfig.OAuth2.RefreshTokenWOVersion) {
+				action.Options.IMAPConfig.OAuth2.RefreshToken = preserveSecretSentinel()
+			}
+		}
+	}
+	return nil
 }
 
 func (*actionResource) preservePlanFields(ctx context.Context, plan, state *eventActionResourceModel) diag.Diagnostics {
