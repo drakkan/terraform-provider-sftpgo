@@ -18,10 +18,11 @@ resource "sftpgo_folder" "test" {
     filesystem = {
       provider = 3
       azblobconfig = {
-        container = "fake container"
-        account_name = "my access key"
-        account_key = "my secret"
-        key_prefix = "prefix/"
+        container              = "fake container"
+        account_name           = "my access key"
+        account_key_wo         = "my secret"
+        account_key_wo_version = "1"
+        key_prefix             = "prefix/"
       }
     }
 }

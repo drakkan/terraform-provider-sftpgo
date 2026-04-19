@@ -169,9 +169,15 @@ Read-Only:
 
 - `mode` (Number) 1 = Encrypt, 2 = Decrypt.
 - `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `passphrase_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `passphrase_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `paths` (Attributes List) Paths to encrypt or decrypt. (see [below for nested schema](#nestedatt--actions--options--fs_config--pgp--paths))
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `private_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `private_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `profile` (Number) 0 = Default, 1 = RFC 4880, 2 = RFC 9580. Don't set to use the default.
 - `public_key` (String) PGP public key in ASCII-armored format.
 
@@ -207,6 +213,8 @@ Read-Only:
 - `method` (String) HTTP method: GET, POST, PUT, DELETE.
 - `parts` (Attributes List) Multipart requests allow to combine one or more sets of data into a single body. For each part, you can set a file path or a body as text. Placeholders are supported in file path, body, header values. (see [below for nested schema](#nestedatt--actions--options--http_config--parts))
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `query_parameters` (Attributes List) Query parameters to add to the HTTP request. (see [below for nested schema](#nestedatt--actions--options--http_config--query_parameters))
 - `skip_tls_verify` (Boolean) If enabled any certificate presented by the server and any host name in that certificate are accepted. In this mode, TLS is susceptible to machine-in-the-middle attacks.
 - `timeout` (Number) Time limit for the request in seconds. Ignored for multipart requests with files as attachments.
@@ -318,6 +326,8 @@ Supported values:
 - `mailbox` (String) Mailbox to check, e.g. `INBOX`.
 - `oauth2` (Attributes) (see [below for nested schema](#nestedatt--actions--options--imap_config--oauth2))
 - `password` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `path` (String) Directory path where downloaded attachments will be stored.
 - `post_process_action` (Number) Action to perform on the email after processing.
 
@@ -336,12 +346,16 @@ Read-Only:
 
 - `client_id` (String) OAuth2 Client ID.
 - `client_secret` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `client_secret_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `client_secret_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `provider` (Number) OAuth2 Provider.
 
 Supported values:
 * `0`: Google
 * `1`: Microsoft
 - `refresh_token` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `refresh_token_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `refresh_token_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `tenant` (String) OAuth2 Tenant.
 
 

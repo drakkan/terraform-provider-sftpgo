@@ -24,6 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
@@ -97,8 +98,7 @@ func (r *groupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"user_settings": schema.SingleNestedAttribute{
 				Optional:    true,
-				Computed:    true,
-				Description: "Settings to apply to users",
+				Description: "Settings to apply to users. Omit this block entirely to create a group with no default settings. When present, the nested `filesystem` block must be set explicitly (e.g. `filesystem = { provider = 0 }` for local). Defaults are no longer auto-populated from the server because this block contains write-only attributes.",
 				Attributes: map[string]schema.Attribute{
 					"home_dir": schema.StringAttribute{
 						Optional:    true,
@@ -164,6 +164,12 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	group, diags := plan.toSFTPGo(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -188,6 +194,10 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	// user_settings is Optional-only: mirror plan's null back into state.
+	if plan.UserSettings.IsNull() {
+		state.UserSettings = plan.UserSettings
 	}
 
 	// Set state to fully populated data
@@ -233,6 +243,11 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	// user_settings is Optional-only: mirror a null previous state back onto
+	// newState so drift-detection ignores a server-synthesized empty object.
+	if state.UserSettings.IsNull() {
+		newState.UserSettings = state.UserSettings
+	}
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &newState)
@@ -251,6 +266,13 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	group, diags := plan.toSFTPGo(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -285,6 +307,9 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	if plan.UserSettings.IsNull() {
+		state.UserSettings = plan.UserSettings
 	}
 
 	// Set refreshed state
@@ -374,5 +399,63 @@ func (*groupResource) preservePlanFields(ctx context.Context, plan, state *group
 	}
 	state.UserSettings = settings
 
+	return nil
+}
+
+// applyWriteOnlyConfig copies write-only secret values from req.Config into
+// the plan's nested filesystem block. Group resources carry the filesystem
+// under `user_settings.filesystem`.
+func (*groupResource) applyWriteOnlyConfig(ctx context.Context, cfg tfsdk.Config, plan *groupResourceModel) diag.Diagnostics {
+	var config groupResourceModel
+	diags := cfg.Get(ctx, &config)
+	if diags.HasError() {
+		return diags
+	}
+	if config.UserSettings.IsNull() || plan.UserSettings.IsNull() {
+		return nil
+	}
+	var settingsConfig groupUserSettings
+	diags = config.UserSettings.As(ctx, &settingsConfig, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	var settingsPlan groupUserSettings
+	diags = plan.UserSettings.As(ctx, &settingsPlan, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+
+	var fsConfig filesystem
+	diags = settingsConfig.FsConfig.As(ctx, &fsConfig, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	var fsPlan filesystem
+	diags = settingsPlan.FsConfig.As(ctx, &fsPlan, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	fs, diags := applyFsConfigWriteOnly(ctx, fsConfig, fsPlan)
+	if diags.HasError() {
+		return diags
+	}
+	settingsPlan.FsConfig = fs
+	settings, diags := types.ObjectValueFrom(ctx, settingsPlan.getTFAttributes(), settingsPlan)
+	if diags.HasError() {
+		return diags
+	}
+	plan.UserSettings = settings
 	return nil
 }

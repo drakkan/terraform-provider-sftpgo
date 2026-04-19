@@ -90,9 +90,22 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				},
 			},
 			"password": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
-				Description: "Plain text password or hash format supported by SFTPGo.",
+				Description: "Plain text password or hash format supported by SFTPGo. Exactly one of `password` and `password_wo` must be set.",
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(path.MatchRoot("password"), path.MatchRoot("password_wo")),
+				},
+			},
+			"password_wo": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
+				Description: "Write-only variant of `password`. " + writeOnlyDescriptionGeneric,
+			},
+			"password_wo_version": schema.StringAttribute{
+				Optional:    true,
+				Description: "Trigger attribute for `password_wo`. " + writeOnlyVersionDescGeneric,
 			},
 			"email": schema.StringAttribute{
 				Optional:    true,
@@ -217,6 +230,15 @@ func (r *adminResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
+	// Write-only attributes are not in the plan: read them from the config.
+	var config adminResourceModel
+	diags = req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	plan.PasswordWO = config.PasswordWO
+
 	admin, diags := plan.toSFTPGo(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -238,6 +260,7 @@ func (r *adminResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 	state.Password = plan.Password
+	state.PasswordWOVersion = plan.PasswordWOVersion
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, state)
@@ -279,6 +302,7 @@ func (r *adminResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	newState.Password = state.Password
+	newState.PasswordWOVersion = state.PasswordWOVersion
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &newState)
@@ -297,6 +321,16 @@ func (r *adminResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Write-only attributes are not in the plan: read them from the config.
+	var config adminResourceModel
+	diags = req.Config.Get(ctx, &config)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	plan.PasswordWO = config.PasswordWO
+
 	admin, diags := plan.toSFTPGo(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -328,6 +362,7 @@ func (r *adminResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 	state.Password = plan.Password
+	state.PasswordWOVersion = plan.PasswordWOVersion
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

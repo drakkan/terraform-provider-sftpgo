@@ -273,6 +273,54 @@ func TestAccEnterpriseFolderResource(t *testing.T) {
 	})
 }
 
+func TestAccFolderResource_writeOnly(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_folder" "wo" {
+					  name        = "wo_folder"
+					  mapped_path = "/tmp/wo_folder"
+					  filesystem = {
+					    provider = 4
+					    cryptconfig = {
+					      passphrase_wo         = "initial_passphrase"
+					      passphrase_wo_version = "1"
+					    }
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_folder.wo", "filesystem.cryptconfig.passphrase_wo_version", "1"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.wo", "filesystem.cryptconfig.passphrase_wo"),
+				),
+			},
+			{
+				Config: `
+					resource "sftpgo_folder" "wo" {
+					  name        = "wo_folder"
+					  mapped_path = "/tmp/wo_folder"
+					  filesystem = {
+					    provider = 4
+					    cryptconfig = {
+					      passphrase_wo         = "rotated_passphrase"
+					      passphrase_wo_version = "2"
+					    }
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_folder.wo", "filesystem.cryptconfig.passphrase_wo_version", "2"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.wo", "filesystem.cryptconfig.passphrase_wo"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccFolderResource_renameForcesReplace(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

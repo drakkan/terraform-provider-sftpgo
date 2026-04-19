@@ -150,6 +150,51 @@ func TestAccAdminResource(t *testing.T) {
 	})
 }
 
+func TestAccAdminResource_writeOnly(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with password_wo
+			{
+				Config: `
+					resource "sftpgo_admin" "wo" {
+					  username            = "wo_admin"
+					  status              = 1
+					  password_wo         = "initial_secret"
+					  password_wo_version = "1"
+					  permissions         = ["*"]
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_admin.wo", "username", "wo_admin"),
+					resource.TestCheckNoResourceAttr("sftpgo_admin.wo", "password"),
+					// The write-only value itself must never appear in state.
+					resource.TestCheckNoResourceAttr("sftpgo_admin.wo", "password_wo"),
+					resource.TestCheckResourceAttr("sftpgo_admin.wo", "password_wo_version", "1"),
+				),
+			},
+			// Bump version to trigger an update
+			{
+				Config: `
+					resource "sftpgo_admin" "wo" {
+					  username            = "wo_admin"
+					  status              = 1
+					  password_wo         = "rotated_secret"
+					  password_wo_version = "2"
+					  permissions         = ["*"]
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_admin.wo", "password_wo_version", "2"),
+					resource.TestCheckNoResourceAttr("sftpgo_admin.wo", "password_wo"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccAdminResource_renameForcesReplace(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

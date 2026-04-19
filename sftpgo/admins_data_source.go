@@ -75,6 +75,14 @@ func (d *adminsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 							Computed:    true,
 							Description: "Password hash saved in the SFTPGo data provider.",
 						},
+						"password_wo": schema.StringAttribute{
+							Computed:    true,
+							Description: "Write-only attribute placeholder. Always null in data source reads.",
+						},
+						"password_wo_version": schema.StringAttribute{
+							Computed:    true,
+							Description: "Write-only trigger attribute placeholder. Always null in data source reads.",
+						},
 						"email": schema.StringAttribute{
 							Computed:    true,
 							Description: "Admin email address.",

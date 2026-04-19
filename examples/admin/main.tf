@@ -13,11 +13,12 @@ provider "sftpgo" {
 }
 
 resource "sftpgo_admin" "test" {
-    username    = "test"
-    status = 1
-    password = "password"
-    email = "admin@sftpgo.com"
-    permissions = ["add_users", "edit_users","del_users"]
+    username            = "test"
+    status              = 1
+    password_wo         = "password"
+    password_wo_version = "1"
+    email               = "admin@sftpgo.com"
+    permissions         = ["add_users", "edit_users","del_users"]
     filters = {
         allow_list = ["192.168.1.0/24"]
     }

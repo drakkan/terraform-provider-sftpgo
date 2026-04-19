@@ -28,6 +28,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
@@ -119,8 +120,7 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			},
 			"options": schema.SingleNestedAttribute{
 				Optional:    true,
-				Computed:    true,
-				Description: "Configuration options specific for the action type.",
+				Description: "Configuration options specific for the action type. Must be specified (use `options = {}` when the action type has no options). Defaults are no longer auto-populated from the server because this block contains write-only attributes.",
 				Attributes: map[string]schema.Attribute{
 					"http_config": schema.SingleNestedAttribute{
 						Optional:    true,
@@ -135,10 +135,14 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								Description: "Username for HTTP basic authentication.",
 							},
 							"password": schema.StringAttribute{
-								Optional:    true,
-								Sensitive:   true,
-								Description: computedSecretDescription,
+								Optional:           true,
+								Sensitive:          true,
+								Description:        computedSecretDescription + " Mutually exclusive with `password_wo`.",
+								DeprecationMessage: legacySecretDeprecation("password"),
+								Validators:         []validator.String{conflictsWithWO("password")},
 							},
+							"password_wo":         writeOnlyAttr("password"),
+							"password_wo_version": writeOnlyVersionAttr("password"),
 							"headers": schema.ListNestedAttribute{
 								Optional:    true,
 								Description: `Headers to add to the HTTP request.`,
@@ -512,20 +516,32 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 										},
 									},
 									"password": schema.StringAttribute{
-										Optional:    true,
-										Sensitive:   true,
-										Description: computedSecretDescription,
+										Optional:           true,
+										Sensitive:          true,
+										Description:        computedSecretDescription + " Mutually exclusive with `password_wo`.",
+										DeprecationMessage: legacySecretDeprecation("password"),
+										Validators:         []validator.String{conflictsWithWO("password")},
 									},
+									"password_wo":         writeOnlyAttr("password"),
+									"password_wo_version": writeOnlyVersionAttr("password"),
 									"private_key": schema.StringAttribute{
-										Optional:    true,
-										Sensitive:   true,
-										Description: computedSecretDescription,
+										Optional:           true,
+										Sensitive:          true,
+										Description:        computedSecretDescription + " Mutually exclusive with `private_key_wo`.",
+										DeprecationMessage: legacySecretDeprecation("private_key"),
+										Validators:         []validator.String{conflictsWithWO("private_key")},
 									},
+									"private_key_wo":         writeOnlyAttr("private_key"),
+									"private_key_wo_version": writeOnlyVersionAttr("private_key"),
 									"passphrase": schema.StringAttribute{
-										Optional:    true,
-										Sensitive:   true,
-										Description: computedSecretDescription,
+										Optional:           true,
+										Sensitive:          true,
+										Description:        computedSecretDescription + " Mutually exclusive with `passphrase_wo`.",
+										DeprecationMessage: legacySecretDeprecation("passphrase"),
+										Validators:         []validator.String{conflictsWithWO("passphrase")},
 									},
+									"passphrase_wo":         writeOnlyAttr("passphrase"),
+									"passphrase_wo_version": writeOnlyVersionAttr("passphrase"),
 									"public_key": schema.StringAttribute{
 										Optional:    true,
 										Description: "PGP public key in ASCII-armored format.",
@@ -637,10 +653,14 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 								Description: "IMAP username.",
 							},
 							"password": schema.StringAttribute{
-								Optional:    true,
-								Sensitive:   true,
-								Description: computedSecretDescription,
+								Optional:           true,
+								Sensitive:          true,
+								Description:        computedSecretDescription + " Mutually exclusive with `password_wo`.",
+								DeprecationMessage: legacySecretDeprecation("password"),
+								Validators:         []validator.String{conflictsWithWO("password")},
 							},
+							"password_wo":         writeOnlyAttr("password"),
+							"password_wo_version": writeOnlyVersionAttr("password"),
 							"auth_type": schema.Int64Attribute{
 								Optional: true,
 								MarkdownDescription: "Authentication type.\n\n" +
@@ -673,15 +693,23 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 										Description: "OAuth2 Client ID.",
 									},
 									"client_secret": schema.StringAttribute{
-										Optional:    true,
-										Sensitive:   true,
-										Description: computedSecretDescription,
+										Optional:           true,
+										Sensitive:          true,
+										Description:        computedSecretDescription + " Mutually exclusive with `client_secret_wo`.",
+										DeprecationMessage: legacySecretDeprecation("client_secret"),
+										Validators:         []validator.String{conflictsWithWO("client_secret")},
 									},
+									"client_secret_wo":         writeOnlyAttr("client_secret"),
+									"client_secret_wo_version": writeOnlyVersionAttr("client_secret"),
 									"refresh_token": schema.StringAttribute{
-										Optional:    true,
-										Sensitive:   true,
-										Description: computedSecretDescription,
+										Optional:           true,
+										Sensitive:          true,
+										Description:        computedSecretDescription + " Mutually exclusive with `refresh_token_wo`.",
+										DeprecationMessage: legacySecretDeprecation("refresh_token"),
+										Validators:         []validator.String{conflictsWithWO("refresh_token")},
 									},
+									"refresh_token_wo":         writeOnlyAttr("refresh_token"),
+									"refresh_token_wo_version": writeOnlyVersionAttr("refresh_token"),
 								},
 							},
 							"mailbox": schema.StringAttribute{
@@ -876,6 +904,12 @@ func (r *actionResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	action, diags := plan.toSFTPGo(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -900,6 +934,12 @@ func (r *actionResource) Create(ctx context.Context, req resource.CreateRequest,
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	// options is Optional-only: when the user didn't set it, mirror the plan's
+	// null back into state so Terraform doesn't see fromSFTPGo's synthesized
+	// object as an inconsistent apply result.
+	if plan.Options.IsNull() {
+		state.Options = plan.Options
 	}
 
 	// Set state to fully populated data
@@ -963,6 +1003,13 @@ func (r *actionResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	action, diags := plan.toSFTPGo(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -997,6 +1044,9 @@ func (r *actionResource) Update(ctx context.Context, req resource.UpdateRequest,
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	if plan.Options.IsNull() {
+		state.Options = plan.Options
 	}
 
 	// Set refreshed state
@@ -1066,17 +1116,24 @@ func (*actionResource) preservePlanFields(ctx context.Context, plan, state *even
 
 	if actionType == 1 && optionsPlan.HTTPConfig != nil {
 		optionsState.HTTPConfig.Password = optionsPlan.HTTPConfig.Password
+		optionsState.HTTPConfig.PasswordWOVersion = optionsPlan.HTTPConfig.PasswordWOVersion
 	}
 	if actionType == 9 && optionsPlan.FsConfig != nil && optionsPlan.FsConfig.Type.ValueInt64() == 7 {
 		optionsState.FsConfig.PGP.Password = optionsPlan.FsConfig.PGP.Password
 		optionsState.FsConfig.PGP.PrivateKey = optionsPlan.FsConfig.PGP.PrivateKey
 		optionsState.FsConfig.PGP.Passphrase = optionsPlan.FsConfig.PGP.Passphrase
+		optionsState.FsConfig.PGP.PasswordWOVersion = optionsPlan.FsConfig.PGP.PasswordWOVersion
+		optionsState.FsConfig.PGP.PrivateKeyWOVersion = optionsPlan.FsConfig.PGP.PrivateKeyWOVersion
+		optionsState.FsConfig.PGP.PassphraseWOVersion = optionsPlan.FsConfig.PGP.PassphraseWOVersion
 	}
 	if actionType == 16 && optionsPlan.IMAPConfig != nil {
 		optionsState.IMAPConfig.Password = optionsPlan.IMAPConfig.Password
+		optionsState.IMAPConfig.PasswordWOVersion = optionsPlan.IMAPConfig.PasswordWOVersion
 		if optionsPlan.IMAPConfig.OAuth2 != nil {
 			optionsState.IMAPConfig.OAuth2.ClientSecret = optionsPlan.IMAPConfig.OAuth2.ClientSecret
 			optionsState.IMAPConfig.OAuth2.RefreshToken = optionsPlan.IMAPConfig.OAuth2.RefreshToken
+			optionsState.IMAPConfig.OAuth2.ClientSecretWOVersion = optionsPlan.IMAPConfig.OAuth2.ClientSecretWOVersion
+			optionsState.IMAPConfig.OAuth2.RefreshTokenWOVersion = optionsPlan.IMAPConfig.OAuth2.RefreshTokenWOVersion
 		}
 	}
 
@@ -1086,5 +1143,58 @@ func (*actionResource) preservePlanFields(ctx context.Context, plan, state *even
 	}
 	state.Options = optionsStateObj
 
+	return nil
+}
+
+// applyWriteOnlyConfig copies write-only secrets from req.Config into the
+// plan's nested options so toSFTPGo can forward them to the server.
+func (*actionResource) applyWriteOnlyConfig(ctx context.Context, cfg tfsdk.Config, plan *eventActionResourceModel) diag.Diagnostics {
+	var config eventActionResourceModel
+	diags := cfg.Get(ctx, &config)
+	if diags.HasError() {
+		return diags
+	}
+	if config.Options.IsNull() || plan.Options.IsNull() {
+		return nil
+	}
+	var optionsConfig eventActionOptions
+	diags = config.Options.As(ctx, &optionsConfig, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	var optionsPlan eventActionOptions
+	diags = plan.Options.As(ctx, &optionsPlan, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+
+	if optionsPlan.HTTPConfig != nil && optionsConfig.HTTPConfig != nil {
+		optionsPlan.HTTPConfig.PasswordWO = optionsConfig.HTTPConfig.PasswordWO
+	}
+	if optionsPlan.FsConfig != nil && optionsPlan.FsConfig.PGP != nil &&
+		optionsConfig.FsConfig != nil && optionsConfig.FsConfig.PGP != nil {
+		optionsPlan.FsConfig.PGP.PasswordWO = optionsConfig.FsConfig.PGP.PasswordWO
+		optionsPlan.FsConfig.PGP.PrivateKeyWO = optionsConfig.FsConfig.PGP.PrivateKeyWO
+		optionsPlan.FsConfig.PGP.PassphraseWO = optionsConfig.FsConfig.PGP.PassphraseWO
+	}
+	if optionsPlan.IMAPConfig != nil && optionsConfig.IMAPConfig != nil {
+		optionsPlan.IMAPConfig.PasswordWO = optionsConfig.IMAPConfig.PasswordWO
+		if optionsPlan.IMAPConfig.OAuth2 != nil && optionsConfig.IMAPConfig.OAuth2 != nil {
+			optionsPlan.IMAPConfig.OAuth2.ClientSecretWO = optionsConfig.IMAPConfig.OAuth2.ClientSecretWO
+			optionsPlan.IMAPConfig.OAuth2.RefreshTokenWO = optionsConfig.IMAPConfig.OAuth2.RefreshTokenWO
+		}
+	}
+
+	optionsObj, diags := types.ObjectValueFrom(ctx, optionsPlan.getTFAttributes(), optionsPlan)
+	if diags.HasError() {
+		return diags
+	}
+	plan.Options = optionsObj
 	return nil
 }

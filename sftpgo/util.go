@@ -23,351 +23,381 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sftpgo/sdk"
 )
 
 const (
-	computedSecretDescription = `SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".`
-	secretDescriptionGeneric  = `If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).`
-	enterpriseFeatureNote     = `Available in the Enterprise edition`
+	computedSecretDescription    = `SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".`
+	secretDescriptionGeneric     = `If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).`
+	writeOnlyDescriptionGeneric  = `Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.`
+	writeOnlyVersionDescGeneric  = `Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.`
+	enterpriseFeatureNote        = `Available in the Enterprise edition`
 )
 
-func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
-	return schema.SingleNestedAttribute{
+func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
+	return dsschema.SingleNestedAttribute{
 		Computed:    true,
 		Description: "Filesystem configuration.",
-		Attributes: map[string]schema.Attribute{
-			"provider": schema.Int64Attribute{
+		Attributes: map[string]dsschema.Attribute{
+			"provider": dsschema.Int64Attribute{
 				Computed:    true,
 				Description: "Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP",
 			},
-			"osconfig": schema.SingleNestedAttribute{
+			"osconfig": dsschema.SingleNestedAttribute{
 				Computed: true,
-				Attributes: map[string]schema.Attribute{
-					"read_buffer_size": schema.Int64Attribute{
+				Attributes: map[string]dsschema.Attribute{
+					"read_buffer_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "Optional read buffer size, as MB, to use for downloads.",
 					},
-					"write_buffer_size": schema.Int64Attribute{
+					"write_buffer_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "Optional write buffer size, as MB, to use for uploads.",
 					},
 				},
 			},
-			"s3config": schema.SingleNestedAttribute{
+			"s3config": dsschema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "S3 compatible object storage configuration details.",
-				Attributes: map[string]schema.Attribute{
-					"bucket": schema.StringAttribute{
+				Attributes: map[string]dsschema.Attribute{
+					"bucket": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "S3 bucket name.",
 					},
-					"region": schema.StringAttribute{
+					"region": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "S3 region.",
 					},
-					"access_key": schema.StringAttribute{
+					"access_key": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "AWS Access Key ID for authentication. Leave blank when using IAM roles or instance profiles.",
 					},
-					"access_secret": schema.StringAttribute{
+					"access_secret": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"sse_customer_key": schema.StringAttribute{
+					"access_secret_wo":            computedWOPlaceholder(false),
+					"access_secret_wo_version":    computedWOPlaceholder(true),
+					"sse_customer_key": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"key_prefix": schema.StringAttribute{
+					"sse_customer_key_wo":         computedWOPlaceholder(false),
+					"sse_customer_key_wo_version": computedWOPlaceholder(true),
+					"key_prefix": dsschema.StringAttribute{
 						Computed:    true,
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with this prefix.`,
 					},
-					"role_arn": schema.StringAttribute{
+					"role_arn": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "IAM Role ARN to assume.",
 					},
-					"session_token": schema.StringAttribute{
+					"session_token": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "Optional Session token that is a part of temporary security credentials provisioned by AWS STS.",
 					},
-					"endpoint": schema.StringAttribute{
+					"endpoint": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "The endpoint is generally required for S3 compatible backends.",
 					},
-					"storage_class": schema.StringAttribute{
+					"storage_class": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "S3 storage class for uploaded objects (e.g. STANDARD, STANDARD_IA, GLACIER). Leave empty for the default storage class.",
 					},
-					"acl": schema.StringAttribute{
+					"acl": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "The canned ACL to apply to uploaded objects. Empty means the bucket default.",
 					},
-					"upload_part_size": schema.Int64Attribute{
+					"upload_part_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "The buffer size (in MB) to use for multipart uploads.",
 					},
-					"upload_concurrency": schema.Int64Attribute{
+					"upload_concurrency": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "How many parts are uploaded in parallel. Not set means the default (5).",
 					},
-					"download_part_size": schema.Int64Attribute{
+					"download_part_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "The buffer size (in MB) to use for multipart downloads.",
 					},
-					"upload_part_max_time": schema.Int64Attribute{
+					"upload_part_max_time": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.",
 					},
-					"download_concurrency": schema.Int64Attribute{
+					"download_concurrency": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "How many parts are downloaded in parallel. Ignored for partial downloads.",
 					},
-					"download_part_max_time": schema.Int64Attribute{
+					"download_part_max_time": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "The maximum time allowed, in seconds, to download a single chunk. Not set means no timeout.",
 					},
-					"force_path_style": schema.BoolAttribute{
+					"force_path_style": dsschema.BoolAttribute{
 						Computed:    true,
 						Description: `If enabled path-style addressing is used, i.e. http://s3.amazonaws.com/BUCKET/KEY`,
 					},
-					"skip_tls_verify": schema.BoolAttribute{
+					"skip_tls_verify": dsschema.BoolAttribute{
 						Computed:    true,
 						Description: `If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.`,
 					},
 				},
 			},
-			"gcsconfig": schema.SingleNestedAttribute{
+			"gcsconfig": dsschema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "Google Cloud Storage configuration details.",
-				Attributes: map[string]schema.Attribute{
-					"bucket": schema.StringAttribute{
+				Attributes: map[string]dsschema.Attribute{
+					"bucket": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "GCS bucket name.",
 					},
-					"key_prefix": schema.StringAttribute{
+					"key_prefix": dsschema.StringAttribute{
 						Computed:    true,
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with this prefix.`,
 					},
-					"universe_domain": schema.StringAttribute{
+					"universe_domain": dsschema.StringAttribute{
 						Computed:    true,
 						Description: `The universe domain to use for Google Cloud API requests. If omitted or empty, the default public domain (googleapis.com) is used. Set this value if you need to connect to a custom Google Cloud environment, such as Google Distributed Cloud or a Sovereign Cloud. ` + enterpriseFeatureNote,
 					},
-					"credentials": schema.StringAttribute{
+					"credentials": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"automatic_credentials": schema.Int64Attribute{
+					"credentials_wo":         computedWOPlaceholder(false),
+					"credentials_wo_version": computedWOPlaceholder(true),
+					"automatic_credentials": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "If set to 1 SFTPGo will use credentials from the environment",
 					},
-					"hns": schema.Int64Attribute{
+					"hns": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "1 if Hierarchical namespace support is enabled for the bucket. " + enterpriseFeatureNote + ".",
 					},
-					"storage_class": schema.StringAttribute{
+					"storage_class": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "Google Cloud Storage class for uploaded objects (e.g. STANDARD, NEARLINE, COLDLINE, ARCHIVE). Leave empty for the default storage class.",
 					},
-					"acl": schema.StringAttribute{
+					"acl": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "The ACL to apply to uploaded objects. Empty means the bucket default.",
 					},
-					"upload_part_size": schema.Int64Attribute{
+					"upload_part_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "The buffer size (in MB) to use for multipart uploads. The default value is 16MB. Not set means use the default.",
 					},
-					"upload_part_max_time": schema.Int64Attribute{
+					"upload_part_max_time": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.",
 					},
 				},
 			},
-			"azblobconfig": schema.SingleNestedAttribute{
+			"azblobconfig": dsschema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "Azure Blob Storage configuration details.",
-				Attributes: map[string]schema.Attribute{
-					"container": schema.StringAttribute{
+				Attributes: map[string]dsschema.Attribute{
+					"container": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "Azure Blob Storage container name.",
 					},
-					"account_name": schema.StringAttribute{
+					"account_name": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "Storage account name. Leave blank to use SAS URL.",
 					},
-					"account_key": schema.StringAttribute{
+					"account_key": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"sas_url": schema.StringAttribute{
+					"account_key_wo":         computedWOPlaceholder(false),
+					"account_key_wo_version": computedWOPlaceholder(true),
+					"sas_url": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"endpoint": schema.StringAttribute{
+					"sas_url_wo":         computedWOPlaceholder(false),
+					"sas_url_wo_version": computedWOPlaceholder(true),
+					"endpoint": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "Optional endpoint",
 					},
-					"key_prefix": schema.StringAttribute{
+					"key_prefix": dsschema.StringAttribute{
 						Computed:    true,
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with this prefix.`,
 					},
-					"upload_part_size": schema.Int64Attribute{
+					"upload_part_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "The buffer size (in MB) to use for multipart uploads.",
 					},
-					"upload_concurrency": schema.Int64Attribute{
+					"upload_concurrency": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "How many parts are uploaded in parallel.",
 					},
-					"download_part_size": schema.Int64Attribute{
+					"download_part_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "The buffer size (in MB) to use for multipart downloads.",
 					},
-					"download_concurrency": schema.Int64Attribute{
+					"download_concurrency": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "How many parts are downloaded in parallel.",
 					},
-					"use_emulator": schema.BoolAttribute{
+					"use_emulator": dsschema.BoolAttribute{
 						Computed:    true,
 						Description: "If true, the Azure Storage Emulator (Azurite) is used instead of the cloud service.",
 					},
-					"access_tier": schema.StringAttribute{
+					"access_tier": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "Blob access tier. Valid values: empty, Archive, Hot, Cool.",
 					},
 				},
 			},
-			"cryptconfig": schema.SingleNestedAttribute{
+			"cryptconfig": dsschema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "Encrypted local filesystem configuration details.",
-				Attributes: map[string]schema.Attribute{
-					"passphrase": schema.StringAttribute{
+				Attributes: map[string]dsschema.Attribute{
+					"passphrase": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"read_buffer_size": schema.Int64Attribute{
+					"passphrase_wo":         computedWOPlaceholder(false),
+					"passphrase_wo_version": computedWOPlaceholder(true),
+					"read_buffer_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "Optional read buffer size, as MB, to use for downloads.",
 					},
-					"write_buffer_size": schema.Int64Attribute{
+					"write_buffer_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "Optional write buffer size, as MB, to use for uploads.",
 					},
 				},
 			},
-			"sftpconfig": schema.SingleNestedAttribute{
+			"sftpconfig": dsschema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "Remote SFTP server configuration details.",
-				Attributes: map[string]schema.Attribute{
-					"endpoint": schema.StringAttribute{
+				Attributes: map[string]dsschema.Attribute{
+					"endpoint": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "SFTP endpoint as host:port.",
 					},
-					"username": schema.StringAttribute{
+					"username": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "Username for SFTP authentication.",
 					},
-					"password": schema.StringAttribute{
+					"password": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"private_key": schema.StringAttribute{
+					"password_wo":         computedWOPlaceholder(false),
+					"password_wo_version": computedWOPlaceholder(true),
+					"private_key": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"key_passphrase": schema.StringAttribute{
+					"private_key_wo":         computedWOPlaceholder(false),
+					"private_key_wo_version": computedWOPlaceholder(true),
+					"key_passphrase": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"fingerprints": schema.ListAttribute{
+					"key_passphrase_wo":         computedWOPlaceholder(false),
+					"key_passphrase_wo_version": computedWOPlaceholder(true),
+					"fingerprints": dsschema.ListAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
 						Description: "SHA256 fingerprints to validate when connecting to the external SFTP server.",
 					},
-					"prefix": schema.StringAttribute{
+					"prefix": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "Restrict access to this path.",
 					},
-					"disable_concurrent_reads": schema.BoolAttribute{
+					"disable_concurrent_reads": dsschema.BoolAttribute{
 						Computed:    true,
 						Description: "Concurrent reads are safe to use and disabling them will degrade performance. Some servers automatically delete files once they are downloaded; disable concurrent reads for such servers.",
 					},
-					"buffer_size": schema.Int64Attribute{
+					"buffer_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "The buffer size (in MB) to use for uploads/downloads.",
 					},
-					"equality_check_mode": schema.Int64Attribute{
+					"equality_check_mode": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.",
 					},
-					"socks_proxy": schema.StringAttribute{
+					"socks_proxy": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. " + enterpriseFeatureNote + ".",
 					},
-					"socks_username": schema.StringAttribute{
+					"socks_username": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "The optional SOCKS username. " + enterpriseFeatureNote + ".",
 					},
-					"socks_password": schema.StringAttribute{
+					"socks_password": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription + " " + enterpriseFeatureNote + ".",
 					},
+					"socks_password_wo":         computedWOPlaceholder(false),
+					"socks_password_wo_version": computedWOPlaceholder(true),
 				},
 			},
-			"ftpconfig": schema.SingleNestedAttribute{
+			"ftpconfig": dsschema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "Remote FTP server configuration details. " + enterpriseFeatureNote,
-				Attributes: map[string]schema.Attribute{
-					"endpoint": schema.StringAttribute{
+				Attributes: map[string]dsschema.Attribute{
+					"endpoint": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "FTP endpoint as host:port.",
 					},
-					"username": schema.StringAttribute{
+					"username": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "Username for FTP authentication.",
 					},
-					"password": schema.StringAttribute{
+					"password": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"tls_mode": schema.Int64Attribute{
+					"password_wo":         computedWOPlaceholder(false),
+					"password_wo_version": computedWOPlaceholder(true),
+					"tls_mode": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "0 disabled, 1 Explicit, 2 Implicit.",
 					},
-					"skip_tls_verify": schema.BoolAttribute{
+					"skip_tls_verify": dsschema.BoolAttribute{
 						Computed:    true,
 						Description: "If true, the TLS certificate of the FTP server is not verified.",
 					},
 				},
 			},
-			"httpconfig": schema.SingleNestedAttribute{
+			"httpconfig": dsschema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "HTTP/S remote filesystem configuration details.",
-				Attributes: map[string]schema.Attribute{
-					"endpoint": schema.StringAttribute{
+				Attributes: map[string]dsschema.Attribute{
+					"endpoint": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "HTTP/S endpoint URL. SFTPGo uses this URL as base; for example for the `stat` API, SFTPGo appends `/stat/{name}`.",
 					},
-					"username": schema.StringAttribute{
+					"username": dsschema.StringAttribute{
 						Computed:    true,
 						Description: "Username for HTTP basic authentication.",
 					},
-					"password": schema.StringAttribute{
+					"password": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"api_key": schema.StringAttribute{
+					"password_wo":         computedWOPlaceholder(false),
+					"password_wo_version": computedWOPlaceholder(true),
+					"api_key": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"skip_tls_verify": schema.BoolAttribute{
+					"api_key_wo":         computedWOPlaceholder(false),
+					"api_key_wo_version": computedWOPlaceholder(true),
+					"skip_tls_verify": dsschema.BoolAttribute{
 						Computed:    true,
 						Description: "If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.",
 					},
-					"equality_check_mode": schema.Int64Attribute{
+					"equality_check_mode": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.",
 					},
@@ -380,7 +410,7 @@ func getComputedSchemaForFilesystem() schema.SingleNestedAttribute {
 func getSchemaForFilesystem() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Required:    true,
-		Description: "Filesystem configuration.",
+		Description: "Filesystem configuration. This block must be set explicitly: for the default local filesystem pass `filesystem = { provider = 0 }`. Defaults are no longer auto-populated from the server because the block contains write-only attributes.",
 		Attributes: map[string]schema.Attribute{
 			"provider": schema.Int64Attribute{
 				Required:    true,
@@ -425,15 +455,23 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "AWS Access Key ID for authentication. Leave blank when using IAM roles or instance profiles.",
 					},
 					"access_secret": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text access secret. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text access secret. " + secretDescriptionGeneric + " Mutually exclusive with `access_secret_wo`.",
+						DeprecationMessage: legacySecretDeprecation("access_secret"),
+						Validators:         []validator.String{conflictsWithWO("access_secret")},
 					},
+					"access_secret_wo":         writeOnlyAttr("access_secret"),
+					"access_secret_wo_version": writeOnlyVersionAttr("access_secret"),
 					"sse_customer_key": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text Server-Side encryption key. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text Server-Side encryption key. " + secretDescriptionGeneric + " Mutually exclusive with `sse_customer_key_wo`.",
+						DeprecationMessage: legacySecretDeprecation("sse_customer_key"),
+						Validators:         []validator.String{conflictsWithWO("sse_customer_key")},
 					},
+					"sse_customer_key_wo":         writeOnlyAttr("sse_customer_key"),
+					"sse_customer_key_wo_version": writeOnlyVersionAttr("sse_customer_key"),
 					"key_prefix": schema.StringAttribute{
 						Optional:    true,
 						Description: `If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"`,
@@ -505,10 +543,14 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: `The universe domain to use for Google Cloud API requests. If omitted or empty, the default public domain (googleapis.com) is used. Set this value if you need to connect to a custom Google Cloud environment, such as Google Distributed Cloud or a Sovereign Cloud. ` + enterpriseFeatureNote,
 					},
 					"credentials": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text credentials. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text credentials. " + secretDescriptionGeneric + " Mutually exclusive with `credentials_wo`.",
+						DeprecationMessage: legacySecretDeprecation("credentials"),
+						Validators:         []validator.String{conflictsWithWO("credentials")},
 					},
+					"credentials_wo":         writeOnlyAttr("credentials"),
+					"credentials_wo_version": writeOnlyVersionAttr("credentials"),
 					"automatic_credentials": schema.Int64Attribute{
 						Optional:    true,
 						Description: "0 = disabled, explicit JSON credentials must be provided (default); 1 = enabled, use Application Default Credentials (ADC) to find credentials.",
@@ -552,15 +594,23 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "Storage account name. Leave blank to use SAS URL.",
 					},
 					"account_key": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text account key. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text account key. " + secretDescriptionGeneric + " Mutually exclusive with `account_key_wo`.",
+						DeprecationMessage: legacySecretDeprecation("account_key"),
+						Validators:         []validator.String{conflictsWithWO("account_key")},
 					},
+					"account_key_wo":         writeOnlyAttr("account_key"),
+					"account_key_wo_version": writeOnlyVersionAttr("account_key"),
 					"sas_url": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text SAS URL. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text SAS URL. " + secretDescriptionGeneric + " Mutually exclusive with `sas_url_wo`.",
+						DeprecationMessage: legacySecretDeprecation("sas_url"),
+						Validators:         []validator.String{conflictsWithWO("sas_url")},
 					},
+					"sas_url_wo":         writeOnlyAttr("sas_url"),
+					"sas_url_wo_version": writeOnlyVersionAttr("sas_url"),
 					"endpoint": schema.StringAttribute{
 						Optional:    true,
 						Description: `Optional endpoint. Default is "blob.core.windows.net". If you use the emulator the endpoint must include the protocol, for example "http://127.0.0.1:10000".`,
@@ -599,10 +649,14 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"passphrase": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text passphrase. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text passphrase. " + secretDescriptionGeneric + " Mutually exclusive with `passphrase_wo`.",
+						DeprecationMessage: legacySecretDeprecation("passphrase"),
+						Validators:         []validator.String{conflictsWithWO("passphrase")},
 					},
+					"passphrase_wo":         writeOnlyAttr("passphrase"),
+					"passphrase_wo_version": writeOnlyVersionAttr("passphrase"),
 					"read_buffer_size": schema.Int64Attribute{
 						Optional:    true,
 						Description: "Optional read buffer size, as MB, to use for downloads. Omit to disable buffering, that's fine in most use cases.",
@@ -635,20 +689,32 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "Username for SFTP authentication.",
 					},
 					"password": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text password. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text password. " + secretDescriptionGeneric + " Mutually exclusive with `password_wo`.",
+						DeprecationMessage: legacySecretDeprecation("password"),
+						Validators:         []validator.String{conflictsWithWO("password")},
 					},
+					"password_wo":         writeOnlyAttr("password"),
+					"password_wo_version": writeOnlyVersionAttr("password"),
 					"private_key": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text private key. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text private key. " + secretDescriptionGeneric + " Mutually exclusive with `private_key_wo`.",
+						DeprecationMessage: legacySecretDeprecation("private_key"),
+						Validators:         []validator.String{conflictsWithWO("private_key")},
 					},
+					"private_key_wo":         writeOnlyAttr("private_key"),
+					"private_key_wo_version": writeOnlyVersionAttr("private_key"),
 					"key_passphrase": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text passphrase for the private key. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text passphrase for the private key. " + secretDescriptionGeneric + " Mutually exclusive with `key_passphrase_wo`.",
+						DeprecationMessage: legacySecretDeprecation("key_passphrase"),
+						Validators:         []validator.String{conflictsWithWO("key_passphrase")},
 					},
+					"key_passphrase_wo":         writeOnlyAttr("key_passphrase"),
+					"key_passphrase_wo_version": writeOnlyVersionAttr("key_passphrase"),
 					"fingerprints": schema.ListAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
@@ -679,10 +745,14 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "The optional SOCKS username. " + enterpriseFeatureNote + ".",
 					},
 					"socks_password": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text SOCKS password. " + secretDescriptionGeneric + " " + enterpriseFeatureNote + ".",
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text SOCKS password. " + secretDescriptionGeneric + " Mutually exclusive with `socks_password_wo`. " + enterpriseFeatureNote + ".",
+						DeprecationMessage: legacySecretDeprecation("socks_password"),
+						Validators:         []validator.String{conflictsWithWO("socks_password")},
 					},
+					"socks_password_wo":         writeOnlyAttr("socks_password"),
+					"socks_password_wo_version": writeOnlyVersionAttr("socks_password"),
 				},
 			},
 			"ftpconfig": schema.SingleNestedAttribute{
@@ -698,10 +768,14 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "Username for FTP authentication.",
 					},
 					"password": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text password. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text password. " + secretDescriptionGeneric + " Mutually exclusive with `password_wo`.",
+						DeprecationMessage: legacySecretDeprecation("password"),
+						Validators:         []validator.String{conflictsWithWO("password")},
 					},
+					"password_wo":         writeOnlyAttr("password"),
+					"password_wo_version": writeOnlyVersionAttr("password"),
 					"tls_mode": schema.Int64Attribute{
 						Optional:    true,
 						Description: "0 disabled, 1 Explicit, 2 Implicit.",
@@ -725,15 +799,23 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Description: "Username for HTTP basic authentication.",
 					},
 					"password": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text password. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text password. " + secretDescriptionGeneric + " Mutually exclusive with `password_wo`.",
+						DeprecationMessage: legacySecretDeprecation("password"),
+						Validators:         []validator.String{conflictsWithWO("password")},
 					},
+					"password_wo":         writeOnlyAttr("password"),
+					"password_wo_version": writeOnlyVersionAttr("password"),
 					"api_key": schema.StringAttribute{
-						Optional:    true,
-						Sensitive:   true,
-						Description: "Plain text API key. " + secretDescriptionGeneric,
+						Optional:           true,
+						Sensitive:          true,
+						Description:        "Plain text API key. " + secretDescriptionGeneric + " Mutually exclusive with `api_key_wo`.",
+						DeprecationMessage: legacySecretDeprecation("api_key"),
+						Validators:         []validator.String{conflictsWithWO("api_key")},
 					},
+					"api_key_wo":         writeOnlyAttr("api_key"),
+					"api_key_wo_version": writeOnlyVersionAttr("api_key"),
 					"skip_tls_verify": schema.BoolAttribute{
 						Optional:    true,
 						Description: "If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.",
@@ -748,45 +830,45 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 	}
 }
 
-func getComputedSchemaForVirtualFolders() schema.ListNestedAttribute {
-	return schema.ListNestedAttribute{
+func getComputedSchemaForVirtualFolders() dsschema.ListNestedAttribute {
+	return dsschema.ListNestedAttribute{
 		Computed:    true,
 		Description: "Virtual folder.",
-		NestedObject: schema.NestedAttributeObject{
-			Attributes: map[string]schema.Attribute{
-				"name": schema.StringAttribute{
+		NestedObject: dsschema.NestedAttributeObject{
+			Attributes: map[string]dsschema.Attribute{
+				"name": dsschema.StringAttribute{
 					Computed:    true,
 					Description: "Unique folder name",
 				},
-				"mapped_path": schema.StringAttribute{
+				"mapped_path": dsschema.StringAttribute{
 					Computed:    true,
 					Description: "Absolute path to a local directory. This is the folder root path for local storage provider. For non-local filesystems it will store temporary files.",
 				},
-				"virtual_path": schema.StringAttribute{
+				"virtual_path": dsschema.StringAttribute{
 					Computed:    true,
 					Description: "The folder will be available on this path.",
 				},
-				"description": schema.StringAttribute{
+				"description": dsschema.StringAttribute{
 					Computed:    true,
 					Description: "Optional description.",
 				},
-				"quota_size": schema.Int64Attribute{
+				"quota_size": dsschema.Int64Attribute{
 					Computed:    true,
 					Description: "Maximum size allowed as bytes. Not set means unlimited, -1 included in user quota",
 				},
-				"quota_files": schema.Int64Attribute{
+				"quota_files": dsschema.Int64Attribute{
 					Computed:    true,
 					Description: "Maximum number of files allowed. Not set means unlimited, -1 included in user quota",
 				},
-				"used_quota_size": schema.Int64Attribute{
+				"used_quota_size": dsschema.Int64Attribute{
 					Computed:    true,
 					Description: "Used quota as bytes.",
 				},
-				"used_quota_files": schema.Int64Attribute{
+				"used_quota_files": dsschema.Int64Attribute{
 					Computed:    true,
 					Description: "Used quota as number of files.",
 				},
-				"last_quota_update": schema.Int64Attribute{
+				"last_quota_update": dsschema.Int64Attribute{
 					Computed:    true,
 					Description: "Last quota update as unix timestamp in milliseconds",
 				},
@@ -848,207 +930,207 @@ func getSchemaForVirtualFolders() schema.ListNestedAttribute {
 	}
 }
 
-func getComputedSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
-	result := schema.SingleNestedAttribute{
+func getComputedSchemaForUserFilters(isGroup bool) dsschema.SingleNestedAttribute {
+	result := dsschema.SingleNestedAttribute{
 		Computed: true,
-		Attributes: map[string]schema.Attribute{
-			"allowed_ip": schema.ListAttribute{
+		Attributes: map[string]dsschema.Attribute{
+			"allowed_ip": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: `Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"`,
 			},
-			"denied_ip": schema.ListAttribute{
+			"denied_ip": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.",
 			},
-			"denied_login_methods": schema.ListAttribute{
+			"denied_login_methods": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "Disabled login methods.",
 			},
-			"denied_protocols": schema.ListAttribute{
+			"denied_protocols": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "Disabled protocols.",
 			},
-			"file_patterns": schema.ListNestedAttribute{
+			"file_patterns": dsschema.ListNestedAttribute{
 				Computed:    true,
 				Description: `Filters based on shell patterns.`,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"path": schema.StringAttribute{
+				NestedObject: dsschema.NestedAttributeObject{
+					Attributes: map[string]dsschema.Attribute{
+						"path": dsschema.StringAttribute{
 							Computed:    true,
 							Description: "Virtual path, if no other specific filter is defined, the filter applies for sub directories too.",
 						},
-						"allowed_patterns": schema.ListAttribute{
+						"allowed_patterns": dsschema.ListAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
 							Description: "Files/directories with these, case insensitive, patterns are allowed. Allowed file patterns are evaluated before the denied ones.",
 						},
-						"denied_patterns": schema.ListAttribute{
+						"denied_patterns": dsschema.ListAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
 							Description: "Files/directories with these, case insensitive, patterns are not allowed.",
 						},
-						"deny_policy": schema.Int64Attribute{
+						"deny_policy": dsschema.Int64Attribute{
 							Computed:    true,
 							Description: "Set to 1 to hide denied files/directories in directory listing.",
 						},
 					},
 				},
 			},
-			"max_upload_file_size": schema.Int64Attribute{
+			"max_upload_file_size": dsschema.Int64Attribute{
 				Computed:    true,
 				Description: "Max size allowed for a single upload. Unset means no limit.",
 			},
-			"tls_username": schema.StringAttribute{
+			"tls_username": dsschema.StringAttribute{
 				Computed:    true,
 				Description: `TLS certificate attribute to use as username. For FTP clients it must match the name provided using the "USER" command. For WebDAV, if no username is provided, the CN will be used as username. For WebDAV clients it must match the implicit or provided username.`,
 			},
-			"external_auth_disabled": schema.BoolAttribute{
+			"external_auth_disabled": dsschema.BoolAttribute{
 				Computed:    true,
 				Description: "If set, external auth hook will not be executed.",
 			},
-			"pre_login_disabled": schema.BoolAttribute{
+			"pre_login_disabled": dsschema.BoolAttribute{
 				Computed:    true,
 				Description: "If set, external pre-login hook will not be executed.",
 			},
-			"check_password_disabled": schema.BoolAttribute{
+			"check_password_disabled": dsschema.BoolAttribute{
 				Computed:    true,
 				Description: "If set, check password hook will not be executed.",
 			},
-			"disable_fs_checks": schema.BoolAttribute{
+			"disable_fs_checks": dsschema.BoolAttribute{
 				Computed:    true,
 				Description: "Disable checks for existence and automatic creation of home directory and virtual folders after user login.",
 			},
-			"web_client": schema.ListAttribute{
+			"web_client": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "Web Client/user REST API restrictions.",
 			},
-			"allow_api_key_auth": schema.BoolAttribute{
+			"allow_api_key_auth": dsschema.BoolAttribute{
 				Computed:    true,
 				Description: "If set, API Key authentication is allowed.",
 			},
-			"user_type": schema.StringAttribute{
+			"user_type": dsschema.StringAttribute{
 				Computed:    true,
 				Description: "Hint for authentication plugins.",
 			},
-			"bandwidth_limits": schema.ListNestedAttribute{
+			"bandwidth_limits": dsschema.ListNestedAttribute{
 				Computed:    true,
 				Description: "Per-source bandwidth limits.",
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"sources": schema.ListAttribute{
+				NestedObject: dsschema.NestedAttributeObject{
+					Attributes: map[string]dsschema.Attribute{
+						"sources": dsschema.ListAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
 							Description: `Source networks in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32". The limit applies if the defined networks contain the client IP.`,
 						},
-						"upload_bandwidth": schema.Int64Attribute{
+						"upload_bandwidth": dsschema.Int64Attribute{
 							Computed:    true,
 							Description: "Maximum upload bandwidth as KB/s.",
 						},
-						"download_bandwidth": schema.Int64Attribute{
+						"download_bandwidth": dsschema.Int64Attribute{
 							Computed:    true,
 							Description: "Maximum download bandwidth as KB/s.",
 						},
 					},
 				},
 			},
-			"external_auth_cache_time": schema.Int64Attribute{
+			"external_auth_cache_time": dsschema.Int64Attribute{
 				Computed:    true,
 				Description: "Defines the cache time, in seconds, for users authenticated using an external auth hook. Not set means no cache.",
 			},
-			"start_directory": schema.StringAttribute{
+			"start_directory": dsschema.StringAttribute{
 				Computed:    true,
 				Description: `Alternate starting directory. If not set, the default is "/". This option is supported for SFTP/SCP, FTP and HTTP (WebClient/REST API) protocols. Relative paths will use this directory as base.`,
 			},
-			"two_factor_protocols": schema.ListAttribute{
+			"two_factor_protocols": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "Defines protocols that require two factor authentication",
 			},
-			"ftp_security": schema.Int64Attribute{
+			"ftp_security": dsschema.Int64Attribute{
 				Computed:    true,
 				Description: "FTP security mode. Set to 1 to require TLS for both data and control connection.",
 			},
-			"is_anonymous": schema.BoolAttribute{
+			"is_anonymous": dsschema.BoolAttribute{
 				Computed:    true,
 				Description: `If enabled the user can login with any password or no password at all. Anonymous users are supported for FTP and WebDAV protocols and permissions will be automatically set to "list" and "download" (read only)`,
 			},
-			"default_shares_expiration": schema.Int64Attribute{
+			"default_shares_expiration": dsschema.Int64Attribute{
 				Computed:    true,
 				Description: "Default expiration for newly created shares as number of days. Not set means no default expiration.",
 			},
-			"max_shares_expiration": schema.Int64Attribute{
+			"max_shares_expiration": dsschema.Int64Attribute{
 				Computed:    true,
 				Description: "Maximum allowed expiration, as a number of days, when a user creates or updates a share. Not set means that non-expiring shares are allowed.",
 			},
-			"password_expiration": schema.Int64Attribute{
+			"password_expiration": dsschema.Int64Attribute{
 				Computed:    true,
 				Description: "The password expires after the defined number of days. Not set means no expiration",
 			},
-			"password_strength": schema.Int64Attribute{
+			"password_strength": dsschema.Int64Attribute{
 				Computed:    true,
 				Description: "Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.",
 			},
-			"password_policy": schema.SingleNestedAttribute{
+			"password_policy": dsschema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "Static password complexity requirements. Whenever possible, prefer using the entropy-based approach provided by password_strength. " + enterpriseFeatureNote,
-				Attributes: map[string]schema.Attribute{
-					"length": schema.Int64Attribute{
+				Attributes: map[string]dsschema.Attribute{
+					"length": dsschema.Int64Attribute{
 						Optional:    true,
 						Description: "Minimum password length.",
 					},
-					"uppers": schema.Int64Attribute{
+					"uppers": dsschema.Int64Attribute{
 						Optional:    true,
 						Description: "Minimum number of uppercase characters required.",
 					},
-					"lowers": schema.Int64Attribute{
+					"lowers": dsschema.Int64Attribute{
 						Optional:    true,
 						Description: "Minimum number of lowercase characters required.",
 					},
-					"digits": schema.Int64Attribute{
+					"digits": dsschema.Int64Attribute{
 						Optional:    true,
 						Description: "Minimum number of digit characters required.",
 					},
-					"specials": schema.Int64Attribute{
+					"specials": dsschema.Int64Attribute{
 						Optional:    true,
 						Description: "Minimum number of special characters required.",
 					},
 				},
 			},
-			"access_time": schema.ListNestedAttribute{
+			"access_time": dsschema.ListNestedAttribute{
 				Computed:    true,
 				Description: "Time periods in which access is allowed",
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"day_of_week": schema.Int64Attribute{
+				NestedObject: dsschema.NestedAttributeObject{
+					Attributes: map[string]dsschema.Attribute{
+						"day_of_week": dsschema.Int64Attribute{
 							Computed:    true,
 							Description: "Day of week, 0 Sunday, 6 Saturday",
 						},
-						"from": schema.StringAttribute{
+						"from": dsschema.StringAttribute{
 							Computed:    true,
 							Description: "Start time in HH:MM format",
 						},
-						"to": schema.StringAttribute{
+						"to": dsschema.StringAttribute{
 							Computed:    true,
 							Description: "End time in HH:MM format",
 						},
 					},
 				},
 			},
-			"enforce_secure_algorithms": schema.BoolAttribute{
+			"enforce_secure_algorithms": dsschema.BoolAttribute{
 				Computed:    true,
 				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote + ".",
 			},
-			"denied_share_paths": schema.ListAttribute{
+			"denied_share_paths": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "Virtual paths that cannot be shared. Shares for any listed path and its sub-paths are rejected. " + enterpriseFeatureNote + ".",
 			},
-			"denied_share_scopes": schema.ListAttribute{
+			"denied_share_scopes": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "Share scopes that users are not allowed to use. Valid values: read, write, read_write. If all scopes are denied, sharing is completely disabled. " + enterpriseFeatureNote + ".",
@@ -1056,15 +1138,15 @@ func getComputedSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute 
 		},
 	}
 	if isGroup {
-		result.Attributes["share_policy"] = schema.SingleNestedAttribute{
+		result.Attributes["share_policy"] = dsschema.SingleNestedAttribute{
 			Computed:    true,
 			Description: "Share access rules. " + enterpriseFeatureNote,
-			Attributes: map[string]schema.Attribute{
-				"permissions": schema.Int64Attribute{
+			Attributes: map[string]dsschema.Attribute{
+				"permissions": dsschema.Int64Attribute{
 					Computed:    true,
 					Description: "Bitmask representing the share permissions. 1 = Read, 2 = Write, 4 = Delete. Example: Read + Write is 3 (1 + 2).",
 				},
-				"mode": schema.Int64Attribute{
+				"mode": dsschema.Int64Attribute{
 					Computed:    true,
 					Description: "Policy mode. 1 = suggested (the group policy is pre-selected but can be removed by the user), 2 = enforced (the group policy is mandatory and cannot be changed by the user).",
 				},
@@ -1072,25 +1154,25 @@ func getComputedSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute 
 		}
 		return result
 	}
-	result.Attributes["require_password_change"] = schema.BoolAttribute{
+	result.Attributes["require_password_change"] = dsschema.BoolAttribute{
 		Computed:    true,
 		Description: "If set, user must change their password from WebClient/REST API at next login.",
 	}
-	result.Attributes["tls_certs"] = schema.ListAttribute{
+	result.Attributes["tls_certs"] = dsschema.ListAttribute{
 		ElementType: types.StringType,
 		Computed:    true,
 		Description: "TLS certificates for mutual authentication. If provided will be checked before TLS username.",
 	}
-	result.Attributes["additional_emails"] = schema.ListAttribute{
+	result.Attributes["additional_emails"] = dsschema.ListAttribute{
 		ElementType: types.StringType,
 		Computed:    true,
 		Description: "Additional email addresses.",
 	}
-	result.Attributes["custom1"] = schema.StringAttribute{
+	result.Attributes["custom1"] = dsschema.StringAttribute{
 		Computed:    true,
 		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. Deprecated: use custom_placeholders instead. ` + enterpriseFeatureNote + ".",
 	}
-	result.Attributes["custom_placeholders"] = schema.ListAttribute{
+	result.Attributes["custom_placeholders"] = dsschema.ListAttribute{
 		ElementType: types.StringType,
 		Computed:    true,
 		Description: "List of extra placeholders available for use in group configurations. Each placeholder can be referenced as %custom1%, %custom2%, and so on. " + enterpriseFeatureNote + ".",
@@ -1400,25 +1482,76 @@ func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 	return result
 }
 
+// conflictsWithWO returns a validator that fails if the current attribute is
+// set together with its `<name>_wo` sibling within the same nested object.
+func conflictsWithWO(name string) validator.String {
+	return stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName(name + "_wo"))
+}
+
+// computedWOPlaceholder builds a Computed-only placeholder attribute for
+// data sources. Values are always null in data source reads; it exists only
+// so the data source schema matches the model struct shared with the
+// resource.
+func computedWOPlaceholder(isVersion bool) dsschema.Attribute {
+	desc := "Write-only attribute placeholder. Always null in data source reads."
+	if isVersion {
+		desc = "Write-only trigger attribute placeholder. Always null in data source reads."
+	}
+	return dsschema.StringAttribute{
+		Computed:    true,
+		Description: desc,
+	}
+}
+
+// writeOnlyAttr builds the `<name>_wo` write-only schema attribute.
+func writeOnlyAttr(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Optional:    true,
+		Sensitive:   true,
+		WriteOnly:   true,
+		Description: "Write-only variant of `" + name + "`. " + writeOnlyDescriptionGeneric,
+	}
+}
+
+// writeOnlyVersionAttr builds the `<name>_wo_version` trigger attribute.
+func writeOnlyVersionAttr(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Optional:    true,
+		Description: "Trigger attribute for `" + name + "_wo`. " + writeOnlyVersionDescGeneric,
+	}
+}
+
+// legacySecretDeprecation is the deprecation message appended to legacy
+// sensitive attributes to nudge users toward their write-only counterparts.
+func legacySecretDeprecation(name string) string {
+	return "Storing secrets in plan/state is discouraged. Prefer the write-only variant `" + name + "_wo` (Terraform 1.11+)."
+}
+
 func preserveFsConfigPlanFields(ctx context.Context, fsPlan, fsState filesystem) (types.Object, diag.Diagnostics) {
 	switch sdk.FilesystemProvider(fsState.Provider.ValueInt64()) {
 	case sdk.S3FilesystemProvider:
 		if fsPlan.S3Config != nil {
 			fsState.S3Config.AccessSecret = fsPlan.S3Config.AccessSecret
 			fsState.S3Config.SSECustomerKey = fsPlan.S3Config.SSECustomerKey
+			fsState.S3Config.AccessSecretWOVersion = fsPlan.S3Config.AccessSecretWOVersion
+			fsState.S3Config.SSECustomerKeyWOVersion = fsPlan.S3Config.SSECustomerKeyWOVersion
 		}
 	case sdk.GCSFilesystemProvider:
 		if fsPlan.GCSConfig != nil {
 			fsState.GCSConfig.Credentials = fsPlan.GCSConfig.Credentials
+			fsState.GCSConfig.CredentialsWOVersion = fsPlan.GCSConfig.CredentialsWOVersion
 		}
 	case sdk.AzureBlobFilesystemProvider:
 		if fsPlan.AzBlobConfig != nil {
 			fsState.AzBlobConfig.AccountKey = fsPlan.AzBlobConfig.AccountKey
 			fsState.AzBlobConfig.SASURL = fsPlan.AzBlobConfig.SASURL
+			fsState.AzBlobConfig.AccountKeyWOVersion = fsPlan.AzBlobConfig.AccountKeyWOVersion
+			fsState.AzBlobConfig.SASURLWOVersion = fsPlan.AzBlobConfig.SASURLWOVersion
 		}
 	case sdk.CryptedFilesystemProvider:
 		if fsPlan.CryptConfig != nil {
 			fsState.CryptConfig.Passphrase = fsPlan.CryptConfig.Passphrase
+			fsState.CryptConfig.PassphraseWOVersion = fsPlan.CryptConfig.PassphraseWOVersion
 		}
 	case sdk.SFTPFilesystemProvider:
 		if fsPlan.SFTPConfig != nil {
@@ -1426,19 +1559,61 @@ func preserveFsConfigPlanFields(ctx context.Context, fsPlan, fsState filesystem)
 			fsState.SFTPConfig.PrivateKey = fsPlan.SFTPConfig.PrivateKey
 			fsState.SFTPConfig.KeyPassphrase = fsPlan.SFTPConfig.KeyPassphrase
 			fsState.SFTPConfig.SocksPassword = fsPlan.SFTPConfig.SocksPassword
+			fsState.SFTPConfig.PasswordWOVersion = fsPlan.SFTPConfig.PasswordWOVersion
+			fsState.SFTPConfig.PrivateKeyWOVersion = fsPlan.SFTPConfig.PrivateKeyWOVersion
+			fsState.SFTPConfig.KeyPassphraseWOVersion = fsPlan.SFTPConfig.KeyPassphraseWOVersion
+			fsState.SFTPConfig.SocksPasswordWOVersion = fsPlan.SFTPConfig.SocksPasswordWOVersion
 		}
 	case sdk.HTTPFilesystemProvider:
 		if fsPlan.HTTPConfig != nil {
 			fsState.HTTPConfig.Password = fsPlan.HTTPConfig.Password
 			fsState.HTTPConfig.APIKey = fsPlan.HTTPConfig.APIKey
+			fsState.HTTPConfig.PasswordWOVersion = fsPlan.HTTPConfig.PasswordWOVersion
+			fsState.HTTPConfig.APIKeyWOVersion = fsPlan.HTTPConfig.APIKeyWOVersion
 		}
 	case client.FTPFilesystemProvider:
 		if fsPlan.FTPConfig != nil {
 			fsState.FTPConfig.Password = fsPlan.FTPConfig.Password
+			fsState.FTPConfig.PasswordWOVersion = fsPlan.FTPConfig.PasswordWOVersion
 		}
 	}
 
 	return types.ObjectValueFrom(ctx, fsState.getTFAttributes(), fsState)
+}
+
+// applyFsConfigWriteOnly copies the write-only secret values from the
+// configuration's filesystem block into the plan's filesystem block so the
+// plan passed to toSFTPGo carries them. Only the nested config matching the
+// configured provider is touched; the rest is left nil.
+func applyFsConfigWriteOnly(ctx context.Context, fsConfig, fsPlan filesystem) (types.Object, diag.Diagnostics) {
+	if fsPlan.S3Config != nil && fsConfig.S3Config != nil {
+		fsPlan.S3Config.AccessSecretWO = fsConfig.S3Config.AccessSecretWO
+		fsPlan.S3Config.SSECustomerKeyWO = fsConfig.S3Config.SSECustomerKeyWO
+	}
+	if fsPlan.GCSConfig != nil && fsConfig.GCSConfig != nil {
+		fsPlan.GCSConfig.CredentialsWO = fsConfig.GCSConfig.CredentialsWO
+	}
+	if fsPlan.AzBlobConfig != nil && fsConfig.AzBlobConfig != nil {
+		fsPlan.AzBlobConfig.AccountKeyWO = fsConfig.AzBlobConfig.AccountKeyWO
+		fsPlan.AzBlobConfig.SASURLWO = fsConfig.AzBlobConfig.SASURLWO
+	}
+	if fsPlan.CryptConfig != nil && fsConfig.CryptConfig != nil {
+		fsPlan.CryptConfig.PassphraseWO = fsConfig.CryptConfig.PassphraseWO
+	}
+	if fsPlan.SFTPConfig != nil && fsConfig.SFTPConfig != nil {
+		fsPlan.SFTPConfig.PasswordWO = fsConfig.SFTPConfig.PasswordWO
+		fsPlan.SFTPConfig.PrivateKeyWO = fsConfig.SFTPConfig.PrivateKeyWO
+		fsPlan.SFTPConfig.KeyPassphraseWO = fsConfig.SFTPConfig.KeyPassphraseWO
+		fsPlan.SFTPConfig.SocksPasswordWO = fsConfig.SFTPConfig.SocksPasswordWO
+	}
+	if fsPlan.FTPConfig != nil && fsConfig.FTPConfig != nil {
+		fsPlan.FTPConfig.PasswordWO = fsConfig.FTPConfig.PasswordWO
+	}
+	if fsPlan.HTTPConfig != nil && fsConfig.HTTPConfig != nil {
+		fsPlan.HTTPConfig.PasswordWO = fsConfig.HTTPConfig.PasswordWO
+		fsPlan.HTTPConfig.APIKeyWO = fsConfig.HTTPConfig.APIKeyWO
+	}
+	return types.ObjectValueFrom(ctx, fsPlan.getTFAttributes(), fsPlan)
 }
 
 // contains reports whether v is present in elems.

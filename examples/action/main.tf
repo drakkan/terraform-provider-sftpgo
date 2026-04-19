@@ -18,11 +18,12 @@ resource "sftpgo_action" "test" {
     type = 1
     options = {
         http_config = {
-            endpoint = "http://127.0.0.1:8082/notify"
-            username = "myuser"
-            password = "mypassword"
-            timeout = 10
-            method = "GET"
+            endpoint            = "http://127.0.0.1:8082/notify"
+            username            = "myuser"
+            password_wo         = "mypassword"
+            password_wo_version = "1"
+            timeout             = 10
+            method              = "GET"
         }
     }
 }

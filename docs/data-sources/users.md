@@ -45,6 +45,8 @@ Read-Only:
 - `last_quota_update` (Number) Last quota update as unix timestamp in milliseconds.
 - `max_sessions` (Number) Maximum concurrent sessions. Not set means no limit.
 - `password` (String) Password hash saved in the SFTPGo data provider.
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `permissions` (Map of String) Comma separated, per-directory, permissions.
 - `public_keys` (List of String) List of public keys.
 - `quota_files` (Number) Maximum number of files allowed. Not set means no limit.
@@ -85,6 +87,8 @@ Read-Only:
 
 - `access_tier` (String) Blob access tier. Valid values: empty, Archive, Hot, Cool.
 - `account_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `account_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `account_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `account_name` (String) Storage account name. Leave blank to use SAS URL.
 - `container` (String) Azure Blob Storage container name.
 - `download_concurrency` (Number) How many parts are downloaded in parallel.
@@ -92,6 +96,8 @@ Read-Only:
 - `endpoint` (String) Optional endpoint
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `sas_url` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `sas_url_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `sas_url_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `upload_concurrency` (Number) How many parts are uploaded in parallel.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 - `use_emulator` (Boolean) If true, the Azure Storage Emulator (Azurite) is used instead of the cloud service.
@@ -103,6 +109,8 @@ Read-Only:
 Read-Only:
 
 - `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `passphrase_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `passphrase_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads.
 - `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads.
 
@@ -114,6 +122,8 @@ Read-Only:
 
 - `endpoint` (String) FTP endpoint as host:port.
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the FTP server is not verified.
 - `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
 - `username` (String) Username for FTP authentication.
@@ -128,6 +138,8 @@ Read-Only:
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String) GCS bucket name.
 - `credentials` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `credentials_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `credentials_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `hns` (Number) 1 if Hierarchical namespace support is enabled for the bucket. Available in the Enterprise edition.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String) Google Cloud Storage class for uploaded objects (e.g. STANDARD, NEARLINE, COLDLINE, ARCHIVE). Leave empty for the default storage class.
@@ -142,9 +154,13 @@ Read-Only:
 Read-Only:
 
 - `api_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `api_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `api_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `endpoint` (String) HTTP/S endpoint URL. SFTPGo uses this URL as base; for example for the `stat` API, SFTPGo appends `/stat/{name}`.
 - `equality_check_mode` (Number) Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.
 - `username` (String) Username for HTTP basic authentication.
 
@@ -165,6 +181,8 @@ Read-Only:
 
 - `access_key` (String) AWS Access Key ID for authentication. Leave blank when using IAM roles or instance profiles.
 - `access_secret` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `access_secret_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `access_secret_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String) S3 bucket name.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
@@ -178,6 +196,8 @@ Read-Only:
 - `session_token` (String) Optional Session token that is a part of temporary security credentials provisioned by AWS STS.
 - `skip_tls_verify` (Boolean) If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.
 - `sse_customer_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `sse_customer_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `sse_customer_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `storage_class` (String) S3 storage class for uploaded objects (e.g. STANDARD, STANDARD_IA, GLACIER). Leave empty for the default storage class.
 - `upload_concurrency` (Number) How many parts are uploaded in parallel. Not set means the default (5).
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.
@@ -195,10 +215,18 @@ Read-Only:
 - `equality_check_mode` (Number) Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
 - `key_passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `key_passphrase_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `key_passphrase_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `private_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `private_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `socks_password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Available in the Enterprise edition.
+- `socks_password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `socks_password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `socks_proxy` (String) The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. Available in the Enterprise edition.
 - `socks_username` (String) The optional SOCKS username. Available in the Enterprise edition.
 - `username` (String) Username for SFTP authentication.
@@ -336,6 +364,8 @@ Read-Only:
 
 - `access_tier` (String) Blob access tier. Valid values: empty, Archive, Hot, Cool.
 - `account_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `account_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `account_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `account_name` (String) Storage account name. Leave blank to use SAS URL.
 - `container` (String) Azure Blob Storage container name.
 - `download_concurrency` (Number) How many parts are downloaded in parallel.
@@ -343,6 +373,8 @@ Read-Only:
 - `endpoint` (String) Optional endpoint
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `sas_url` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `sas_url_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `sas_url_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `upload_concurrency` (Number) How many parts are uploaded in parallel.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 - `use_emulator` (Boolean) If true, the Azure Storage Emulator (Azurite) is used instead of the cloud service.
@@ -354,6 +386,8 @@ Read-Only:
 Read-Only:
 
 - `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `passphrase_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `passphrase_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads.
 - `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads.
 
@@ -365,6 +399,8 @@ Read-Only:
 
 - `endpoint` (String) FTP endpoint as host:port.
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the FTP server is not verified.
 - `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
 - `username` (String) Username for FTP authentication.
@@ -379,6 +415,8 @@ Read-Only:
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String) GCS bucket name.
 - `credentials` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `credentials_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `credentials_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `hns` (Number) 1 if Hierarchical namespace support is enabled for the bucket. Available in the Enterprise edition.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String) Google Cloud Storage class for uploaded objects (e.g. STANDARD, NEARLINE, COLDLINE, ARCHIVE). Leave empty for the default storage class.
@@ -393,9 +431,13 @@ Read-Only:
 Read-Only:
 
 - `api_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `api_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `api_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `endpoint` (String) HTTP/S endpoint URL. SFTPGo uses this URL as base; for example for the `stat` API, SFTPGo appends `/stat/{name}`.
 - `equality_check_mode` (Number) Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.
 - `username` (String) Username for HTTP basic authentication.
 
@@ -416,6 +458,8 @@ Read-Only:
 
 - `access_key` (String) AWS Access Key ID for authentication. Leave blank when using IAM roles or instance profiles.
 - `access_secret` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `access_secret_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `access_secret_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String) S3 bucket name.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
@@ -429,6 +473,8 @@ Read-Only:
 - `session_token` (String) Optional Session token that is a part of temporary security credentials provisioned by AWS STS.
 - `skip_tls_verify` (Boolean) If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.
 - `sse_customer_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `sse_customer_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `sse_customer_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `storage_class` (String) S3 storage class for uploaded objects (e.g. STANDARD, STANDARD_IA, GLACIER). Leave empty for the default storage class.
 - `upload_concurrency` (Number) How many parts are uploaded in parallel. Not set means the default (5).
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.
@@ -446,10 +492,18 @@ Read-Only:
 - `equality_check_mode` (Number) Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
 - `key_passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `key_passphrase_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `key_passphrase_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `private_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `private_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `socks_password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Available in the Enterprise edition.
+- `socks_password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `socks_password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `socks_proxy` (String) The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. Available in the Enterprise edition.
 - `socks_username` (String) The optional SOCKS username. Available in the Enterprise edition.
 - `username` (String) Username for SFTP authentication.

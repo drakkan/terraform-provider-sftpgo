@@ -17,18 +17,22 @@ Admin
 
 ### Required
 
-- `password` (String, Sensitive) Plain text password or hash format supported by SFTPGo.
 - `permissions` (List of String) Granted permissions.
 - `status` (Number) 1 enabled, 0 disabled (login is not allowed).
 - `username` (String) Unique username. Changing the username after creation forces replacement because the SFTPGo API does not support renaming.
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `additional_info` (String) Free form text field.
 - `description` (String) Optional description.
 - `email` (String) Admin email address.
 - `filters` (Attributes) Additional restrictions. (see [below for nested schema](#nestedatt--filters))
 - `groups` (Attributes List) Groups automatically selected for new users created by this admin. (see [below for nested schema](#nestedatt--groups))
+- `password` (String, Sensitive) Plain text password or hash format supported by SFTPGo. Exactly one of `password` and `password_wo` must be set.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `password_wo_version` (String) Trigger attribute for `password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `preferences` (Attributes) Admin preferences. (see [below for nested schema](#nestedatt--preferences))
 - `role` (String) Role name. If set the admin can only administer users with the same role.
 

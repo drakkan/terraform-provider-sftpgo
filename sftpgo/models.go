@@ -38,6 +38,8 @@ type userResourceModel struct {
 	Status                   types.Int64        `tfsdk:"status"`
 	ExpirationDate           types.Int64        `tfsdk:"expiration_date"`
 	Password                 types.String       `tfsdk:"password"`
+	PasswordWO               types.String       `tfsdk:"password_wo"`
+	PasswordWOVersion        types.String       `tfsdk:"password_wo_version"`
 	PublicKeys               types.List         `tfsdk:"public_keys"`
 	HomeDir                  types.String       `tfsdk:"home_dir"`
 	UID                      types.Int64        `tfsdk:"uid"`
@@ -95,7 +97,7 @@ func (u *userResourceModel) toSFTPGo(ctx context.Context) (*client.User, diag.Di
 				Role:                 u.Role.ValueString(),
 			},
 		},
-		Password: u.Password.ValueString(),
+		Password: resolveSecret(u.Password, u.PasswordWO),
 	}
 	if !u.PublicKeys.IsNull() {
 		diags := u.PublicKeys.ElementsAs(ctx, &user.PublicKeys, false)
@@ -793,25 +795,29 @@ type osFsConfig struct {
 }
 
 type s3FsConfig struct {
-	Bucket              types.String `tfsdk:"bucket"`
-	KeyPrefix           types.String `tfsdk:"key_prefix"`
-	Region              types.String `tfsdk:"region"`
-	AccessKey           types.String `tfsdk:"access_key"`
-	AccessSecret        types.String `tfsdk:"access_secret"`
-	SSECustomerKey      types.String `tfsdk:"sse_customer_key"`
-	RoleARN             types.String `tfsdk:"role_arn"`
-	SessionToken        types.String `tfsdk:"session_token"`
-	Endpoint            types.String `tfsdk:"endpoint"`
-	StorageClass        types.String `tfsdk:"storage_class"`
-	ACL                 types.String `tfsdk:"acl"`
-	UploadPartSize      types.Int64  `tfsdk:"upload_part_size"`
-	UploadConcurrency   types.Int64  `tfsdk:"upload_concurrency"`
-	DownloadPartSize    types.Int64  `tfsdk:"download_part_size"`
-	UploadPartMaxTime   types.Int64  `tfsdk:"upload_part_max_time"`
-	DownloadConcurrency types.Int64  `tfsdk:"download_concurrency"`
-	DownloadPartMaxTime types.Int64  `tfsdk:"download_part_max_time"`
-	ForcePathStyle      types.Bool   `tfsdk:"force_path_style"`
-	SkipTLSVerify       types.Bool   `tfsdk:"skip_tls_verify"`
+	Bucket                    types.String `tfsdk:"bucket"`
+	KeyPrefix                 types.String `tfsdk:"key_prefix"`
+	Region                    types.String `tfsdk:"region"`
+	AccessKey                 types.String `tfsdk:"access_key"`
+	AccessSecret              types.String `tfsdk:"access_secret"`
+	AccessSecretWO            types.String `tfsdk:"access_secret_wo"`
+	AccessSecretWOVersion     types.String `tfsdk:"access_secret_wo_version"`
+	SSECustomerKey            types.String `tfsdk:"sse_customer_key"`
+	SSECustomerKeyWO          types.String `tfsdk:"sse_customer_key_wo"`
+	SSECustomerKeyWOVersion   types.String `tfsdk:"sse_customer_key_wo_version"`
+	RoleARN                   types.String `tfsdk:"role_arn"`
+	SessionToken              types.String `tfsdk:"session_token"`
+	Endpoint                  types.String `tfsdk:"endpoint"`
+	StorageClass              types.String `tfsdk:"storage_class"`
+	ACL                       types.String `tfsdk:"acl"`
+	UploadPartSize            types.Int64  `tfsdk:"upload_part_size"`
+	UploadConcurrency         types.Int64  `tfsdk:"upload_concurrency"`
+	DownloadPartSize          types.Int64  `tfsdk:"download_part_size"`
+	UploadPartMaxTime         types.Int64  `tfsdk:"upload_part_max_time"`
+	DownloadConcurrency       types.Int64  `tfsdk:"download_concurrency"`
+	DownloadPartMaxTime       types.Int64  `tfsdk:"download_part_max_time"`
+	ForcePathStyle            types.Bool   `tfsdk:"force_path_style"`
+	SkipTLSVerify             types.Bool   `tfsdk:"skip_tls_verify"`
 }
 
 type gcsFsConfig struct {
@@ -819,6 +825,8 @@ type gcsFsConfig struct {
 	KeyPrefix             types.String `tfsdk:"key_prefix"`
 	UniverseDomain        types.String `tfsdk:"universe_domain"`
 	Credentials           types.String `tfsdk:"credentials"`
+	CredentialsWO         types.String `tfsdk:"credentials_wo"`
+	CredentialsWOVersion  types.String `tfsdk:"credentials_wo_version"`
 	AutomaticCredentials  types.Int64  `tfsdk:"automatic_credentials"`
 	HierarchicalNamespace types.Int64  `tfsdk:"hns"`
 	StorageClass          types.String `tfsdk:"storage_class"`
@@ -828,57 +836,77 @@ type gcsFsConfig struct {
 }
 
 type azBlobFsConfig struct {
-	Container           types.String `tfsdk:"container"`
-	AccountName         types.String `tfsdk:"account_name"`
-	AccountKey          types.String `tfsdk:"account_key"`
-	SASURL              types.String `tfsdk:"sas_url"`
-	Endpoint            types.String `tfsdk:"endpoint"`
-	KeyPrefix           types.String `tfsdk:"key_prefix"`
-	UploadPartSize      types.Int64  `tfsdk:"upload_part_size"`
-	UploadConcurrency   types.Int64  `tfsdk:"upload_concurrency"`
-	DownloadPartSize    types.Int64  `tfsdk:"download_part_size"`
-	DownloadConcurrency types.Int64  `tfsdk:"download_concurrency"`
-	UseEmulator         types.Bool   `tfsdk:"use_emulator"`
-	AccessTier          types.String `tfsdk:"access_tier"`
+	Container            types.String `tfsdk:"container"`
+	AccountName          types.String `tfsdk:"account_name"`
+	AccountKey           types.String `tfsdk:"account_key"`
+	AccountKeyWO         types.String `tfsdk:"account_key_wo"`
+	AccountKeyWOVersion  types.String `tfsdk:"account_key_wo_version"`
+	SASURL               types.String `tfsdk:"sas_url"`
+	SASURLWO             types.String `tfsdk:"sas_url_wo"`
+	SASURLWOVersion      types.String `tfsdk:"sas_url_wo_version"`
+	Endpoint             types.String `tfsdk:"endpoint"`
+	KeyPrefix            types.String `tfsdk:"key_prefix"`
+	UploadPartSize       types.Int64  `tfsdk:"upload_part_size"`
+	UploadConcurrency    types.Int64  `tfsdk:"upload_concurrency"`
+	DownloadPartSize     types.Int64  `tfsdk:"download_part_size"`
+	DownloadConcurrency  types.Int64  `tfsdk:"download_concurrency"`
+	UseEmulator          types.Bool   `tfsdk:"use_emulator"`
+	AccessTier           types.String `tfsdk:"access_tier"`
 }
 
 type cryptFsConfig struct {
-	Passphrase      types.String `tfsdk:"passphrase"`
-	ReadBufferSize  types.Int64  `tfsdk:"read_buffer_size"`
-	WriteBufferSize types.Int64  `tfsdk:"write_buffer_size"`
+	Passphrase           types.String `tfsdk:"passphrase"`
+	PassphraseWO         types.String `tfsdk:"passphrase_wo"`
+	PassphraseWOVersion  types.String `tfsdk:"passphrase_wo_version"`
+	ReadBufferSize       types.Int64  `tfsdk:"read_buffer_size"`
+	WriteBufferSize      types.Int64  `tfsdk:"write_buffer_size"`
 }
 
 type sftpFsConfig struct {
-	Endpoint                types.String `tfsdk:"endpoint"`
-	Username                types.String `tfsdk:"username"`
-	Password                types.String `tfsdk:"password"`
-	PrivateKey              types.String `tfsdk:"private_key"`
-	KeyPassphrase           types.String `tfsdk:"key_passphrase"`
-	Fingerprints            types.List   `tfsdk:"fingerprints"`
-	Prefix                  types.String `tfsdk:"prefix"`
-	DisableCouncurrentReads types.Bool   `tfsdk:"disable_concurrent_reads"`
-	BufferSize              types.Int64  `tfsdk:"buffer_size"`
-	EqualityCheckMode       types.Int64  `tfsdk:"equality_check_mode"`
-	SocksProxy              types.String `tfsdk:"socks_proxy"`
-	SocksUsername           types.String `tfsdk:"socks_username"`
-	SocksPassword           types.String `tfsdk:"socks_password"`
+	Endpoint                 types.String `tfsdk:"endpoint"`
+	Username                 types.String `tfsdk:"username"`
+	Password                 types.String `tfsdk:"password"`
+	PasswordWO               types.String `tfsdk:"password_wo"`
+	PasswordWOVersion        types.String `tfsdk:"password_wo_version"`
+	PrivateKey               types.String `tfsdk:"private_key"`
+	PrivateKeyWO             types.String `tfsdk:"private_key_wo"`
+	PrivateKeyWOVersion      types.String `tfsdk:"private_key_wo_version"`
+	KeyPassphrase            types.String `tfsdk:"key_passphrase"`
+	KeyPassphraseWO          types.String `tfsdk:"key_passphrase_wo"`
+	KeyPassphraseWOVersion   types.String `tfsdk:"key_passphrase_wo_version"`
+	Fingerprints             types.List   `tfsdk:"fingerprints"`
+	Prefix                   types.String `tfsdk:"prefix"`
+	DisableCouncurrentReads  types.Bool   `tfsdk:"disable_concurrent_reads"`
+	BufferSize               types.Int64  `tfsdk:"buffer_size"`
+	EqualityCheckMode        types.Int64  `tfsdk:"equality_check_mode"`
+	SocksProxy               types.String `tfsdk:"socks_proxy"`
+	SocksUsername            types.String `tfsdk:"socks_username"`
+	SocksPassword            types.String `tfsdk:"socks_password"`
+	SocksPasswordWO          types.String `tfsdk:"socks_password_wo"`
+	SocksPasswordWOVersion   types.String `tfsdk:"socks_password_wo_version"`
 }
 
 type ftpFsConfig struct {
-	Endpoint      types.String `tfsdk:"endpoint"`
-	Username      types.String `tfsdk:"username"`
-	Password      types.String `tfsdk:"password"`
-	TLSMode       types.Int64  `tfsdk:"tls_mode"`
-	SkipTLSVerify types.Bool   `tfsdk:"skip_tls_verify"`
-}
-
-type httpFsConfig struct {
 	Endpoint          types.String `tfsdk:"endpoint"`
 	Username          types.String `tfsdk:"username"`
 	Password          types.String `tfsdk:"password"`
-	APIKey            types.String `tfsdk:"api_key"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.String `tfsdk:"password_wo_version"`
+	TLSMode           types.Int64  `tfsdk:"tls_mode"`
 	SkipTLSVerify     types.Bool   `tfsdk:"skip_tls_verify"`
-	EqualityCheckMode types.Int64  `tfsdk:"equality_check_mode"`
+}
+
+type httpFsConfig struct {
+	Endpoint           types.String `tfsdk:"endpoint"`
+	Username           types.String `tfsdk:"username"`
+	Password           types.String `tfsdk:"password"`
+	PasswordWO         types.String `tfsdk:"password_wo"`
+	PasswordWOVersion  types.String `tfsdk:"password_wo_version"`
+	APIKey             types.String `tfsdk:"api_key"`
+	APIKeyWO           types.String `tfsdk:"api_key_wo"`
+	APIKeyWOVersion    types.String `tfsdk:"api_key_wo_version"`
+	SkipTLSVerify      types.Bool   `tfsdk:"skip_tls_verify"`
+	EqualityCheckMode  types.Int64  `tfsdk:"equality_check_mode"`
 }
 
 type filesystem struct {
@@ -931,90 +959,112 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 		},
 		"s3config": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"bucket":                 types.StringType,
-				"key_prefix":             types.StringType,
-				"region":                 types.StringType,
-				"access_key":             types.StringType,
-				"access_secret":          types.StringType,
-				"sse_customer_key":       types.StringType,
-				"role_arn":               types.StringType,
-				"session_token":          types.StringType,
-				"endpoint":               types.StringType,
-				"storage_class":          types.StringType,
-				"acl":                    types.StringType,
-				"upload_part_size":       types.Int64Type,
-				"upload_concurrency":     types.Int64Type,
-				"download_part_size":     types.Int64Type,
-				"upload_part_max_time":   types.Int64Type,
-				"download_concurrency":   types.Int64Type,
-				"download_part_max_time": types.Int64Type,
-				"force_path_style":       types.BoolType,
-				"skip_tls_verify":        types.BoolType,
+				"bucket":                      types.StringType,
+				"key_prefix":                  types.StringType,
+				"region":                      types.StringType,
+				"access_key":                  types.StringType,
+				"access_secret":               types.StringType,
+				"access_secret_wo":            types.StringType,
+				"access_secret_wo_version":    types.StringType,
+				"sse_customer_key":            types.StringType,
+				"sse_customer_key_wo":         types.StringType,
+				"sse_customer_key_wo_version": types.StringType,
+				"role_arn":                    types.StringType,
+				"session_token":               types.StringType,
+				"endpoint":                    types.StringType,
+				"storage_class":               types.StringType,
+				"acl":                         types.StringType,
+				"upload_part_size":            types.Int64Type,
+				"upload_concurrency":          types.Int64Type,
+				"download_part_size":          types.Int64Type,
+				"upload_part_max_time":        types.Int64Type,
+				"download_concurrency":        types.Int64Type,
+				"download_part_max_time":      types.Int64Type,
+				"force_path_style":            types.BoolType,
+				"skip_tls_verify":             types.BoolType,
 			},
 		},
 		"gcsconfig": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"bucket":                types.StringType,
-				"key_prefix":            types.StringType,
-				"universe_domain":       types.StringType,
-				"credentials":           types.StringType,
-				"automatic_credentials": types.Int64Type,
-				"hns":                   types.Int64Type,
-				"storage_class":         types.StringType,
-				"acl":                   types.StringType,
-				"upload_part_size":      types.Int64Type,
-				"upload_part_max_time":  types.Int64Type,
+				"bucket":                 types.StringType,
+				"key_prefix":             types.StringType,
+				"universe_domain":        types.StringType,
+				"credentials":            types.StringType,
+				"credentials_wo":         types.StringType,
+				"credentials_wo_version": types.StringType,
+				"automatic_credentials":  types.Int64Type,
+				"hns":                    types.Int64Type,
+				"storage_class":          types.StringType,
+				"acl":                    types.StringType,
+				"upload_part_size":       types.Int64Type,
+				"upload_part_max_time":   types.Int64Type,
 			},
 		},
 		"azblobconfig": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"container":            types.StringType,
-				"account_name":         types.StringType,
-				"account_key":          types.StringType,
-				"sas_url":              types.StringType,
-				"endpoint":             types.StringType,
-				"key_prefix":           types.StringType,
-				"upload_part_size":     types.Int64Type,
-				"upload_concurrency":   types.Int64Type,
-				"download_part_size":   types.Int64Type,
-				"download_concurrency": types.Int64Type,
-				"use_emulator":         types.BoolType,
-				"access_tier":          types.StringType,
+				"container":              types.StringType,
+				"account_name":           types.StringType,
+				"account_key":            types.StringType,
+				"account_key_wo":         types.StringType,
+				"account_key_wo_version": types.StringType,
+				"sas_url":                types.StringType,
+				"sas_url_wo":             types.StringType,
+				"sas_url_wo_version":     types.StringType,
+				"endpoint":               types.StringType,
+				"key_prefix":             types.StringType,
+				"upload_part_size":       types.Int64Type,
+				"upload_concurrency":     types.Int64Type,
+				"download_part_size":     types.Int64Type,
+				"download_concurrency":   types.Int64Type,
+				"use_emulator":           types.BoolType,
+				"access_tier":            types.StringType,
 			},
 		},
 		"cryptconfig": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"passphrase":        types.StringType,
-				"read_buffer_size":  types.Int64Type,
-				"write_buffer_size": types.Int64Type,
+				"passphrase":            types.StringType,
+				"passphrase_wo":         types.StringType,
+				"passphrase_wo_version": types.StringType,
+				"read_buffer_size":      types.Int64Type,
+				"write_buffer_size":     types.Int64Type,
 			},
 		},
 		"sftpconfig": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"endpoint":       types.StringType,
-				"username":       types.StringType,
-				"password":       types.StringType,
-				"private_key":    types.StringType,
-				"key_passphrase": types.StringType,
+				"endpoint":                  types.StringType,
+				"username":                  types.StringType,
+				"password":                  types.StringType,
+				"password_wo":               types.StringType,
+				"password_wo_version":       types.StringType,
+				"private_key":               types.StringType,
+				"private_key_wo":            types.StringType,
+				"private_key_wo_version":    types.StringType,
+				"key_passphrase":            types.StringType,
+				"key_passphrase_wo":         types.StringType,
+				"key_passphrase_wo_version": types.StringType,
 				"fingerprints": types.ListType{
 					ElemType: types.StringType,
 				},
-				"prefix":                   types.StringType,
-				"disable_concurrent_reads": types.BoolType,
-				"buffer_size":              types.Int64Type,
-				"equality_check_mode":      types.Int64Type,
-				"socks_proxy":              types.StringType,
-				"socks_username":           types.StringType,
-				"socks_password":           types.StringType,
+				"prefix":                    types.StringType,
+				"disable_concurrent_reads":  types.BoolType,
+				"buffer_size":               types.Int64Type,
+				"equality_check_mode":       types.Int64Type,
+				"socks_proxy":               types.StringType,
+				"socks_username":            types.StringType,
+				"socks_password":            types.StringType,
+				"socks_password_wo":         types.StringType,
+				"socks_password_wo_version": types.StringType,
 			},
 		},
 		"ftpconfig": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"endpoint":        types.StringType,
-				"username":        types.StringType,
-				"password":        types.StringType,
-				"tls_mode":        types.Int64Type,
-				"skip_tls_verify": types.BoolType,
+				"endpoint":            types.StringType,
+				"username":            types.StringType,
+				"password":            types.StringType,
+				"password_wo":         types.StringType,
+				"password_wo_version": types.StringType,
+				"tls_mode":            types.Int64Type,
+				"skip_tls_verify":     types.BoolType,
 			},
 		},
 		"httpconfig": types.ObjectType{
@@ -1022,7 +1072,11 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"endpoint":            types.StringType,
 				"username":            types.StringType,
 				"password":            types.StringType,
+				"password_wo":         types.StringType,
+				"password_wo_version": types.StringType,
 				"api_key":             types.StringType,
+				"api_key_wo":          types.StringType,
+				"api_key_wo_version":  types.StringType,
 				"skip_tls_verify":     types.BoolType,
 				"equality_check_mode": types.Int64Type,
 			},
@@ -1058,8 +1112,8 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 				ForcePathStyle:      f.S3Config.ForcePathStyle.ValueBool(),
 				SkipTLSVerify:       f.S3Config.SkipTLSVerify.ValueBool(),
 			},
-			AccessSecret:   getSFTPGoSecret(f.S3Config.AccessSecret.ValueString()),
-			SSECustomerKey: getSFTPGoSecret(f.S3Config.SSECustomerKey.ValueString()),
+			AccessSecret:   getSFTPGoSecret(resolveSecret(f.S3Config.AccessSecret, f.S3Config.AccessSecretWO)),
+			SSECustomerKey: getSFTPGoSecret(resolveSecret(f.S3Config.SSECustomerKey, f.S3Config.SSECustomerKeyWO)),
 		},
 		GCSConfig: client.GCSFsConfig{
 			BaseGCSFsConfig: client.BaseGCSFsConfig{
@@ -1073,7 +1127,7 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 				UploadPartSize:        f.GCSConfig.UploadPartSize.ValueInt64(),
 				UploadPartMaxTime:     int(f.GCSConfig.UploadPartMaxTime.ValueInt64()),
 			},
-			Credentials: getSFTPGoSecret(f.GCSConfig.Credentials.ValueString()),
+			Credentials: getSFTPGoSecret(resolveSecret(f.GCSConfig.Credentials, f.GCSConfig.CredentialsWO)),
 		},
 		AzBlobConfig: sdk.AzBlobFsConfig{
 			BaseAzBlobFsConfig: sdk.BaseAzBlobFsConfig{
@@ -1088,11 +1142,11 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 				UseEmulator:         f.AzBlobConfig.UseEmulator.ValueBool(),
 				AccessTier:          f.AzBlobConfig.AccessTier.ValueString(),
 			},
-			AccountKey: getSFTPGoSecret(f.AzBlobConfig.AccountKey.ValueString()),
-			SASURL:     getSFTPGoSecret(f.AzBlobConfig.SASURL.ValueString()),
+			AccountKey: getSFTPGoSecret(resolveSecret(f.AzBlobConfig.AccountKey, f.AzBlobConfig.AccountKeyWO)),
+			SASURL:     getSFTPGoSecret(resolveSecret(f.AzBlobConfig.SASURL, f.AzBlobConfig.SASURLWO)),
 		},
 		CryptConfig: sdk.CryptFsConfig{
-			Passphrase: getSFTPGoSecret(f.CryptConfig.Passphrase.ValueString()),
+			Passphrase: getSFTPGoSecret(resolveSecret(f.CryptConfig.Passphrase, f.CryptConfig.PassphraseWO)),
 			OSFsConfig: sdk.OSFsConfig{
 				ReadBufferSize:  int(f.CryptConfig.ReadBufferSize.ValueInt64()),
 				WriteBufferSize: int(f.CryptConfig.WriteBufferSize.ValueInt64()),
@@ -1109,15 +1163,15 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 				SocksProxy:              f.SFTPConfig.SocksProxy.ValueString(),
 				SocksUsername:           f.SFTPConfig.SocksUsername.ValueString(),
 			},
-			Password:      getSFTPGoSecret(f.SFTPConfig.Password.ValueString()),
-			PrivateKey:    getSFTPGoSecret(f.SFTPConfig.PrivateKey.ValueString()),
-			KeyPassphrase: getSFTPGoSecret(f.SFTPConfig.KeyPassphrase.ValueString()),
-			SocksPassword: getSFTPGoSecret(f.SFTPConfig.SocksPassword.ValueString()),
+			Password:      getSFTPGoSecret(resolveSecret(f.SFTPConfig.Password, f.SFTPConfig.PasswordWO)),
+			PrivateKey:    getSFTPGoSecret(resolveSecret(f.SFTPConfig.PrivateKey, f.SFTPConfig.PrivateKeyWO)),
+			KeyPassphrase: getSFTPGoSecret(resolveSecret(f.SFTPConfig.KeyPassphrase, f.SFTPConfig.KeyPassphraseWO)),
+			SocksPassword: getSFTPGoSecret(resolveSecret(f.SFTPConfig.SocksPassword, f.SFTPConfig.SocksPasswordWO)),
 		},
 		FTPConfig: client.FTPFsConfig{
 			Endpoint:      f.FTPConfig.Endpoint.ValueString(),
 			Username:      f.FTPConfig.Username.ValueString(),
-			Password:      getSFTPGoSecret(f.FTPConfig.Password.ValueString()),
+			Password:      getSFTPGoSecret(resolveSecret(f.FTPConfig.Password, f.FTPConfig.PasswordWO)),
 			TLSMode:       int(f.FTPConfig.TLSMode.ValueInt64()),
 			SkipTLSVerify: f.FTPConfig.SkipTLSVerify.ValueBool(),
 		},
@@ -1128,8 +1182,8 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 				SkipTLSVerify:     f.HTTPConfig.SkipTLSVerify.ValueBool(),
 				EqualityCheckMode: int(f.HTTPConfig.EqualityCheckMode.ValueInt64()),
 			},
-			Password: getSFTPGoSecret(f.HTTPConfig.Password.ValueString()),
-			APIKey:   getSFTPGoSecret(f.HTTPConfig.APIKey.ValueString()),
+			Password: getSFTPGoSecret(resolveSecret(f.HTTPConfig.Password, f.HTTPConfig.PasswordWO)),
+			APIKey:   getSFTPGoSecret(resolveSecret(f.HTTPConfig.APIKey, f.HTTPConfig.APIKeyWO)),
 		},
 	}
 
@@ -1780,21 +1834,23 @@ func (m *adminGroupMapping) fromSFTPGo(ctx context.Context, mapping *client.Admi
 }
 
 type adminResourceModel struct {
-	ID             types.String        `tfsdk:"id"`
-	Username       types.String        `tfsdk:"username"`
-	Status         types.Int64         `tfsdk:"status"`
-	Email          types.String        `tfsdk:"email"`
-	Password       types.String        `tfsdk:"password"`
-	Permissions    types.List          `tfsdk:"permissions"`
-	Filters        types.Object        `tfsdk:"filters"`
-	Preferences    types.Object        `tfsdk:"preferences"`
-	Description    types.String        `tfsdk:"description"`
-	AdditionalInfo types.String        `tfsdk:"additional_info"`
-	Groups         []adminGroupMapping `tfsdk:"groups"`
-	CreatedAt      types.Int64         `tfsdk:"created_at"`
-	UpdatedAt      types.Int64         `tfsdk:"updated_at"`
-	LastLogin      types.Int64         `tfsdk:"last_login"`
-	Role           types.String        `tfsdk:"role"`
+	ID                types.String        `tfsdk:"id"`
+	Username          types.String        `tfsdk:"username"`
+	Status            types.Int64         `tfsdk:"status"`
+	Email             types.String        `tfsdk:"email"`
+	Password          types.String        `tfsdk:"password"`
+	PasswordWO        types.String        `tfsdk:"password_wo"`
+	PasswordWOVersion types.String        `tfsdk:"password_wo_version"`
+	Permissions       types.List          `tfsdk:"permissions"`
+	Filters           types.Object        `tfsdk:"filters"`
+	Preferences       types.Object        `tfsdk:"preferences"`
+	Description       types.String        `tfsdk:"description"`
+	AdditionalInfo    types.String        `tfsdk:"additional_info"`
+	Groups            []adminGroupMapping `tfsdk:"groups"`
+	CreatedAt         types.Int64         `tfsdk:"created_at"`
+	UpdatedAt         types.Int64         `tfsdk:"updated_at"`
+	LastLogin         types.Int64         `tfsdk:"last_login"`
+	Role              types.String        `tfsdk:"role"`
 }
 
 func (a *adminResourceModel) toSFTPGo(ctx context.Context) (*client.Admin, diag.Diagnostics) {
@@ -1802,7 +1858,7 @@ func (a *adminResourceModel) toSFTPGo(ctx context.Context) (*client.Admin, diag.
 		Username:       a.Username.ValueString(),
 		Status:         int(a.Status.ValueInt64()),
 		Email:          a.Email.ValueString(),
-		Password:       a.Password.ValueString(),
+		Password:       resolveSecret(a.Password, a.PasswordWO),
 		Description:    a.Description.ValueString(),
 		AdditionalInfo: a.AdditionalInfo.ValueString(),
 		CreatedAt:      a.CreatedAt.ValueInt64(),
@@ -2049,33 +2105,43 @@ type httpPart struct {
 }
 
 type eventActionHTTPConfig struct {
-	Endpoint        types.String `tfsdk:"endpoint"`
-	Username        types.String `tfsdk:"username"`
-	Password        types.String `tfsdk:"password"`
-	Headers         []keyValue   `tfsdk:"headers"`
-	Timeout         types.Int64  `tfsdk:"timeout"`
-	SkipTLSVerify   types.Bool   `tfsdk:"skip_tls_verify"`
-	Method          types.String `tfsdk:"method"`
-	QueryParameters []keyValue   `tfsdk:"query_parameters"`
-	Body            types.String `tfsdk:"body"`
-	Parts           []httpPart   `tfsdk:"parts"`
+	Endpoint          types.String `tfsdk:"endpoint"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.String `tfsdk:"password_wo_version"`
+	Headers           []keyValue   `tfsdk:"headers"`
+	Timeout           types.Int64  `tfsdk:"timeout"`
+	SkipTLSVerify     types.Bool   `tfsdk:"skip_tls_verify"`
+	Method            types.String `tfsdk:"method"`
+	QueryParameters   []keyValue   `tfsdk:"query_parameters"`
+	Body              types.String `tfsdk:"body"`
+	Parts             []httpPart   `tfsdk:"parts"`
 }
 
 type oauth2Config struct {
-	Provider     types.Int64  `tfsdk:"provider"`
-	Tenant       types.String `tfsdk:"tenant"`
-	ClientID     types.String `tfsdk:"client_id"`
-	ClientSecret types.String `tfsdk:"client_secret"`
-	RefreshToken types.String `tfsdk:"refresh_token"`
+	Provider              types.Int64  `tfsdk:"provider"`
+	Tenant                types.String `tfsdk:"tenant"`
+	ClientID              types.String `tfsdk:"client_id"`
+	ClientSecret          types.String `tfsdk:"client_secret"`
+	ClientSecretWO        types.String `tfsdk:"client_secret_wo"`
+	ClientSecretWOVersion types.String `tfsdk:"client_secret_wo_version"`
+	RefreshToken          types.String `tfsdk:"refresh_token"`
+	RefreshTokenWO        types.String `tfsdk:"refresh_token_wo"`
+	RefreshTokenWOVersion types.String `tfsdk:"refresh_token_wo_version"`
 }
 
 func (c *oauth2Config) getTFAttributes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"provider":      types.Int64Type,
-		"tenant":        types.StringType,
-		"client_id":     types.StringType,
-		"client_secret": types.StringType,
-		"refresh_token": types.StringType,
+		"provider":                 types.Int64Type,
+		"tenant":                   types.StringType,
+		"client_id":                types.StringType,
+		"client_secret":            types.StringType,
+		"client_secret_wo":         types.StringType,
+		"client_secret_wo_version": types.StringType,
+		"refresh_token":            types.StringType,
+		"refresh_token_wo":         types.StringType,
+		"refresh_token_wo_version": types.StringType,
 	}
 }
 
@@ -2083,6 +2149,8 @@ type eventActionIMAPConfig struct {
 	Endpoint          types.String  `tfsdk:"endpoint"`
 	Username          types.String  `tfsdk:"username"`
 	Password          types.String  `tfsdk:"password"`
+	PasswordWO        types.String  `tfsdk:"password_wo"`
+	PasswordWOVersion types.String  `tfsdk:"password_wo_version"`
 	AuthType          types.Int64   `tfsdk:"auth_type"`
 	OAuth2            *oauth2Config `tfsdk:"oauth2"`
 	Mailbox           types.String  `tfsdk:"mailbox"`
@@ -2159,13 +2227,19 @@ type eventActionFsDecompress struct {
 }
 
 type eventActionPGPConfig struct {
-	Mode       types.Int64  `tfsdk:"mode"`
-	Profile    types.Int64  `tfsdk:"profile"`
-	Paths      []keyValue   `tfsdk:"paths"`
-	Password   types.String `tfsdk:"password"`
-	PrivateKey types.String `tfsdk:"private_key"`
-	Passphrase types.String `tfsdk:"passphrase"`
-	PublicKey  types.String `tfsdk:"public_key"`
+	Mode                 types.Int64  `tfsdk:"mode"`
+	Profile              types.Int64  `tfsdk:"profile"`
+	Paths                []keyValue   `tfsdk:"paths"`
+	Password             types.String `tfsdk:"password"`
+	PasswordWO           types.String `tfsdk:"password_wo"`
+	PasswordWOVersion    types.String `tfsdk:"password_wo_version"`
+	PrivateKey           types.String `tfsdk:"private_key"`
+	PrivateKeyWO         types.String `tfsdk:"private_key_wo"`
+	PrivateKeyWOVersion  types.String `tfsdk:"private_key_wo_version"`
+	Passphrase           types.String `tfsdk:"passphrase"`
+	PassphraseWO         types.String `tfsdk:"passphrase_wo"`
+	PassphraseWOVersion  types.String `tfsdk:"passphrase_wo_version"`
+	PublicKey            types.String `tfsdk:"public_key"`
 }
 
 type eventActionMetadataCheck struct {
@@ -2218,6 +2292,15 @@ type eventActionOptions struct {
 	ICAPConfig           *eventActionICAPConfig          `tfsdk:"icap_config"`
 	ShareExpiration      *eventActionShareExpiration     `tfsdk:"share_expiration_config"`
 	EventReportConfig    *eventActionEventReportConfig   `tfsdk:"event_report_config"`
+}
+
+// isEmpty reports whether the action has no sub-config set. Used to decide
+// whether to persist Options as null in state.
+func (o *eventActionOptions) isEmpty() bool {
+	return o.HTTPConfig == nil && o.CmdConfig == nil && o.EmailConfig == nil &&
+		o.RetentionConfig == nil && o.FsConfig == nil && o.PwdExpirationConfig == nil &&
+		o.UserInactivityConfig == nil && o.IDPConfig == nil && o.IMAPConfig == nil &&
+		o.ICAPConfig == nil && o.ShareExpiration == nil && o.EventReportConfig == nil
 }
 
 func (o *eventActionOptions) ensureNotNull() {
@@ -2281,9 +2364,11 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"http_config": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"endpoint": types.StringType,
-				"username": types.StringType,
-				"password": types.StringType,
+				"endpoint":            types.StringType,
+				"username":            types.StringType,
+				"password":            types.StringType,
+				"password_wo":         types.StringType,
+				"password_wo_version": types.StringType,
 				"headers": types.ListType{
 					ElemType: types.ObjectType{
 						AttrTypes: kv.getTFAttributes(),
@@ -2410,10 +2495,16 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 								AttrTypes: kv.getTFAttributes(),
 							},
 						},
-						"password":    types.StringType,
-						"private_key": types.StringType,
-						"passphrase":  types.StringType,
-						"public_key":  types.StringType,
+						"password":               types.StringType,
+						"password_wo":            types.StringType,
+						"password_wo_version":    types.StringType,
+						"private_key":            types.StringType,
+						"private_key_wo":         types.StringType,
+						"private_key_wo_version": types.StringType,
+						"passphrase":             types.StringType,
+						"passphrase_wo":          types.StringType,
+						"passphrase_wo_version":  types.StringType,
+						"public_key":             types.StringType,
 					},
 				},
 				"metadata_check": types.ObjectType{
@@ -2449,10 +2540,12 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 		},
 		"imap_config": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"endpoint":  types.StringType,
-				"username":  types.StringType,
-				"password":  types.StringType,
-				"auth_type": types.Int64Type,
+				"endpoint":            types.StringType,
+				"username":            types.StringType,
+				"password":            types.StringType,
+				"password_wo":         types.StringType,
+				"password_wo_version": types.StringType,
+				"auth_type":           types.Int64Type,
 				"oauth2": types.ObjectType{
 					AttrTypes: oauth2Config.getTFAttributes(),
 				},
@@ -2512,7 +2605,7 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 		HTTPConfig: client.EventActionHTTPConfig{
 			Endpoint:      o.HTTPConfig.Endpoint.ValueString(),
 			Username:      o.HTTPConfig.Username.ValueString(),
-			Password:      getSFTPGoSecret(o.HTTPConfig.Password.ValueString()),
+			Password:      getSFTPGoSecret(resolveSecret(o.HTTPConfig.Password, o.HTTPConfig.PasswordWO)),
 			Timeout:       int(o.HTTPConfig.Timeout.ValueInt64()),
 			SkipTLSVerify: o.HTTPConfig.SkipTLSVerify.ValueBool(),
 			Method:        o.HTTPConfig.Method.ValueString(),
@@ -2540,9 +2633,9 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			PGP: client.EventActionPGP{
 				Mode:       int(o.FsConfig.PGP.Mode.ValueInt64()),
 				Profile:    int(o.FsConfig.PGP.Profile.ValueInt64()),
-				Password:   getSFTPGoSecret(o.FsConfig.PGP.Password.ValueString()),
-				PrivateKey: getSFTPGoSecret(o.FsConfig.PGP.PrivateKey.ValueString()),
-				Passphrase: getSFTPGoSecret(o.FsConfig.PGP.Passphrase.ValueString()),
+				Password:   getSFTPGoSecret(resolveSecret(o.FsConfig.PGP.Password, o.FsConfig.PGP.PasswordWO)),
+				PrivateKey: getSFTPGoSecret(resolveSecret(o.FsConfig.PGP.PrivateKey, o.FsConfig.PGP.PrivateKeyWO)),
+				Passphrase: getSFTPGoSecret(resolveSecret(o.FsConfig.PGP.Passphrase, o.FsConfig.PGP.PassphraseWO)),
 				PublicKey:  o.FsConfig.PGP.PublicKey.ValueString(),
 			},
 			MetadataCheck: client.EventActionMetadataCheck{
@@ -2571,14 +2664,14 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 		IMAPConfig: client.EventActionIMAPConfig{
 			Endpoint: o.IMAPConfig.Endpoint.ValueString(),
 			Username: o.IMAPConfig.Username.ValueString(),
-			Password: getSFTPGoSecret(o.IMAPConfig.Password.ValueString()),
+			Password: getSFTPGoSecret(resolveSecret(o.IMAPConfig.Password, o.IMAPConfig.PasswordWO)),
 			AuthType: int(o.IMAPConfig.AuthType.ValueInt64()),
 			OAuth2: client.OAuth2Config{
 				Provider:     int(o.IMAPConfig.OAuth2.Provider.ValueInt64()),
 				Tenant:       o.IMAPConfig.OAuth2.Tenant.ValueString(),
 				ClientID:     o.IMAPConfig.OAuth2.ClientID.ValueString(),
-				ClientSecret: getSFTPGoSecret(o.IMAPConfig.OAuth2.ClientSecret.ValueString()),
-				RefreshToken: getSFTPGoSecret(o.IMAPConfig.OAuth2.RefreshToken.ValueString()),
+				ClientSecret: getSFTPGoSecret(resolveSecret(o.IMAPConfig.OAuth2.ClientSecret, o.IMAPConfig.OAuth2.ClientSecretWO)),
+				RefreshToken: getSFTPGoSecret(resolveSecret(o.IMAPConfig.OAuth2.RefreshToken, o.IMAPConfig.OAuth2.RefreshTokenWO)),
 			},
 			Mailbox:           o.IMAPConfig.Mailbox.ValueString(),
 			Path:              o.IMAPConfig.Path.ValueString(),
@@ -3071,6 +3164,13 @@ func (a *eventActionResourceModel) fromSFTPGo(ctx context.Context, action *clien
 	if diags.HasError() {
 		return diags
 	}
+	// When the server has no options for this action type, keep Options null
+	// so the Optional-only attribute stays consistent with configs that don't
+	// specify the `options` block.
+	if opts.isEmpty() {
+		a.Options = types.ObjectNull(opts.getTFAttributes())
+		return nil
+	}
 	options, diags := types.ObjectValueFrom(ctx, opts.getTFAttributes(), opts)
 	if diags.HasError() {
 		return diags
@@ -3495,6 +3595,18 @@ func getOptionalBool(val bool) types.Bool {
 
 var supportedSecretStatues = []string{kms.SecretStatusSecretBox, kms.SecretStatusAES256GCM, kms.SecretStatusGCP,
 	kms.SecretStatusAWS, kms.SecretStatusVaultTransit, kms.SecretStatusAzureKeyVault}
+
+// resolveSecret returns the secret value to send to SFTPGo.
+// The write-only value takes precedence over the legacy plaintext attribute:
+// the two are mutually exclusive at schema level, so only one will be set in
+// any given configuration. Both are accepted in plaintext or SFTPGo secret
+// format.
+func resolveSecret(legacy, writeOnly types.String) string {
+	if !writeOnly.IsNull() && !writeOnly.IsUnknown() {
+		return writeOnly.ValueString()
+	}
+	return legacy.ValueString()
+}
 
 func getSFTPGoSecret(val string) kms.BaseSecret {
 	if val == "" {

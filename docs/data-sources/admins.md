@@ -34,6 +34,8 @@ Read-Only:
 - `id` (String) Matches the `username` attribute.
 - `last_login` (Number) Last login as unix timestamp in milliseconds.
 - `password` (String) Password hash saved in the SFTPGo data provider.
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `permissions` (List of String) Granted permissions.
 - `preferences` (Attributes) Admin preferences. (see [below for nested schema](#nestedatt--admins--preferences))
 - `role` (String) Role name. If set the admin can only administer users with the same role.

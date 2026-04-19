@@ -13,11 +13,12 @@ provider "sftpgo" {
 }
 
 resource "sftpgo_user" "test" {
-    username    = "test"
-    status      = 1
-    password    = "password"
-    home_dir    = "/tmp/test1"
-    email       = "test@test.com"
+    username            = "test"
+    status              = 1
+    password_wo         = "password"
+    password_wo_version = "1"
+    home_dir            = "/tmp/test1"
+    email               = "test@test.com"
     permissions = {
         "/" = "*",
         "/p1" = "list,download"
@@ -25,10 +26,11 @@ resource "sftpgo_user" "test" {
     filesystem = {
       provider = 1
       s3config = {
-        bucket = "abc"
-        region = "us-west-1"
-        access_key = "key"
-        access_secret = "secret payload"
+        bucket                     = "abc"
+        region                     = "us-west-1"
+        access_key                 = "key"
+        access_secret_wo           = "secret payload"
+        access_secret_wo_version   = "1"
       }
     }
     groups = [

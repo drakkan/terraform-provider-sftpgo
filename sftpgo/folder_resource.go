@@ -23,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
@@ -108,6 +109,12 @@ func (r *folderResource) Create(ctx context.Context, req resource.CreateRequest,
 	// Retrieve values from plan
 	var plan virtualFolderResourceModel
 	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -200,6 +207,13 @@ func (r *folderResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	folder, diags := plan.toSFTPGo(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -300,5 +314,40 @@ func (*folderResource) preservePlanFields(ctx context.Context, plan, state *virt
 	}
 	state.FsConfig = fs
 
+	return nil
+}
+
+// applyWriteOnlyConfig copies write-only secret values from req.Config into
+// the plan's filesystem block.
+func (*folderResource) applyWriteOnlyConfig(ctx context.Context, cfg tfsdk.Config, plan *virtualFolderResourceModel) diag.Diagnostics {
+	var config virtualFolderResourceModel
+	diags := cfg.Get(ctx, &config)
+	if diags.HasError() {
+		return diags
+	}
+	if config.FsConfig.IsNull() || plan.FsConfig.IsNull() {
+		return nil
+	}
+	var fsConfig filesystem
+	diags = config.FsConfig.As(ctx, &fsConfig, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	var fsPlan filesystem
+	diags = plan.FsConfig.As(ctx, &fsPlan, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	fs, diags := applyFsConfigWriteOnly(ctx, fsConfig, fsPlan)
+	if diags.HasError() {
+		return diags
+	}
+	plan.FsConfig = fs
 	return nil
 }

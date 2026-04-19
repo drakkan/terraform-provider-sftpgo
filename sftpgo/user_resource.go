@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -26,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
@@ -96,7 +98,20 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"password": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
-				Description: "Plain text password or hash format supported by SFTPGo. Set to empty to remove the password.",
+				Description: "Plain text password or hash format supported by SFTPGo. Set to empty to remove the password. Mutually exclusive with `password_wo`.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("password_wo")),
+				},
+			},
+			"password_wo": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
+				Description: "Write-only variant of `password`. " + writeOnlyDescriptionGeneric,
+			},
+			"password_wo_version": schema.StringAttribute{
+				Optional:    true,
+				Description: "Trigger attribute for `password_wo`. " + writeOnlyVersionDescGeneric,
 			},
 			"public_keys": schema.ListAttribute{
 				ElementType: types.StringType,
@@ -255,6 +270,13 @@ func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	// Write-only attributes are not in the plan: read them from the config.
+	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	user, diags := plan.toSFTPGo(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -342,6 +364,14 @@ func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Write-only attributes are not in the plan: read them from the config.
+	diags = r.applyWriteOnlyConfig(ctx, req.Config, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	user, diags := plan.toSFTPGo(ctx)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -416,9 +446,11 @@ func (*userResource) ImportState(ctx context.Context, req resource.ImportStateRe
 }
 
 func (*userResource) preservePlanFields(ctx context.Context, plan, state *userResourceModel) diag.Diagnostics {
-	if !plan.Password.IsNull() {
-		state.Password = plan.Password
-	}
+	// Mirror the plan: if the user supplied the legacy password keep it,
+	// otherwise force state to null so a WriteOnly-only config doesn't
+	// surface the server-returned hash on an Optional-only attribute.
+	state.Password = plan.Password
+	state.PasswordWOVersion = plan.PasswordWOVersion
 
 	if plan.FsConfig.IsNull() {
 		return nil
@@ -447,5 +479,44 @@ func (*userResource) preservePlanFields(ctx context.Context, plan, state *userRe
 	}
 	state.FsConfig = fs
 
+	return nil
+}
+
+// applyWriteOnlyConfig copies write-only attribute values from the
+// configuration into the plan. Write-only values are never stored in plan or
+// state, so they must be read from req.Config on every Create/Update.
+func (*userResource) applyWriteOnlyConfig(ctx context.Context, cfg tfsdk.Config, plan *userResourceModel) diag.Diagnostics {
+	var config userResourceModel
+	diags := cfg.Get(ctx, &config)
+	if diags.HasError() {
+		return diags
+	}
+	plan.PasswordWO = config.PasswordWO
+
+	if config.FsConfig.IsNull() {
+		return nil
+	}
+
+	var fsConfig filesystem
+	diags = config.FsConfig.As(ctx, &fsConfig, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	var fsPlan filesystem
+	diags = plan.FsConfig.As(ctx, &fsPlan, basetypes.ObjectAsOptions{
+		UnhandledNullAsEmpty:    true,
+		UnhandledUnknownAsEmpty: true,
+	})
+	if diags.HasError() {
+		return diags
+	}
+	fs, diags := applyFsConfigWriteOnly(ctx, fsConfig, fsPlan)
+	if diags.HasError() {
+		return diags
+	}
+	plan.FsConfig = fs
 	return nil
 }

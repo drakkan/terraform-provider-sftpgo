@@ -1461,6 +1461,61 @@ EOF
 	})
 }
 
+func TestAccActionResource_writeOnly(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create an HTTP action using password_wo.
+			{
+				Config: `
+					resource "sftpgo_action" "wo" {
+					  name = "wo_http_action"
+					  type = 1
+					  options = {
+					    http_config = {
+					      endpoint            = "http://127.0.0.1:9999/"
+					      method              = "GET"
+					      timeout             = 10
+					      password_wo         = "initial_secret"
+					      password_wo_version = "1"
+					    }
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.wo", "name", "wo_http_action"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.wo", "options.http_config.password_wo"),
+					resource.TestCheckResourceAttr("sftpgo_action.wo", "options.http_config.password_wo_version", "1"),
+				),
+			},
+			// Bump version to rotate the secret.
+			{
+				Config: `
+					resource "sftpgo_action" "wo" {
+					  name = "wo_http_action"
+					  type = 1
+					  options = {
+					    http_config = {
+					      endpoint            = "http://127.0.0.1:9999/"
+					      method              = "GET"
+					      timeout             = 10
+					      password_wo         = "rotated_secret"
+					      password_wo_version = "2"
+					    }
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.wo", "options.http_config.password_wo_version", "2"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.wo", "options.http_config.password_wo"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccActionResource_renameForcesReplace(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

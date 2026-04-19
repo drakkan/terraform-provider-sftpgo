@@ -95,6 +95,14 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											Computed:    true,
 											Description: computedSecretDescription,
 										},
+										"password_wo": schema.StringAttribute{
+											Computed:    true,
+											Description: "Write-only attribute placeholder. Always null in data source reads.",
+										},
+										"password_wo_version": schema.StringAttribute{
+											Computed:    true,
+											Description: "Write-only trigger attribute placeholder. Always null in data source reads.",
+										},
 										"headers": schema.ListNestedAttribute{
 											Computed:    true,
 											Description: `Headers to add to the HTTP request.`,
@@ -423,13 +431,37 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 													Computed:    true,
 													Description: computedSecretDescription,
 												},
+												"password_wo": schema.StringAttribute{
+													Computed:    true,
+													Description: "Write-only attribute placeholder. Always null in data source reads.",
+												},
+												"password_wo_version": schema.StringAttribute{
+													Computed:    true,
+													Description: "Write-only trigger attribute placeholder. Always null in data source reads.",
+												},
 												"private_key": schema.StringAttribute{
 													Computed:    true,
 													Description: computedSecretDescription,
 												},
+												"private_key_wo": schema.StringAttribute{
+													Computed:    true,
+													Description: "Write-only attribute placeholder. Always null in data source reads.",
+												},
+												"private_key_wo_version": schema.StringAttribute{
+													Computed:    true,
+													Description: "Write-only trigger attribute placeholder. Always null in data source reads.",
+												},
 												"passphrase": schema.StringAttribute{
 													Computed:    true,
 													Description: computedSecretDescription,
+												},
+												"passphrase_wo": schema.StringAttribute{
+													Computed:    true,
+													Description: "Write-only attribute placeholder. Always null in data source reads.",
+												},
+												"passphrase_wo_version": schema.StringAttribute{
+													Computed:    true,
+													Description: "Write-only trigger attribute placeholder. Always null in data source reads.",
 												},
 												"public_key": schema.StringAttribute{
 													Computed:    true,
@@ -534,6 +566,14 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 											Sensitive:   true,
 											Description: computedSecretDescription,
 										},
+										"password_wo": schema.StringAttribute{
+											Computed:    true,
+											Description: "Write-only attribute placeholder. Always null in data source reads.",
+										},
+										"password_wo_version": schema.StringAttribute{
+											Computed:    true,
+											Description: "Write-only trigger attribute placeholder. Always null in data source reads.",
+										},
 										"auth_type": schema.Int64Attribute{
 											Computed: true,
 											MarkdownDescription: "Authentication type.\n\n" +
@@ -564,10 +604,26 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 													Sensitive:   true,
 													Description: computedSecretDescription,
 												},
+												"client_secret_wo": schema.StringAttribute{
+													Computed:    true,
+													Description: "Write-only attribute placeholder. Always null in data source reads.",
+												},
+												"client_secret_wo_version": schema.StringAttribute{
+													Computed:    true,
+													Description: "Write-only trigger attribute placeholder. Always null in data source reads.",
+												},
 												"refresh_token": schema.StringAttribute{
 													Computed:    true,
 													Sensitive:   true,
 													Description: computedSecretDescription,
+												},
+												"refresh_token_wo": schema.StringAttribute{
+													Computed:    true,
+													Description: "Write-only attribute placeholder. Always null in data source reads.",
+												},
+												"refresh_token_wo_version": schema.StringAttribute{
+													Computed:    true,
+													Description: "Write-only trigger attribute placeholder. Always null in data source reads.",
 												},
 											},
 										},

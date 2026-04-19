@@ -373,7 +373,7 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./", "list,download"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.provider", "4"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.%", "3"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.%", "5"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.passphrase", "test pwd"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.read_buffer_size", "4"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.write_buffer_size", "3"),
@@ -629,6 +629,106 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 				ImportStateVerify: false, // SFTPGo will not return plain text password/secrets
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccUserResource_writeOnly(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create: top-level password_wo plus a nested S3 access_secret_wo.
+			{
+				Config: `
+					resource "sftpgo_user" "wo" {
+					  username            = "wo_user"
+					  status              = 1
+					  password_wo         = "initial_pwd"
+					  password_wo_version = "1"
+					  home_dir            = "/tmp/wo_user"
+					  permissions         = { "/" = "*" }
+					  filesystem = {
+					    provider = 1
+					    s3config = {
+					      bucket                      = "mybucket"
+					      region                      = "us-east-1"
+					      access_key                  = "AKIA"
+					      access_secret_wo            = "s3_secret_v1"
+					      access_secret_wo_version    = "1"
+					    }
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.wo", "username", "wo_user"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.wo", "password"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.wo", "password_wo"),
+					resource.TestCheckResourceAttr("sftpgo_user.wo", "password_wo_version", "1"),
+					// The plaintext access_secret must not be in state either.
+					resource.TestCheckNoResourceAttr("sftpgo_user.wo", "filesystem.s3config.access_secret_wo"),
+					resource.TestCheckResourceAttr("sftpgo_user.wo", "filesystem.s3config.access_secret_wo_version", "1"),
+				),
+			},
+			// Rotate both secrets by bumping their versions.
+			{
+				Config: `
+					resource "sftpgo_user" "wo" {
+					  username            = "wo_user"
+					  status              = 1
+					  password_wo         = "rotated_pwd"
+					  password_wo_version = "2"
+					  home_dir            = "/tmp/wo_user"
+					  permissions         = { "/" = "*" }
+					  filesystem = {
+					    provider = 1
+					    s3config = {
+					      bucket                      = "mybucket"
+					      region                      = "us-east-1"
+					      access_key                  = "AKIA"
+					      access_secret_wo            = "s3_secret_v2"
+					      access_secret_wo_version    = "2"
+					    }
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.wo", "password_wo_version", "2"),
+					resource.TestCheckResourceAttr("sftpgo_user.wo", "filesystem.s3config.access_secret_wo_version", "2"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.wo", "password_wo"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.wo", "filesystem.s3config.access_secret_wo"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccUserResource_legacyPasswordStillWorks verifies the non write-only
+// password attribute keeps working for backwards compatibility.
+func TestAccUserResource_legacyPasswordStillWorks(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_user" "legacy" {
+					  username    = "legacy_user"
+					  status      = 1
+					  password    = "legacy_pwd"
+					  home_dir    = "/tmp/legacy_user"
+					  permissions = { "/" = "*" }
+					  filesystem  = { provider = 0 }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.legacy", "password", "legacy_pwd"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.legacy", "password_wo_version"),
+				),
+			},
 		},
 	})
 }

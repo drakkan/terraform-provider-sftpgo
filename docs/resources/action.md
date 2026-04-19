@@ -43,7 +43,7 @@ Supported values:
 ### Optional
 
 - `description` (String) Optional description.
-- `options` (Attributes) Configuration options specific for the action type. (see [below for nested schema](#nestedatt--options))
+- `options` (Attributes) Configuration options specific for the action type. Must be specified (use `options = {}` when the action type has no options). Defaults are no longer auto-populated from the server because this block contains write-only attributes. (see [below for nested schema](#nestedatt--options))
 
 ### Read-Only
 
@@ -208,9 +208,15 @@ Required:
 
 Optional:
 
-- `passphrase` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
-- `password` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
-- `private_key` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `passphrase` (String, Sensitive, Deprecated) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Mutually exclusive with `passphrase_wo`.
+- `passphrase_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `passphrase`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `passphrase_wo_version` (String) Trigger attribute for `passphrase_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
+- `password` (String, Sensitive, Deprecated) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Mutually exclusive with `password_wo`.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `password_wo_version` (String) Trigger attribute for `password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
+- `private_key` (String, Sensitive, Deprecated) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Mutually exclusive with `private_key_wo`.
+- `private_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `private_key`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `private_key_wo_version` (String) Trigger attribute for `private_key_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `profile` (Number) Algorithms to use. 0 = Default (widely implemented algorithms), 1 = RFC 4880, 2 = RFC 9580. Don't set to use the default.
 - `public_key` (String) PGP public key in ASCII-armored format.
 
@@ -251,7 +257,9 @@ Optional:
 - `body` (String) Request body for POST/PUT.
 - `headers` (Attributes List) Headers to add to the HTTP request. (see [below for nested schema](#nestedatt--options--http_config--headers))
 - `parts` (Attributes List) Multipart requests allow to combine one or more sets of data into a single body. For each part, you can set a file path or a body as text. Placeholders are supported in file path, body, header values. (see [below for nested schema](#nestedatt--options--http_config--parts))
-- `password` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password` (String, Sensitive, Deprecated) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Mutually exclusive with `password_wo`.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `password_wo_version` (String) Trigger attribute for `password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `query_parameters` (Attributes List) Query parameters to add to the HTTP request. (see [below for nested schema](#nestedatt--options--http_config--query_parameters))
 - `skip_tls_verify` (Boolean) If enabled any certificate presented by the server and any host name in that certificate are accepted. In this mode, TLS is susceptible to machine-in-the-middle attacks.
 - `timeout` (Number) Time limit for the request in seconds. Ignored for multipart requests with files as attachments. For non multipart requests is required Ignored for multipart requests with files as attachments otherwise required and must be between 1 and 120
@@ -374,7 +382,9 @@ Supported values:
 * `1`: Plain
 - `mailbox` (String) Mailbox to check, e.g. `INBOX`.
 - `oauth2` (Attributes) (see [below for nested schema](#nestedatt--options--imap_config--oauth2))
-- `password` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password` (String, Sensitive, Deprecated) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Mutually exclusive with `password_wo`.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `password_wo_version` (String) Trigger attribute for `password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `path` (String) Directory path where downloaded attachments will be stored.
 - `post_process_action` (Number) Action to perform on the email after processing.
 
@@ -392,13 +402,17 @@ Supported values:
 Optional:
 
 - `client_id` (String) OAuth2 Client ID.
-- `client_secret` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `client_secret` (String, Sensitive, Deprecated) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Mutually exclusive with `client_secret_wo`.
+- `client_secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `client_secret`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `client_secret_wo_version` (String) Trigger attribute for `client_secret_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `provider` (Number) OAuth2 Provider.
 
 Supported values:
 * `0`: Google
 * `1`: Microsoft
-- `refresh_token` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `refresh_token` (String, Sensitive, Deprecated) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Mutually exclusive with `refresh_token_wo`.
+- `refresh_token_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `refresh_token`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `refresh_token_wo_version` (String) Trigger attribute for `refresh_token_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `tenant` (String) OAuth2 Tenant.
 
 

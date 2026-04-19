@@ -22,7 +22,7 @@ Group
 ### Optional
 
 - `description` (String) Optional description.
-- `user_settings` (Attributes) Settings to apply to users (see [below for nested schema](#nestedatt--user_settings))
+- `user_settings` (Attributes) Settings to apply to users. Omit this block entirely to create a group with no default settings. When present, the nested `filesystem` block must be set explicitly (e.g. `filesystem = { provider = 0 }` for local). Defaults are no longer auto-populated from the server because this block contains write-only attributes. (see [below for nested schema](#nestedatt--user_settings))
 - `virtual_folders` (Attributes List) (see [below for nested schema](#nestedatt--virtual_folders))
 
 ### Read-Only
@@ -36,7 +36,7 @@ Group
 
 Required:
 
-- `filesystem` (Attributes) Filesystem configuration. (see [below for nested schema](#nestedatt--user_settings--filesystem))
+- `filesystem` (Attributes) Filesystem configuration. This block must be set explicitly: for the default local filesystem pass `filesystem = { provider = 0 }`. Defaults are no longer auto-populated from the server because the block contains write-only attributes. (see [below for nested schema](#nestedatt--user_settings--filesystem))
 
 Optional:
 
@@ -77,14 +77,18 @@ Optional:
 Optional:
 
 - `access_tier` (String) Blob Access Tier. Not set means the container default.
-- `account_key` (String, Sensitive) Plain text account key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `account_key` (String, Sensitive, Deprecated) Plain text account key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `account_key_wo`.
+- `account_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `account_key`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `account_key_wo_version` (String) Trigger attribute for `account_key_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `account_name` (String) Storage account name. Leave blank to use SAS URL.
 - `container` (String) Azure Blob Storage container name.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Default: 5.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads. If this value is not set, the default value (5MB) will be used.
 - `endpoint` (String) Optional endpoint. Default is "blob.core.windows.net". If you use the emulator the endpoint must include the protocol, for example "http://127.0.0.1:10000".
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"
-- `sas_url` (String, Sensitive) Plain text SAS URL. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `sas_url` (String, Sensitive, Deprecated) Plain text SAS URL. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `sas_url_wo`.
+- `sas_url_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `sas_url`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `sas_url_wo_version` (String) Trigger attribute for `sas_url_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `upload_concurrency` (Number) How many parts are uploaded in parallel. Default: 5.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads. If this value is not set, the default value (5MB) will be used.
 - `use_emulator` (Boolean) If true, the Azure Storage Emulator (Azurite) is used instead of the cloud service.
@@ -95,7 +99,9 @@ Optional:
 
 Optional:
 
-- `passphrase` (String, Sensitive) Plain text passphrase. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `passphrase` (String, Sensitive, Deprecated) Plain text passphrase. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `passphrase_wo`.
+- `passphrase_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `passphrase`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `passphrase_wo_version` (String) Trigger attribute for `passphrase_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads. Omit to disable buffering, that's fine in most use cases.
 - `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads. Omit to disable buffering, that's fine in most use cases.
 
@@ -110,7 +116,9 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `password` (String, Sensitive, Deprecated) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `password_wo`.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `password_wo_version` (String) Trigger attribute for `password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the FTP server is not verified.
 - `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
 
@@ -126,7 +134,9 @@ Optional:
 
 - `acl` (String) The ACL to apply to uploaded objects. Not set means the bucket default.
 - `automatic_credentials` (Number) 0 = disabled, explicit JSON credentials must be provided (default); 1 = enabled, use Application Default Credentials (ADC) to find credentials.
-- `credentials` (String, Sensitive) Plain text credentials. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `credentials` (String, Sensitive, Deprecated) Plain text credentials. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `credentials_wo`.
+- `credentials_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `credentials`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `credentials_wo_version` (String) Trigger attribute for `credentials_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `hns` (Number) Set to 1 if Hierarchical namespace is enabled for the bucket. Available in the Enterprise edition.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"
 - `storage_class` (String) The storage class to use when storing objects. Leave not set for default.
@@ -144,9 +154,13 @@ Required:
 
 Optional:
 
-- `api_key` (String, Sensitive) Plain text API key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `api_key` (String, Sensitive, Deprecated) Plain text API key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `api_key_wo`.
+- `api_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `api_key`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `api_key_wo_version` (String) Trigger attribute for `api_key_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `equality_check_mode` (Number) Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.
-- `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `password` (String, Sensitive, Deprecated) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `password_wo`.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `password_wo_version` (String) Trigger attribute for `password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.
 - `username` (String) Username for HTTP basic authentication.
 
@@ -170,7 +184,9 @@ Required:
 Optional:
 
 - `access_key` (String) AWS Access Key ID for authentication. Leave blank when using IAM roles or instance profiles.
-- `access_secret` (String, Sensitive) Plain text access secret. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `access_secret` (String, Sensitive, Deprecated) Plain text access secret. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `access_secret_wo`.
+- `access_secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `access_secret`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `access_secret_wo_version` (String) Trigger attribute for `access_secret_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `acl` (String) The canned ACL to apply to uploaded objects. Not set means the bucket default.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Not set means the default (5). Ignored for partial downloads.
 - `download_part_max_time` (Number) The maximum time allowed, in seconds, to download a single chunk. Not set means no timeout. Ignored for partial downloads.
@@ -182,7 +198,9 @@ Optional:
 - `role_arn` (String) Optional IAM Role ARN to assume.
 - `session_token` (String) Optional Session token that is a part of temporary security credentials provisioned by AWS STS.
 - `skip_tls_verify` (Boolean) If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.
-- `sse_customer_key` (String, Sensitive) Plain text Server-Side encryption key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
+- `sse_customer_key` (String, Sensitive, Deprecated) Plain text Server-Side encryption key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `sse_customer_key_wo`.
+- `sse_customer_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `sse_customer_key`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `sse_customer_key_wo_version` (String) Trigger attribute for `sse_customer_key_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `storage_class` (String) The storage class to use when storing objects. Leave not set for default.
 - `upload_concurrency` (Number) How many parts are uploaded in parallel. Not set means the default (5).
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.
@@ -204,10 +222,18 @@ Optional:
 - `disable_concurrent_reads` (Boolean) Concurrent reads are safe to use and disabling them will degrade performance so they are enabled by default. Some servers automatically delete files once they are downloaded. Using concurrent reads is problematic with such servers.
 - `equality_check_mode` (Number) Defines how to check if this config points to the same server as another config. By default both the endpoint and the username must match. 1 means that only the endpoint must match. If different configs point to the same server the renaming between the fs configs is allowed.
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server. If not set any host key will be accepted: this is a security risk.
-- `key_passphrase` (String, Sensitive) Plain text passphrase for the private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
-- `password` (String, Sensitive) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
-- `private_key` (String, Sensitive) Plain text private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).
-- `socks_password` (String, Sensitive) Plain text SOCKS password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Available in the Enterprise edition.
+- `key_passphrase` (String, Sensitive, Deprecated) Plain text passphrase for the private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `key_passphrase_wo`.
+- `key_passphrase_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `key_passphrase`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `key_passphrase_wo_version` (String) Trigger attribute for `key_passphrase_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
+- `password` (String, Sensitive, Deprecated) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `password_wo`.
+- `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `password_wo_version` (String) Trigger attribute for `password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
+- `private_key` (String, Sensitive, Deprecated) Plain text private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `private_key_wo`.
+- `private_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `private_key`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `private_key_wo_version` (String) Trigger attribute for `private_key_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
+- `socks_password` (String, Sensitive, Deprecated) Plain text SOCKS password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `socks_password_wo`. Available in the Enterprise edition.
+- `socks_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `socks_password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
+- `socks_password_wo_version` (String) Trigger attribute for `socks_password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `socks_proxy` (String) The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. Available in the Enterprise edition.
 - `socks_username` (String) The optional SOCKS username. Available in the Enterprise edition.
 
@@ -364,6 +390,8 @@ Read-Only:
 
 - `access_tier` (String) Blob access tier. Valid values: empty, Archive, Hot, Cool.
 - `account_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `account_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `account_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `account_name` (String) Storage account name. Leave blank to use SAS URL.
 - `container` (String) Azure Blob Storage container name.
 - `download_concurrency` (Number) How many parts are downloaded in parallel.
@@ -371,6 +399,8 @@ Read-Only:
 - `endpoint` (String) Optional endpoint
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `sas_url` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `sas_url_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `sas_url_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `upload_concurrency` (Number) How many parts are uploaded in parallel.
 - `upload_part_size` (Number) The buffer size (in MB) to use for multipart uploads.
 - `use_emulator` (Boolean) If true, the Azure Storage Emulator (Azurite) is used instead of the cloud service.
@@ -382,6 +412,8 @@ Read-Only:
 Read-Only:
 
 - `passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `passphrase_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `passphrase_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `read_buffer_size` (Number) Optional read buffer size, as MB, to use for downloads.
 - `write_buffer_size` (Number) Optional write buffer size, as MB, to use for uploads.
 
@@ -393,6 +425,8 @@ Read-Only:
 
 - `endpoint` (String) FTP endpoint as host:port.
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the FTP server is not verified.
 - `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
 - `username` (String) Username for FTP authentication.
@@ -407,6 +441,8 @@ Read-Only:
 - `automatic_credentials` (Number) If set to 1 SFTPGo will use credentials from the environment
 - `bucket` (String) GCS bucket name.
 - `credentials` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `credentials_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `credentials_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `hns` (Number) 1 if Hierarchical namespace support is enabled for the bucket. Available in the Enterprise edition.
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
 - `storage_class` (String) Google Cloud Storage class for uploaded objects (e.g. STANDARD, NEARLINE, COLDLINE, ARCHIVE). Leave empty for the default storage class.
@@ -421,9 +457,13 @@ Read-Only:
 Read-Only:
 
 - `api_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `api_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `api_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `endpoint` (String) HTTP/S endpoint URL. SFTPGo uses this URL as base; for example for the `stat` API, SFTPGo appends `/stat/{name}`.
 - `equality_check_mode` (Number) Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.
 - `username` (String) Username for HTTP basic authentication.
 
@@ -444,6 +484,8 @@ Read-Only:
 
 - `access_key` (String) AWS Access Key ID for authentication. Leave blank when using IAM roles or instance profiles.
 - `access_secret` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `access_secret_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `access_secret_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String) S3 bucket name.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
@@ -457,6 +499,8 @@ Read-Only:
 - `session_token` (String) Optional Session token that is a part of temporary security credentials provisioned by AWS STS.
 - `skip_tls_verify` (Boolean) If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.
 - `sse_customer_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `sse_customer_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `sse_customer_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `storage_class` (String) S3 storage class for uploaded objects (e.g. STANDARD, STANDARD_IA, GLACIER). Leave empty for the default storage class.
 - `upload_concurrency` (Number) How many parts are uploaded in parallel. Not set means the default (5).
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. Not set means no timeout.
@@ -474,10 +518,18 @@ Read-Only:
 - `equality_check_mode` (Number) Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.
 - `key_passphrase` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `key_passphrase_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `key_passphrase_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `prefix` (String) Restrict access to this path.
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
+- `private_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `private_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `socks_password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Available in the Enterprise edition.
+- `socks_password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
+- `socks_password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `socks_proxy` (String) The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. Available in the Enterprise edition.
 - `socks_username` (String) The optional SOCKS username. Available in the Enterprise edition.
 - `username` (String) Username for SFTP authentication.
