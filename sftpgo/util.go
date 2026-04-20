@@ -1075,11 +1075,11 @@ func getComputedSchemaForUserFilters(isGroup bool) dsschema.SingleNestedAttribut
 			},
 			"password_strength": dsschema.Int64Attribute{
 				Computed:    true,
-				Description: "Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.",
+				Description: "Minimum password entropy enforced when a password is set. Not set means no per-user value: the primary group's password_strength is used, otherwise the system-level data_provider.password_validation default. A non-zero value overrides the system default (the override may be less strict than the system default). Values in the 50-70 range are suggested for common use cases.",
 			},
 			"password_policy": dsschema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "Static password complexity requirements. Whenever possible, prefer using the entropy-based approach provided by password_strength. " + enterpriseFeatureNote,
+				Description: "Static password complexity requirements. Each field overrides the primary group's corresponding value, which in turn overrides the system-level data_provider.password_validation default (overrides may be less strict than the system default). Whenever possible, prefer using the entropy-based approach provided by password_strength. " + enterpriseFeatureNote,
 				Attributes: map[string]dsschema.Attribute{
 					"length": dsschema.Int64Attribute{
 						Optional:    true,
@@ -1349,11 +1349,11 @@ func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 			},
 			"password_strength": schema.Int64Attribute{
 				Optional:    true,
-				Description: "Minimum password strength. Not set means disabled, any password will be accepted. Values in the 50-70 range are suggested for common use cases.",
+				Description: "Minimum password entropy enforced when a password is set. Not set means no per-user value: the primary group's password_strength is used, otherwise the system-level data_provider.password_validation default. A non-zero value overrides the system default (the override may be less strict than the system default). Values in the 50-70 range are suggested for common use cases.",
 			},
 			"password_policy": schema.SingleNestedAttribute{
 				Optional:    true,
-				Description: "Static password complexity requirements. Whenever possible, prefer using the entropy-based approach provided by password_strength. " + enterpriseFeatureNote,
+				Description: "Static password complexity requirements. Each field overrides the primary group's corresponding value, which in turn overrides the system-level data_provider.password_validation default (overrides may be less strict than the system default). Whenever possible, prefer using the entropy-based approach provided by password_strength. " + enterpriseFeatureNote,
 				Attributes: map[string]schema.Attribute{
 					"length": schema.Int64Attribute{
 						Optional:    true,
