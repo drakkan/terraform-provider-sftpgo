@@ -148,6 +148,10 @@ func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
 						Computed:    true,
 						Description: `If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.`,
 					},
+					"checksum_algorithm": dsschema.StringAttribute{
+						Computed:    true,
+						Description: "Checksum algorithm to compute and send with uploads (PutObject, multipart upload, CopyObject) for end-to-end integrity verification. Empty means no checksum is sent. " + enterpriseFeatureNote + ".",
+					},
 				},
 			},
 			"gcsconfig": dsschema.SingleNestedAttribute{
@@ -529,6 +533,13 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"skip_tls_verify": schema.BoolAttribute{
 						Optional:    true,
 						Description: `If set the S3 client accepts any TLS certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.`,
+					},
+					"checksum_algorithm": schema.StringAttribute{
+						Optional:    true,
+						Description: `Checksum algorithm to compute and send with uploads (PutObject, multipart upload, CopyObject) for end-to-end integrity verification. Leave empty (default) for maximum compatibility with S3-compatible services. Supported values: "crc32", "crc32c", "crc64nvme", "sha1", "sha256". ` + enterpriseFeatureNote + ".",
+						Validators: []validator.String{
+							stringvalidator.OneOf("", "crc32", "crc32c", "crc64nvme", "sha1", "sha256"),
+						},
 					},
 				},
 			},

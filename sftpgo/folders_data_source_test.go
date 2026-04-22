@@ -37,13 +37,15 @@ var (
 		},
 		FsConfig: client.Filesystem{
 			Provider: 1,
-			S3Config: sdk.S3FsConfig{
-				BaseS3FsConfig: sdk.BaseS3FsConfig{
-					Bucket:           "s3bucket",
-					AccessKey:        "my key",
-					Region:           "us-west-1",
-					DownloadPartSize: 100,
-					SkipTLSVerify:    true,
+			S3Config: client.S3FsConfig{
+				BaseS3FsConfig: client.BaseS3FsConfig{
+					BaseS3FsConfig: sdk.BaseS3FsConfig{
+						Bucket:           "s3bucket",
+						AccessKey:        "my key",
+						Region:           "us-west-1",
+						DownloadPartSize: 100,
+						SkipTLSVerify:    true,
+					},
 				},
 				AccessSecret: kms.BaseSecret{
 					Status:  kms.SecretStatusPlain,

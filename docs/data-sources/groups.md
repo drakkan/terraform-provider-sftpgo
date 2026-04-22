@@ -172,6 +172,7 @@ Read-Only:
 - `access_secret_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String) S3 bucket name.
+- `checksum_algorithm` (String) Checksum algorithm to compute and send with uploads (PutObject, multipart upload, CopyObject) for end-to-end integrity verification. Empty means no checksum is sent. Available in the Enterprise edition.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
 - `download_part_max_time` (Number) The maximum time allowed, in seconds, to download a single chunk. Not set means no timeout.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads.
@@ -446,6 +447,7 @@ Read-Only:
 - `access_secret_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String) S3 bucket name.
+- `checksum_algorithm` (String) Checksum algorithm to compute and send with uploads (PutObject, multipart upload, CopyObject) for end-to-end integrity verification. Empty means no checksum is sent. Available in the Enterprise edition.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
 - `download_part_max_time` (Number) The maximum time allowed, in seconds, to download a single chunk. Not set means no timeout.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads.

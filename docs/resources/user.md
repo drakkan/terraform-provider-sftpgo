@@ -200,6 +200,7 @@ Optional:
 - `access_secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `access_secret`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
 - `access_secret_wo_version` (String) Trigger attribute for `access_secret_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `acl` (String) The canned ACL to apply to uploaded objects. Not set means the bucket default.
+- `checksum_algorithm` (String) Checksum algorithm to compute and send with uploads (PutObject, multipart upload, CopyObject) for end-to-end integrity verification. Leave empty (default) for maximum compatibility with S3-compatible services. Supported values: "crc32", "crc32c", "crc64nvme", "sha1", "sha256". Available in the Enterprise edition.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Not set means the default (5). Ignored for partial downloads.
 - `download_part_max_time` (Number) The maximum time allowed, in seconds, to download a single chunk. Not set means no timeout. Ignored for partial downloads.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads. If this value is not set, the default value (5MB) will be used.
@@ -492,6 +493,7 @@ Read-Only:
 - `access_secret_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
 - `acl` (String) The canned ACL to apply to uploaded objects. Empty means the bucket default.
 - `bucket` (String) S3 bucket name.
+- `checksum_algorithm` (String) Checksum algorithm to compute and send with uploads (PutObject, multipart upload, CopyObject) for end-to-end integrity verification. Empty means no checksum is sent. Available in the Enterprise edition.
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Ignored for partial downloads.
 - `download_part_max_time` (Number) The maximum time allowed, in seconds, to download a single chunk. Not set means no timeout.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads.

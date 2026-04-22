@@ -623,6 +623,54 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.password_policy.specials"),
 				),
 			},
+			{
+				Config: `
+				resource "sftpgo_user" "test" {
+				  username = "test user"
+				  status      = 1
+				  home_dir    = "/tmp/testuser"
+				  additional_info = "info"
+				  permissions = {
+					"/" = "*",
+					"/p2" = "list,download"
+				  }
+				  filesystem = {
+					  provider = 1
+					  s3config = {
+					    bucket = "bucket"
+						region = "us-west-1"
+						checksum_algorithm = "crc64nvme"
+			          }
+				  }
+				  filters = {
+					  web_client = ["password-change-disabled"]
+				  }
+				}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.test", "username", "test user"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "id", "test user"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "status", "1"),
+					resource.TestCheckResourceAttrSet("sftpgo_user.test", "created_at"),
+					resource.TestCheckResourceAttrSet("sftpgo_user.test", "updated_at"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "password"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "home_dir", "/tmp/testuser"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "email"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions.%", "2"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./", "*"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./p2", "list,download"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.provider", "1"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.osconfig"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.bucket", "bucket"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.region", "us-west-1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.s3config.checksum_algorithm", "crc64nvme"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "description"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "additional_info", "info"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "groups"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "virtual_folders"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.0", "password-change-disabled"),
+				),
+			},
 			// ImportState testing
 			{
 				ResourceName:      "sftpgo_user.test",

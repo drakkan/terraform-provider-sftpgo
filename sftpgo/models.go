@@ -818,6 +818,7 @@ type s3FsConfig struct {
 	DownloadPartMaxTime       types.Int64  `tfsdk:"download_part_max_time"`
 	ForcePathStyle            types.Bool   `tfsdk:"force_path_style"`
 	SkipTLSVerify             types.Bool   `tfsdk:"skip_tls_verify"`
+	ChecksumAlgorithm         types.String `tfsdk:"checksum_algorithm"`
 }
 
 type gcsFsConfig struct {
@@ -982,6 +983,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"download_part_max_time":      types.Int64Type,
 				"force_path_style":            types.BoolType,
 				"skip_tls_verify":             types.BoolType,
+				"checksum_algorithm":          types.StringType,
 			},
 		},
 		"gcsconfig": types.ObjectType{
@@ -1092,25 +1094,28 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 			ReadBufferSize:  int(f.OSConfig.ReadBufferSize.ValueInt64()),
 			WriteBufferSize: int(f.OSConfig.WriteBufferSize.ValueInt64()),
 		},
-		S3Config: sdk.S3FsConfig{
-			BaseS3FsConfig: sdk.BaseS3FsConfig{
-				Bucket:              f.S3Config.Bucket.ValueString(),
-				KeyPrefix:           f.S3Config.KeyPrefix.ValueString(),
-				Region:              f.S3Config.Region.ValueString(),
-				AccessKey:           f.S3Config.AccessKey.ValueString(),
-				RoleARN:             f.S3Config.RoleARN.ValueString(),
-				SessionToken:        f.S3Config.SessionToken.ValueString(),
-				Endpoint:            f.S3Config.Endpoint.ValueString(),
-				StorageClass:        f.S3Config.StorageClass.ValueString(),
-				ACL:                 f.S3Config.ACL.ValueString(),
-				UploadPartSize:      f.S3Config.UploadPartSize.ValueInt64(),
-				UploadConcurrency:   int(f.S3Config.UploadConcurrency.ValueInt64()),
-				DownloadPartSize:    f.S3Config.DownloadPartSize.ValueInt64(),
-				UploadPartMaxTime:   int(f.S3Config.UploadPartMaxTime.ValueInt64()),
-				DownloadConcurrency: int(f.S3Config.DownloadConcurrency.ValueInt64()),
-				DownloadPartMaxTime: int(f.S3Config.DownloadPartMaxTime.ValueInt64()),
-				ForcePathStyle:      f.S3Config.ForcePathStyle.ValueBool(),
-				SkipTLSVerify:       f.S3Config.SkipTLSVerify.ValueBool(),
+		S3Config: client.S3FsConfig{
+			BaseS3FsConfig: client.BaseS3FsConfig{
+				BaseS3FsConfig: sdk.BaseS3FsConfig{
+					Bucket:              f.S3Config.Bucket.ValueString(),
+					KeyPrefix:           f.S3Config.KeyPrefix.ValueString(),
+					Region:              f.S3Config.Region.ValueString(),
+					AccessKey:           f.S3Config.AccessKey.ValueString(),
+					RoleARN:             f.S3Config.RoleARN.ValueString(),
+					SessionToken:        f.S3Config.SessionToken.ValueString(),
+					Endpoint:            f.S3Config.Endpoint.ValueString(),
+					StorageClass:        f.S3Config.StorageClass.ValueString(),
+					ACL:                 f.S3Config.ACL.ValueString(),
+					UploadPartSize:      f.S3Config.UploadPartSize.ValueInt64(),
+					UploadConcurrency:   int(f.S3Config.UploadConcurrency.ValueInt64()),
+					DownloadPartSize:    f.S3Config.DownloadPartSize.ValueInt64(),
+					UploadPartMaxTime:   int(f.S3Config.UploadPartMaxTime.ValueInt64()),
+					DownloadConcurrency: int(f.S3Config.DownloadConcurrency.ValueInt64()),
+					DownloadPartMaxTime: int(f.S3Config.DownloadPartMaxTime.ValueInt64()),
+					ForcePathStyle:      f.S3Config.ForcePathStyle.ValueBool(),
+					SkipTLSVerify:       f.S3Config.SkipTLSVerify.ValueBool(),
+				},
+				ChecksumAlgorithm: f.S3Config.ChecksumAlgorithm.ValueString(),
 			},
 			AccessSecret:   getSFTPGoSecret(resolveSecret(f.S3Config.AccessSecret, f.S3Config.AccessSecretWO)),
 			SSECustomerKey: getSFTPGoSecret(resolveSecret(f.S3Config.SSECustomerKey, f.S3Config.SSECustomerKeyWO)),
@@ -1235,6 +1240,7 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *client.Filesystem) diag
 			DownloadPartMaxTime: getOptionalInt64(int64(fs.S3Config.DownloadPartMaxTime)),
 			ForcePathStyle:      getOptionalBool(fs.S3Config.ForcePathStyle),
 			SkipTLSVerify:       getOptionalBool(fs.S3Config.SkipTLSVerify),
+			ChecksumAlgorithm:   getOptionalString(fs.S3Config.ChecksumAlgorithm),
 		}
 	case sdk.GCSFilesystemProvider:
 		f.GCSConfig = &gcsFsConfig{

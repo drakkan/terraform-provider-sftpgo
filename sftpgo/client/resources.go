@@ -34,13 +34,28 @@ var (
 type Filesystem struct {
 	Provider     sdk.FilesystemProvider `json:"provider"`
 	OSConfig     sdk.OSFsConfig         `json:"osconfig,omitempty"`
-	S3Config     sdk.S3FsConfig         `json:"s3config,omitempty"`
+	S3Config     S3FsConfig             `json:"s3config,omitempty"`
 	GCSConfig    GCSFsConfig            `json:"gcsconfig,omitempty"`
 	AzBlobConfig sdk.AzBlobFsConfig     `json:"azblobconfig,omitempty"`
 	CryptConfig  sdk.CryptFsConfig      `json:"cryptconfig,omitempty"`
 	SFTPConfig   SFTPFsConfig           `json:"sftpconfig,omitempty"`
 	FTPConfig    FTPFsConfig            `json:"ftpconfig,omitempty"`
 	HTTPConfig   sdk.HTTPFsConfig       `json:"httpconfig,omitempty"`
+}
+
+// BaseS3FsConfig extends sdk.BaseS3FsConfig with SFTPGo Enterprise only fields.
+type BaseS3FsConfig struct {
+	sdk.BaseS3FsConfig
+	// ChecksumAlgorithm defines the checksum algorithm to use for uploads.
+	// Enterprise only.
+	ChecksumAlgorithm string `json:"checksum_algorithm,omitempty"`
+}
+
+// S3FsConfig defines the configuration for S3 based filesystems.
+type S3FsConfig struct {
+	BaseS3FsConfig
+	AccessSecret   kms.BaseSecret `json:"access_secret,omitempty"`
+	SSECustomerKey kms.BaseSecret `json:"sse_customer_key,omitempty"`
 }
 
 // BaseSFTPFsConfig defines the base configuration for SFTP based filesystem
