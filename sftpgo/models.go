@@ -15,8 +15,10 @@
 package sftpgo
 
 import (
+	"cmp"
 	"context"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -140,6 +142,7 @@ func (u *userResourceModel) toSFTPGo(ctx context.Context) (*client.User, diag.Di
 		return user, diags
 	}
 	user.Filters = sftpgoFilters
+
 	for _, f := range u.VirtualFolders {
 		folder, diags := f.toSFTPGo(ctx)
 		if diags.HasError() {
@@ -147,6 +150,10 @@ func (u *userResourceModel) toSFTPGo(ctx context.Context) (*client.User, diag.Di
 		}
 		user.VirtualFolders = append(user.VirtualFolders, folder)
 	}
+	slices.SortFunc(user.VirtualFolders, func(a, b sdk.VirtualFolder) int {
+		return cmp.Compare(a.Name, b.Name)
+	})
+
 	var fs filesystem
 	diags = u.FsConfig.As(ctx, &fs, basetypes.ObjectAsOptions{
 		UnhandledNullAsEmpty:    true,
@@ -231,6 +238,10 @@ func (u *userResourceModel) fromSFTPGo(ctx context.Context, user *client.User) d
 	u.Filters = filters
 
 	u.VirtualFolders = nil
+	slices.SortFunc(user.VirtualFolders, func(a, b sdk.VirtualFolder) int {
+		return cmp.Compare(a.Name, b.Name)
+	})
+
 	for _, f := range user.VirtualFolders {
 		var folder virtualFolder
 		diags := folder.fromSFTPGo(ctx, &f)
@@ -1665,6 +1676,9 @@ func (g *groupResourceModel) toSFTPGo(ctx context.Context) (*client.Group, diag.
 		}
 		group.VirtualFolders = append(group.VirtualFolders, folder)
 	}
+	slices.SortFunc(group.VirtualFolders, func(a, b sdk.VirtualFolder) int {
+		return cmp.Compare(a.Name, b.Name)
+	})
 
 	return group, nil
 }
@@ -1688,6 +1702,10 @@ func (g *groupResourceModel) fromSFTPGo(ctx context.Context, group *client.Group
 	g.UserSettings = settings
 
 	g.VirtualFolders = nil
+	slices.SortFunc(group.VirtualFolders, func(a, b sdk.VirtualFolder) int {
+		return cmp.Compare(a.Name, b.Name)
+	})
+
 	for _, f := range group.VirtualFolders {
 		var folder virtualFolder
 		diags := folder.fromSFTPGo(ctx, &f)
