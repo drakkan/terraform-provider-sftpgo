@@ -216,12 +216,14 @@ func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
 					},
 					"account_key": dsschema.StringAttribute{
 						Computed:    true,
+						Sensitive:   true,
 						Description: computedSecretDescription,
 					},
 					"account_key_wo":         computedWOPlaceholder(false),
 					"account_key_wo_version": computedWOPlaceholder(true),
 					"sas_url": dsschema.StringAttribute{
 						Computed:    true,
+						Sensitive:   true,
 						Description: computedSecretDescription,
 					},
 					"sas_url_wo":         computedWOPlaceholder(false),
