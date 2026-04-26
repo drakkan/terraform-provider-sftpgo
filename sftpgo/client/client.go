@@ -19,6 +19,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
+	"math/rand"
+	"math/bits"
 	"sync"
 	"time"
 )
@@ -42,8 +45,70 @@ func IsNotFound(err error) bool {
 	return false
 }
 
+// IsDeadlock checks whether the given error is a database deadlock error
+// Terraform parallelism may cause deadlocks in some databases (e.g. MySQL)
+func IsDeadlock(err error) bool {
+	if err == nil {
+		return false
+	}
+	errStr := strings.ToLower(err.Error())
+
+	// MySQL deadlocks
+	if strings.Contains(errStr, "error 1213") ||
+	   strings.Contains(errStr, "deadlock found when trying to get lock") {
+		return true
+	}
+
+	return false
+}
+
+// IsRetryableError checks whether the given error should trigger a retry
+func IsRetryableError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	// Add different types of retryable errors here
+	return IsDeadlock(err)
+}
+
+// calculateRetryDelay calculates the delay for the next retry attempt with jitter
+func calculateRetryDelay(attempt int) time.Duration {
+    // Utiliser le plafond précalculé pour éviter l'overflow
+    if attempt > maxSafeAttempt {
+        attempt = maxSafeAttempt
+    }
+
+    base := RetryBaseDelayMs << uint(attempt)
+    if base > RetryMaxDelayMs {
+        base = RetryMaxDelayMs
+    }
+
+    // Add jitter to avoid thundering herd - simple et efficace
+    jitter := rand.Intn(base * RetryJitterPercent / 100)
+    return time.Duration(base + jitter) * time.Millisecond
+}
+
+
 // HostURL - Default SFTPGo URL
 const HostURL string = "http://localhost:8080"
+
+// Retry configuration constants
+const (
+    // MaxRetries - Maximum number of retry attempts for retryable errors
+    MaxRetries = 3
+    // RetryBaseDelayMs - Base delay in milliseconds for exponential backoff for retryable errors
+    RetryBaseDelayMs = 200
+    // RetryMaxDelayMs - Maximum delay in milliseconds to cap exponential backoff
+    RetryMaxDelayMs = 1000
+    // RetryJitterPercent - Percentage of jitter to add to retry delays (20%)
+    RetryJitterPercent = 20
+)
+
+var (
+    // maxSafeAttempt - Maximum attempt number to avoid overflow in delay calculation
+    maxSafeAttempt = bits.Len(uint(RetryMaxDelayMs/RetryBaseDelayMs)) - 1
+)
 
 // Client defines the SFTPGo API client
 type Client struct {
@@ -162,7 +227,32 @@ func (c *Client) doRequestWithAuth(req *http.Request, expectedStatusCode int) ([
 	if err := c.setAuthHeader(req); err != nil {
 		return nil, err
 	}
-	return c.doRequest(req, expectedStatusCode)
+	return c.doRetryableRequest(req, expectedStatusCode)
+}
+
+func (c *Client) doRetryableRequest(req *http.Request, expectedStatusCode int) ([]byte, error) {
+	var lastErr error
+
+	for attempt := 0; attempt <= MaxRetries; attempt++ {
+		body, err := c.doRequest(req, expectedStatusCode)
+		if err == nil {
+			return body, nil
+		}
+
+		lastErr = err
+
+		// Only retry on retryable errors (deadlocks, timeouts, etc.)
+		if !IsRetryableError(lastErr) {
+			return nil, lastErr
+		}
+
+        if attempt < MaxRetries {
+            delay := calculateRetryDelay(attempt)
+            time.Sleep(delay)
+        }
+	}
+
+	return nil, lastErr
 }
 
 func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, error) {
@@ -192,5 +282,5 @@ func (c *Client) doRequest(req *http.Request, expectedStatusCode int) ([]byte, e
 		}
 	}
 
-	return body, err
+	return body, nil
 }
