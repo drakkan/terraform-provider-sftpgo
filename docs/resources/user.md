@@ -261,6 +261,7 @@ Optional:
 - `additional_emails` (List of String) Additional email addresses.
 - `allow_api_key_auth` (Boolean) If set, API Key authentication is allowed.
 - `allowed_ip` (List of String) Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"
+- `allowed_share_paths` (List of String) Virtual paths within which shares are allowed. If non-empty, share paths must be at or below one of these entries. Combined with denied_share_paths via longest-prefix match: the more specific entry wins, and if the same path appears in both lists the denied entry takes precedence. The string "/" acts as a wildcard. Available in the Enterprise edition.
 - `bandwidth_limits` (Attributes List) (see [below for nested schema](#nestedatt--filters--bandwidth_limits))
 - `check_password_disabled` (Boolean) If set, check password hook will not be executed.
 - `custom1` (String) An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. Available in the Enterprise edition.

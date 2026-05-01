@@ -314,6 +314,7 @@ type baseUserFilters struct {
 	PasswordPolicy          *passwordPolicy  `tfsdk:"password_policy"`
 	AccessTime              []timePeriod     `tfsdk:"access_time"`
 	EnforceSecureAlgorithms types.Bool       `tfsdk:"enforce_secure_algorithms"`
+	AllowedSharePaths       types.List       `tfsdk:"allowed_share_paths"`
 	DeniedSharePaths        types.List       `tfsdk:"denied_share_paths"`
 	DeniedShareScopes       types.List       `tfsdk:"denied_share_scopes"`
 }
@@ -398,6 +399,9 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 			},
 		},
 		"enforce_secure_algorithms": types.BoolType,
+		"allowed_share_paths": types.ListType{
+			ElemType: types.StringType,
+		},
 		"denied_share_paths": types.ListType{
 			ElemType: types.StringType,
 		},
@@ -515,6 +519,12 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (client.BaseUserFilters,
 			return filters, diags
 		}
 	}
+	if !f.AllowedSharePaths.IsNull() {
+		diags := f.AllowedSharePaths.ElementsAs(ctx, &filters.AllowedSharePaths, false)
+		if diags.HasError() {
+			return filters, diags
+		}
+	}
 	if !f.DeniedSharePaths.IsNull() {
 		diags := f.DeniedSharePaths.ElementsAs(ctx, &filters.DeniedSharePaths, false)
 		if diags.HasError() {
@@ -606,6 +616,11 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *client.BaseUs
 		})
 	}
 	f.EnforceSecureAlgorithms = getOptionalBool(filters.EnforceSecureAlgorithms)
+	allowedSharePaths, diags := types.ListValueFrom(ctx, types.StringType, filters.AllowedSharePaths)
+	if diags.HasError() {
+		return diags
+	}
+	f.AllowedSharePaths = allowedSharePaths
 	deniedSharePaths, diags := types.ListValueFrom(ctx, types.StringType, filters.DeniedSharePaths)
 	if diags.HasError() {
 		return diags

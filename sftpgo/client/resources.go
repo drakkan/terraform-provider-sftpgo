@@ -276,6 +276,10 @@ type BaseUserFilters struct {
 	AccessTime []sdk.TimePeriod `json:"access_time,omitempty"`
 	// If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP
 	EnforceSecureAlgorithms bool `json:"enforce_secure_algorithms"`
+	// Virtual paths within which shares are allowed. If non-empty, share paths must be
+	// at or below one of these entries. Combined with DeniedSharePaths via longest-prefix
+	// match (denied wins on tie). The string "/" acts as a wildcard
+	AllowedSharePaths []string `json:"allowed_share_paths,omitempty"`
 	// Virtual paths that cannot be shared. If a path is denied, shares for that path and
 	// any sub-path are rejected
 	DeniedSharePaths []string `json:"denied_share_paths,omitempty"`

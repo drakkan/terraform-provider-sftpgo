@@ -336,6 +336,7 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 							    permissions = 2
 								mode = 1
 							}
+							allowed_share_paths = ["/projects"]
 							denied_share_paths = ["/private"]
 							denied_share_scopes = ["write", "read_write"]
 						}
@@ -365,6 +366,8 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.password_policy.uppers", "1"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.share_policy.permissions", "2"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.share_policy.mode", "1"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.allowed_share_paths.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.allowed_share_paths.0", "/projects"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.denied_share_paths.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.denied_share_paths.0", "/private"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.denied_share_scopes.#", "2"),

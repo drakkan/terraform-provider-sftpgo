@@ -222,6 +222,7 @@ func TestAccEnterpriseGroupsDataSource(t *testing.T) {
 					PasswordPolicy: client.PasswordPolicy{
 						Length: 8,
 					},
+					AllowedSharePaths: []string{"/projects"},
 					DeniedSharePaths:  []string{"/private"},
 					DeniedShareScopes: []string{"read_write"},
 				},
@@ -287,6 +288,8 @@ func TestAccEnterpriseGroupsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.share_policy.permissions", "3"),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.share_policy.mode", "2"),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.enforce_secure_algorithms", "true"),
+					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.allowed_share_paths.#", "1"),
+					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.allowed_share_paths.0", "/projects"),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.denied_share_paths.#", "1"),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.denied_share_paths.0", "/private"),
 					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.user_settings.filters.denied_share_scopes.#", "1"),

@@ -1138,6 +1138,11 @@ func getComputedSchemaForUserFilters(isGroup bool) dsschema.SingleNestedAttribut
 				Computed:    true,
 				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote + ".",
 			},
+			"allowed_share_paths": dsschema.ListAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+				Description: "Virtual paths within which shares are allowed. If non-empty, share paths must be at or below one of these entries. Combined with denied_share_paths via longest-prefix match: the more specific entry wins, and if the same path appears in both lists the denied entry takes precedence. The string \"/\" acts as a wildcard. " + enterpriseFeatureNote + ".",
+			},
 			"denied_share_paths": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
@@ -1414,6 +1419,14 @@ func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 			"enforce_secure_algorithms": schema.BoolAttribute{
 				Optional:    true,
 				Description: "If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. " + enterpriseFeatureNote + ".",
+			},
+			"allowed_share_paths": schema.ListAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Description: "Virtual paths within which shares are allowed. If non-empty, share paths must be at or below one of these entries. Combined with denied_share_paths via longest-prefix match: the more specific entry wins, and if the same path appears in both lists the denied entry takes precedence. The string \"/\" acts as a wildcard. " + enterpriseFeatureNote + ".",
+				Validators: []validator.List{
+					listvalidator.UniqueValues(),
+				},
 			},
 			"denied_share_paths": schema.ListAttribute{
 				ElementType: types.StringType,
