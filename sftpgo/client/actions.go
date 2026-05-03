@@ -125,9 +125,18 @@ type FolderRetention struct {
 
 // EventActionDataRetentionConfig defines the configuration for a data retention check
 type EventActionDataRetentionConfig struct {
+	// SourceFolder, when set, scopes the retention check to a single virtual folder.
+	// The action runs once as a system task; user-level conditions are ignored.
+	SourceFolder  string            `json:"source_folder,omitempty"`
 	Folders       []FolderRetention `json:"folders,omitempty"`
 	ArchiveFolder string            `json:"archive_folder,omitempty"`
 	ArchivePath   string            `json:"archive_path,omitempty"`
+	// SplitReports generates individual retention reports per user, allowing one
+	// notification per user. Cannot be combined with SourceFolder.
+	SplitReports bool `json:"split_reports,omitempty"`
+	// DryRun, when true, produces the report without deleting files or creating
+	// archive copies.
+	DryRun bool `json:"dry_run,omitempty"`
 }
 
 type EventActionPGP struct {

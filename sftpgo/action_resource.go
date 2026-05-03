@@ -323,6 +323,10 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 						Optional:    true,
 						Description: "Data retention action configurations.",
 						Attributes: map[string]schema.Attribute{
+							"source_folder": schema.StringAttribute{
+								Optional:    true,
+								Description: "Virtual folder name. When set, the retention check runs once as a system task on this folder. Paths in `folders` are relative to the folder root and rule-level user filters are ignored. " + enterpriseFeatureNote + ".",
+							},
 							"folders": schema.ListNestedAttribute{
 								Optional:    true,
 								Description: "Folders to apply data retention rules to.",
@@ -353,6 +357,14 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							"archive_path": schema.StringAttribute{
 								Optional:    true,
 								Description: `The base path where archived files will be stored. Placeholders are supported. ` + enterpriseFeatureNote + ".",
+							},
+							"split_reports": schema.BoolAttribute{
+								Optional:    true,
+								Description: "Generate individual retention reports per user, allowing one notification per user. Applies to user-scoped retention only. " + enterpriseFeatureNote + ".",
+							},
+							"dry_run": schema.BoolAttribute{
+								Optional:    true,
+								Description: "Produce the retention report without deleting files or creating archive copies. " + enterpriseFeatureNote + ".",
 							},
 						},
 					},

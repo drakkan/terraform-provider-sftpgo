@@ -2232,9 +2232,12 @@ type folderRetention struct {
 }
 
 type eventActionDataRetentionConfig struct {
+	SourceFolder  types.String      `tfsdk:"source_folder"`
 	Folders       []folderRetention `tfsdk:"folders"`
 	ArchiveFolder types.String      `tfsdk:"archive_folder"`
 	ArchivePath   types.String      `tfsdk:"archive_path"`
+	SplitReports  types.Bool        `tfsdk:"split_reports"`
+	DryRun        types.Bool        `tfsdk:"dry_run"`
 }
 
 type eventActionFsCompress struct {
@@ -2453,6 +2456,7 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 		},
 		"retention_config": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
+				"source_folder": types.StringType,
 				"folders": types.ListType{
 					ElemType: types.ObjectType{
 						AttrTypes: map[string]attr.Type{
@@ -2464,6 +2468,8 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 				},
 				"archive_folder": types.StringType,
 				"archive_path":   types.StringType,
+				"split_reports":  types.BoolType,
+				"dry_run":        types.BoolType,
 			},
 		},
 		"fs_config": types.ObjectType{
@@ -2782,8 +2788,11 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 		}
 	}
 
+	options.RetentionConfig.SourceFolder = o.RetentionConfig.SourceFolder.ValueString()
 	options.RetentionConfig.ArchiveFolder = o.RetentionConfig.ArchiveFolder.ValueString()
 	options.RetentionConfig.ArchivePath = o.RetentionConfig.ArchivePath.ValueString()
+	options.RetentionConfig.SplitReports = o.RetentionConfig.SplitReports.ValueBool()
+	options.RetentionConfig.DryRun = o.RetentionConfig.DryRun.ValueBool()
 	for _, folder := range o.RetentionConfig.Folders {
 		options.RetentionConfig.Folders = append(options.RetentionConfig.Folders, client.FolderRetention{
 			Path:            folder.Path.ValueString(),
@@ -2962,8 +2971,11 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 		o.EmailConfig.Attachments = attachments
 	case client.ActionTypeDataRetentionCheck:
 		o.RetentionConfig = &eventActionDataRetentionConfig{
+			SourceFolder:  getOptionalString(action.Options.RetentionConfig.SourceFolder),
 			ArchiveFolder: getOptionalString(action.Options.RetentionConfig.ArchiveFolder),
 			ArchivePath:   getOptionalString(action.Options.RetentionConfig.ArchivePath),
+			SplitReports:  getOptionalBool(action.Options.RetentionConfig.SplitReports),
+			DryRun:        getOptionalBool(action.Options.RetentionConfig.DryRun),
 		}
 		for _, f := range action.Options.RetentionConfig.Folders {
 			o.RetentionConfig.Folders = append(o.RetentionConfig.Folders, folderRetention{

@@ -375,7 +375,10 @@ Read-Only:
 
 - `archive_folder` (String) Virtual folder name. If set, files will be moved there instead of being deleted. Available in the Enterprise edition.
 - `archive_path` (String) The base path where archived files will be stored. Placeholders are supported. Available in the Enterprise edition.
+- `dry_run` (Boolean) Produce the retention report without deleting files or creating archive copies. Available in the Enterprise edition.
 - `folders` (Attributes List) Folders to apply data retention rules to. (see [below for nested schema](#nestedatt--actions--options--retention_config--folders))
+- `source_folder` (String) Virtual folder name. When set, the retention check runs once as a system task on this folder. Available in the Enterprise edition.
+- `split_reports` (Boolean) Generate individual retention reports per user, allowing one notification per user. Available in the Enterprise edition.
 
 <a id="nestedatt--actions--options--retention_config--folders"></a>
 ### Nested Schema for `actions.options.retention_config.folders`

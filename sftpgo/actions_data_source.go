@@ -265,6 +265,10 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 									Computed:    true,
 									Description: "Data retention action configurations.",
 									Attributes: map[string]schema.Attribute{
+										"source_folder": schema.StringAttribute{
+											Computed:    true,
+											Description: "Virtual folder name. When set, the retention check runs once as a system task on this folder. " + enterpriseFeatureNote + ".",
+										},
 										"folders": schema.ListNestedAttribute{
 											Computed:    true,
 											Description: "Folders to apply data retention rules to.",
@@ -292,6 +296,14 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 										"archive_path": schema.StringAttribute{
 											Computed:    true,
 											Description: `The base path where archived files will be stored. Placeholders are supported. ` + enterpriseFeatureNote + ".",
+										},
+										"split_reports": schema.BoolAttribute{
+											Computed:    true,
+											Description: "Generate individual retention reports per user, allowing one notification per user. " + enterpriseFeatureNote + ".",
+										},
+										"dry_run": schema.BoolAttribute{
+											Computed:    true,
+											Description: "Produce the retention report without deleting files or creating archive copies. " + enterpriseFeatureNote + ".",
 										},
 									},
 								},

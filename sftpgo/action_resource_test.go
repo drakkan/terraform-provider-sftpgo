@@ -334,6 +334,8 @@ func TestAccActionResource(t *testing.T) {
 										retention = 15,
 									}
 								]
+								split_reports = true
+								dry_run       = true
 							}
 						}
 				    }`,
@@ -352,10 +354,59 @@ func TestAccActionResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.1.path", "/dir2"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.1.retention", "15"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config.folders.1.delete_empty_dirs"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.split_reports", "true"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.dry_run", "true"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config.source_folder"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.pwd_expiration_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.user_inactivity_config"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.idp_config"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "sftpgo_folder" "retention_source" {
+						name        = "retention_source_folder"
+						mapped_path = "/tmp/retention_source_folder"
+						filesystem = {
+						  provider = 0
+						}
+					}
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 8
+						options = {
+							retention_config = {
+								source_folder = sftpgo_folder.retention_source.name
+								folders = [
+									{
+										path = "/dir1",
+										retention = 24,
+										delete_empty_dirs = true
+									}
+								]
+								dry_run = true
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "name", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "id", "test action"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "type", "8"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.source_folder", "retention_source_folder"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.0.path", "/dir1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.0.retention", "24"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.folders.0.delete_empty_dirs", "true"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.retention_config.dry_run", "true"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config.split_reports"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config.archive_folder"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.retention_config.archive_path"),
 				),
 			},
 			{
