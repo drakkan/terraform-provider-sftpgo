@@ -1055,6 +1055,10 @@ func getComputedSchemaForUserFilters(isGroup bool) dsschema.SingleNestedAttribut
 				Computed:    true,
 				Description: "Defines the cache time, in seconds, for users authenticated using an external auth hook. Not set means no cache.",
 			},
+			"pre_login_cache_time": dsschema.Int64Attribute{
+				Computed:    true,
+				Description: "Defines the cache time, in seconds, used by the pre-login hook gate. When greater than 0 the pre-login hook is skipped if the user's last login is within the configured window. Not set means no cache. " + enterpriseFeatureNote + ".",
+			},
 			"start_directory": dsschema.StringAttribute{
 				Computed:    true,
 				Description: `Alternate starting directory. If not set, the default is "/". This option is supported for SFTP/SCP, FTP and HTTP (WebClient/REST API) protocols. Relative paths will use this directory as base.`,
@@ -1329,6 +1333,10 @@ func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 			"external_auth_cache_time": schema.Int64Attribute{
 				Optional:    true,
 				Description: "Defines the cache time, in seconds, for users authenticated using an external auth hook. Not set means no cache.",
+			},
+			"pre_login_cache_time": schema.Int64Attribute{
+				Optional:    true,
+				Description: "Defines the cache time, in seconds, used by the pre-login hook gate. When greater than 0 the pre-login hook is skipped if the user's last login is within the configured window. Not set means no cache. " + enterpriseFeatureNote + ".",
 			},
 			"start_directory": schema.StringAttribute{
 				Optional:    true,

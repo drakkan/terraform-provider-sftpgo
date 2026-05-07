@@ -239,6 +239,10 @@ type BaseUserFilters struct {
 	// Defines the cache time, in seconds, for users authenticated using
 	// an external auth hook. 0 means no cache
 	ExternalAuthCacheTime int64 `json:"external_auth_cache_time,omitempty"`
+	// Defines the cache time, in seconds, used by the pre-login hook gate.
+	// When > 0 the pre-login hook is skipped if the user's last login
+	// happened within the configured window. 0 means no cache.
+	PreLoginCacheTime int64 `json:"pre_login_cache_time,omitempty"`
 	// Specifies an alternate starting directory. If not set, the default is "/".
 	// This option is supported for SFTP/SCP, FTP and HTTP (WebClient/REST API) protocols.
 	// Relative paths will use this directory as base

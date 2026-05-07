@@ -303,6 +303,7 @@ type baseUserFilters struct {
 	UserType                types.String     `tfsdk:"user_type"`
 	BandwidthLimits         []bandwidthLimit `tfsdk:"bandwidth_limits"`
 	ExternalAuthCacheTime   types.Int64      `tfsdk:"external_auth_cache_time"`
+	PreLoginCacheTime       types.Int64      `tfsdk:"pre_login_cache_time"`
 	StartDirectory          types.String     `tfsdk:"start_directory"`
 	TwoFactorAuthProtocols  types.List       `tfsdk:"two_factor_protocols"`
 	FTPSecurity             types.Int64      `tfsdk:"ftp_security"`
@@ -370,6 +371,7 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 			},
 		},
 		"external_auth_cache_time": types.Int64Type,
+		"pre_login_cache_time":     types.Int64Type,
 		"start_directory":          types.StringType,
 		"two_factor_protocols": types.ListType{
 			ElemType: types.StringType,
@@ -427,6 +429,7 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (client.BaseUserFilters,
 		AllowAPIKeyAuth:         f.AllowAPIKeyAuth.ValueBool(),
 		UserType:                f.UserType.ValueString(),
 		ExternalAuthCacheTime:   f.ExternalAuthCacheTime.ValueInt64(),
+		PreLoginCacheTime:       f.PreLoginCacheTime.ValueInt64(),
 		StartDirectory:          f.StartDirectory.ValueString(),
 		FTPSecurity:             int(f.FTPSecurity.ValueInt64()),
 		IsAnonymous:             f.IsAnonymous.ValueBool(),
@@ -632,6 +635,7 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *client.BaseUs
 	}
 	f.DeniedShareScopes = deniedShareScopes
 	f.ExternalAuthCacheTime = getOptionalInt64(filters.ExternalAuthCacheTime)
+	f.PreLoginCacheTime = getOptionalInt64(filters.PreLoginCacheTime)
 	f.StartDirectory = getOptionalString(filters.StartDirectory)
 	twoFactorProtos, diags := types.ListValueFrom(ctx, types.StringType, filters.TwoFactorAuthProtocols)
 	if diags.HasError() {
