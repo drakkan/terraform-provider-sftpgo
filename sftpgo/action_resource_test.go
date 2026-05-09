@@ -921,6 +921,8 @@ EOF
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.key", "/{{.VirtualPath}}"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.value", "/{{.VirtualPath}}.pgp"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.on_source_processed"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.on_source_processed_move_path"),
 					resource.TestCheckResourceAttrSet("sftpgo_action.test", "options.fs_config.pgp.private_key"),
 					resource.TestCheckResourceAttrSet("sftpgo_action.test", "options.fs_config.pgp.passphrase"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.pgp.password"),
@@ -975,6 +977,8 @@ EOF
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.key", "/{{.VirtualPath}}.pgp"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.value", "/{{.VirtualPath}}"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.on_source_processed"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.on_source_processed_move_path"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.pgp.private_key"),
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.pgp.passphrase"),
 					resource.TestCheckResourceAttrSet("sftpgo_action.test", "options.fs_config.pgp.password"),
@@ -988,6 +992,85 @@ EOF
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{"options.fs_config.pgp.private_key",
 					"options.fs_config.pgp.passphrase", "options.fs_config.pgp.password"},
+			},
+			{
+				// PGP encryption with glob source, directory target and per-entry
+				// disposition (mixed Delete and Move with move_path) — this exercises
+				// the new PGPConfig schema and is the typical scheduled batch shape.
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 9
+						options = {
+							fs_config = {
+								type = 7,
+								pgp = {
+									mode = 1
+									password = "secret"
+           							paths = [
+             					      {
+               						    key = "/inbox/*.csv"
+                                        value = "/encrypted/"
+                                        on_source_processed = 1
+                                      },
+                                      {
+                                        key = "/staging/report.txt"
+                                        value = "/encrypted/"
+                                        on_source_processed = 2
+                                        on_source_processed_move_path = "/processed"
+                                      }
+                                   ]
+								}
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.type", "7"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.mode", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.key", "/inbox/*.csv"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.value", "/encrypted/"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.on_source_processed", "1"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.0.on_source_processed_move_path"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.1.key", "/staging/report.txt"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.1.value", "/encrypted/"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.1.on_source_processed", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.pgp.paths.1.on_source_processed_move_path", "/processed"),
+					resource.TestCheckResourceAttrSet("sftpgo_action.test", "options.fs_config.pgp.password"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"options.fs_config.pgp.private_key",
+					"options.fs_config.pgp.passphrase", "options.fs_config.pgp.password"},
+			},
+			{
+				// Delete action with a glob pattern in the last path component plus
+				// a literal path. Glob support in Delete is Enterprise-only.
+				Config: `
+					resource "sftpgo_action" "test" {
+						name = "test action"
+						type = 9
+						options = {
+							fs_config = {
+								type = 2
+								deletes = ["/inbox/*.tmp", "/legacy/old.log"]
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.type", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.deletes.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.deletes.0", "/inbox/*.tmp"),
+					resource.TestCheckResourceAttr("sftpgo_action.test", "options.fs_config.deletes.1", "/legacy/old.log"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: `

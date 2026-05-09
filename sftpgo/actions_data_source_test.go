@@ -137,10 +137,14 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 				PGP: client.EventActionPGP{
 					Mode:    1,
 					Profile: 1,
-					Paths: []client.KeyValue{
+					Paths: []client.PGPConfig{
 						{
-							Key:   "/{{.VirtualPath}}",
-							Value: "/{{.VirtualPath}}.pgp",
+							KeyValue: client.KeyValue{
+								Key:   "/inbox/*.csv",
+								Value: "/encrypted/",
+							},
+							OnSourceProcessed:         2,
+							OnSourceProcessedMovePath: "/processed",
 						},
 					},
 					Password: kms.BaseSecret{
@@ -227,6 +231,19 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 	_, err = c.CreateAction(action4)
 	require.NoError(t, err)
 
+	action5 := client.BaseEventAction{
+		Name: "z_delete_glob",
+		Type: client.ActionTypeFilesystem,
+		Options: client.EventActionOptions{
+			FsConfig: client.EventActionFilesystemConfig{
+				Type:    client.FilesystemActionDelete,
+				Deletes: []string{"/inbox/*.tmp", "/legacy/old.log"},
+			},
+		},
+	}
+	_, err = c.CreateAction(action5)
+	require.NoError(t, err)
+
 	defer func() {
 		err = c.DeleteAction(action.Name)
 		require.NoError(t, err)
@@ -237,6 +254,8 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 		err = c.DeleteAction(action3.Name)
 		require.NoError(t, err)
 		err = c.DeleteAction(action4.Name)
+		require.NoError(t, err)
+		err = c.DeleteAction(action5.Name)
 		require.NoError(t, err)
 		err = c.DeleteFolder(folder.Name)
 		require.NoError(t, err)
@@ -252,7 +271,7 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 				Config: `data "sftpgo_actions" "test" {}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Verify number of actions returned
-					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.#", "5"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.#", "6"),
 					// Check the created action
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.name", action.Name),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.id", action.Name),
@@ -272,6 +291,10 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 						action.Options.FsConfig.PGP.Paths[0].Key),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.options.fs_config.pgp.paths.0.value",
 						action.Options.FsConfig.PGP.Paths[0].Value),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.options.fs_config.pgp.paths.0.on_source_processed",
+						strconv.Itoa(action.Options.FsConfig.PGP.Paths[0].OnSourceProcessed)),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.0.options.fs_config.pgp.paths.0.on_source_processed_move_path",
+						action.Options.FsConfig.PGP.Paths[0].OnSourceProcessedMovePath),
 					resource.TestCheckResourceAttrSet("data.sftpgo_actions.test", "actions.0.options.fs_config.pgp.password"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.fs_config.pgp.public_key"),
 					resource.TestCheckNoResourceAttr("data.sftpgo_actions.test", "actions.0.options.fs_config.pgp.private_key"),
@@ -316,6 +339,13 @@ func TestAccEnterpriseActionsDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.4.name", action4.Name),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.4.type", fmt.Sprintf("%d", action4.Type)),
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.4.options.email_config.attach_event_report", "true"),
+
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.5.name", action5.Name),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.5.type", fmt.Sprintf("%d", action5.Type)),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.5.options.fs_config.type", "2"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.5.options.fs_config.deletes.#", "2"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.5.options.fs_config.deletes.0", "/inbox/*.tmp"),
+					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "actions.5.options.fs_config.deletes.1", "/legacy/old.log"),
 					// Verify placeholder id attribute
 					resource.TestCheckResourceAttr("data.sftpgo_actions.test", "id", placeholderID),
 				),

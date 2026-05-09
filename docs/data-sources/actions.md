@@ -174,7 +174,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
-- `paths` (Attributes List) Paths to encrypt or decrypt. (see [below for nested schema](#nestedatt--actions--options--fs_config--pgp--paths))
+- `paths` (Attributes List) Paths to encrypt or decrypt. Each entry has its own source disposition. (see [below for nested schema](#nestedatt--actions--options--fs_config--pgp--paths))
 - `private_key` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `private_key_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `private_key_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
@@ -186,8 +186,10 @@ Read-Only:
 
 Read-Only:
 
-- `key` (String) Source path.
-- `value` (String) Target path.
+- `key` (String) Source path. May contain a glob pattern in the last path component (e.g. /inbox/*.csv); in that case the target must end with /.
+- `on_source_processed` (Number) Source disposition after a successful encrypt/decrypt. 0 = none (default), 1 = delete source, 2 = move source to on_source_processed_move_path.
+- `on_source_processed_move_path` (String) Destination directory for moved sources. Required when on_source_processed is 2.
+- `value` (String) Target path. When ending with / it is treated as a destination directory and the output filename is derived from the source.
 
 
 

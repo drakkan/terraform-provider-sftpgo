@@ -139,12 +139,24 @@ type EventActionDataRetentionConfig struct {
 	DryRun bool `json:"dry_run,omitempty"`
 }
 
+// PGPConfig defines a per-entry source/target pair for the PGP action with
+// its own source disposition (None / Delete / Move).
+type PGPConfig struct {
+	// key is the source and target the value
+	KeyValue
+	// Source disposition after successful encrypt/decrypt.
+	// 0 = none (default), 1 = delete source, 2 = move source to OnSourceProcessedMovePath
+	OnSourceProcessed int `json:"on_source_processed,omitempty"`
+	// Destination directory for moved sources. Required when OnSourceProcessed is 2.
+	OnSourceProcessedMovePath string `json:"on_source_processed_move_path,omitempty"`
+}
+
 type EventActionPGP struct {
 	// 1 Encrypt, 2 Decrypt
 	Mode int `json:"mode,omitempty"`
 	// 0 Default, 1 RFC 4880, 2 RFC 9580
 	Profile    int            `json:"profile,omitempty"`
-	Paths      []KeyValue     `json:"paths,omitempty"`
+	Paths      []PGPConfig    `json:"paths,omitempty"`
 	Password   kms.BaseSecret `json:"password,omitempty"`
 	PrivateKey kms.BaseSecret `json:"private_key,omitempty"`
 	Passphrase kms.BaseSecret `json:"passphrase,omitempty"`

@@ -425,16 +425,24 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 												},
 												"paths": schema.ListNestedAttribute{
 													Computed:    true,
-													Description: "Paths to encrypt or decrypt.",
+													Description: "Paths to encrypt or decrypt. Each entry has its own source disposition.",
 													NestedObject: schema.NestedAttributeObject{
 														Attributes: map[string]schema.Attribute{
 															"key": schema.StringAttribute{
 																Computed:    true,
-																Description: "Source path.",
+																Description: "Source path. May contain a glob pattern in the last path component (e.g. /inbox/*.csv); in that case the target must end with /.",
 															},
 															"value": schema.StringAttribute{
 																Computed:    true,
-																Description: "Target path.",
+																Description: "Target path. When ending with / it is treated as a destination directory and the output filename is derived from the source.",
+															},
+															"on_source_processed": schema.Int64Attribute{
+																Computed:    true,
+																Description: "Source disposition after a successful encrypt/decrypt. 0 = none (default), 1 = delete source, 2 = move source to on_source_processed_move_path.",
+															},
+															"on_source_processed_move_path": schema.StringAttribute{
+																Computed:    true,
+																Description: "Destination directory for moved sources. Required when on_source_processed is 2.",
 															},
 														},
 													},

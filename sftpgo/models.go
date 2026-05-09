@@ -2122,6 +2122,22 @@ func (*copyConfig) getTFAttributes() map[string]attr.Type {
 	}
 }
 
+type pgpConfig struct {
+	Key                       types.String `tfsdk:"key"`
+	Value                     types.String `tfsdk:"value"`
+	OnSourceProcessed         types.Int64  `tfsdk:"on_source_processed"`
+	OnSourceProcessedMovePath types.String `tfsdk:"on_source_processed_move_path"`
+}
+
+func (*pgpConfig) getTFAttributes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"key":                           types.StringType,
+		"value":                         types.StringType,
+		"on_source_processed":           types.Int64Type,
+		"on_source_processed_move_path": types.StringType,
+	}
+}
+
 type httpPart struct {
 	Name     types.String `tfsdk:"name"`
 	Filepath types.String `tfsdk:"filepath"`
@@ -2255,19 +2271,19 @@ type eventActionFsDecompress struct {
 }
 
 type eventActionPGPConfig struct {
-	Mode                 types.Int64  `tfsdk:"mode"`
-	Profile              types.Int64  `tfsdk:"profile"`
-	Paths                []keyValue   `tfsdk:"paths"`
-	Password             types.String `tfsdk:"password"`
-	PasswordWO           types.String `tfsdk:"password_wo"`
-	PasswordWOVersion    types.String `tfsdk:"password_wo_version"`
-	PrivateKey           types.String `tfsdk:"private_key"`
-	PrivateKeyWO         types.String `tfsdk:"private_key_wo"`
-	PrivateKeyWOVersion  types.String `tfsdk:"private_key_wo_version"`
-	Passphrase           types.String `tfsdk:"passphrase"`
-	PassphraseWO         types.String `tfsdk:"passphrase_wo"`
-	PassphraseWOVersion  types.String `tfsdk:"passphrase_wo_version"`
-	PublicKey            types.String `tfsdk:"public_key"`
+	Mode                types.Int64  `tfsdk:"mode"`
+	Profile             types.Int64  `tfsdk:"profile"`
+	Paths               []pgpConfig  `tfsdk:"paths"`
+	Password            types.String `tfsdk:"password"`
+	PasswordWO          types.String `tfsdk:"password_wo"`
+	PasswordWOVersion   types.String `tfsdk:"password_wo_version"`
+	PrivateKey          types.String `tfsdk:"private_key"`
+	PrivateKeyWO        types.String `tfsdk:"private_key_wo"`
+	PrivateKeyWOVersion types.String `tfsdk:"private_key_wo_version"`
+	Passphrase          types.String `tfsdk:"passphrase"`
+	PassphraseWO        types.String `tfsdk:"passphrase_wo"`
+	PassphraseWOVersion types.String `tfsdk:"passphrase_wo_version"`
+	PublicKey           types.String `tfsdk:"public_key"`
 }
 
 type eventActionMetadataCheck struct {
@@ -2523,7 +2539,7 @@ func (*eventActionOptions) getTFAttributes() map[string]attr.Type {
 						"profile": types.Int64Type,
 						"paths": types.ListType{
 							ElemType: types.ObjectType{
-								AttrTypes: kv.getTFAttributes(),
+								AttrTypes: (&pgpConfig{}).getTFAttributes(),
 							},
 						},
 						"password":               types.StringType,
@@ -2851,9 +2867,13 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 		}
 	}
 	for _, v := range o.FsConfig.PGP.Paths {
-		options.FsConfig.PGP.Paths = append(options.FsConfig.PGP.Paths, client.KeyValue{
-			Key:   v.Key.ValueString(),
-			Value: v.Value.ValueString(),
+		options.FsConfig.PGP.Paths = append(options.FsConfig.PGP.Paths, client.PGPConfig{
+			KeyValue: client.KeyValue{
+				Key:   v.Key.ValueString(),
+				Value: v.Value.ValueString(),
+			},
+			OnSourceProcessed:         int(v.OnSourceProcessed.ValueInt64()),
+			OnSourceProcessedMovePath: v.OnSourceProcessedMovePath.ValueString(),
 		})
 	}
 	if !o.ICAPConfig.Paths.IsNull() {
@@ -3060,9 +3080,11 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 				PublicKey:  getOptionalString(action.Options.FsConfig.PGP.PublicKey),
 			}
 			for _, v := range action.Options.FsConfig.PGP.Paths {
-				o.FsConfig.PGP.Paths = append(o.FsConfig.PGP.Paths, keyValue{
-					Key:   types.StringValue(v.Key),
-					Value: types.StringValue(v.Value),
+				o.FsConfig.PGP.Paths = append(o.FsConfig.PGP.Paths, pgpConfig{
+					Key:                       types.StringValue(v.Key),
+					Value:                     types.StringValue(v.Value),
+					OnSourceProcessed:         getOptionalInt64(int64(v.OnSourceProcessed)),
+					OnSourceProcessedMovePath: getOptionalString(v.OnSourceProcessedMovePath),
 				})
 			}
 		case client.FilesystemActionMetadataCheck:

@@ -513,16 +513,27 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 									},
 									"paths": schema.ListNestedAttribute{
 										Required:    true,
-										Description: "Paths to encrypt or decrypt.",
+										Description: "Paths to encrypt or decrypt. Each entry has its own source disposition.",
 										NestedObject: schema.NestedAttributeObject{
 											Attributes: map[string]schema.Attribute{
 												"key": schema.StringAttribute{
 													Required:    true,
-													Description: "Source path. Placeholders are supported.",
+													Description: "Source path. Placeholders are supported. May contain a glob pattern in the last path component (e.g. /inbox/*.csv); in that case the target must end with /.",
 												},
 												"value": schema.StringAttribute{
 													Required:    true,
-													Description: "Target path. Placeholders are supported.",
+													Description: "Target path. Placeholders are supported. When ending with / it is treated as a destination directory and the output filename is derived from the source.",
+												},
+												"on_source_processed": schema.Int64Attribute{
+													Optional:    true,
+													Description: "Source disposition after a successful encrypt/decrypt. 0 = none (default), 1 = delete source, 2 = move source to on_source_processed_move_path.",
+													Validators: []validator.Int64{
+														int64validator.Between(0, 2),
+													},
+												},
+												"on_source_processed_move_path": schema.StringAttribute{
+													Optional:    true,
+													Description: "Destination directory for moved sources. Required when on_source_processed is 2.",
 												},
 											},
 										},

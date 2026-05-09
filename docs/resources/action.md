@@ -204,7 +204,7 @@ Optional:
 Required:
 
 - `mode` (Number) 1 = Encrypt, 2 = Decrypt.
-- `paths` (Attributes List) Paths to encrypt or decrypt. (see [below for nested schema](#nestedatt--options--fs_config--pgp--paths))
+- `paths` (Attributes List) Paths to encrypt or decrypt. Each entry has its own source disposition. (see [below for nested schema](#nestedatt--options--fs_config--pgp--paths))
 
 Optional:
 
@@ -225,8 +225,13 @@ Optional:
 
 Required:
 
-- `key` (String) Source path. Placeholders are supported.
-- `value` (String) Target path. Placeholders are supported.
+- `key` (String) Source path. Placeholders are supported. May contain a glob pattern in the last path component (e.g. /inbox/*.csv); in that case the target must end with /.
+- `value` (String) Target path. Placeholders are supported. When ending with / it is treated as a destination directory and the output filename is derived from the source.
+
+Optional:
+
+- `on_source_processed` (Number) Source disposition after a successful encrypt/decrypt. 0 = none (default), 1 = delete source, 2 = move source to on_source_processed_move_path.
+- `on_source_processed_move_path` (String) Destination directory for moved sources. Required when on_source_processed is 2.
 
 
 

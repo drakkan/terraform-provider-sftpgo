@@ -162,6 +162,8 @@ resource "sftpgo_action" "test" {
              {
                key = "/{{.VirtualPath}}"
                value = "/{{.VirtualPath}}.pgp"
+               on_source_processed = 2
+               on_source_processed_move_path = "/processed"
              }
            ],
            passphrase_wo          = "password",
@@ -169,9 +171,7 @@ resource "sftpgo_action" "test" {
            private_key_wo         = var.private_key,
            private_key_wo_version = "1",
            public_key             = var.public_key
-         },
-         "folder": "aaa",
-         "target_folder": "bbbb"
+         }
       }
     }
 }
