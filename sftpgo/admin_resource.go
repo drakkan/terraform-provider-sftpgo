@@ -120,12 +120,13 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"permissions": schema.ListAttribute{
 				ElementType: types.StringType,
 				Required:    true,
-				Description: "Granted permissions.",
+				Description: "Granted permissions. The granular group/folder permissions (`view_groups`, `manage_groups`, `del_groups`, `view_folders`, `manage_folders`, `del_folders`) are available in the Enterprise edition; `manage_groups` and `manage_folders` work on both editions.",
 				Validators: []validator.List{
 					listvalidator.UniqueValues(),
 					listvalidator.ValueStringsAre(stringvalidator.OneOf("*", "add_users", "edit_users",
 						"del_users", "view_users", "view_conns", "close_conns", "view_status", "manage_admins",
-						"manage_folders", "manage_groups", "manage_apikeys", "quota_scans", "manage_system",
+						"view_groups", "manage_groups", "del_groups", "view_folders", "manage_folders", "del_folders",
+						"manage_apikeys", "quota_scans", "manage_system",
 						"manage_defender", "view_defender", "retention_checks", "metadata_checks", "view_events",
 						"manage_event_rules", "manage_roles", "manage_ip_lists", "disable_mfa")),
 				},

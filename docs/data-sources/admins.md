@@ -36,7 +36,7 @@ Read-Only:
 - `password` (String) Password hash saved in the SFTPGo data provider.
 - `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
-- `permissions` (List of String) Granted permissions.
+- `permissions` (List of String) Granted permissions. The granular group/folder permissions (`view_groups`, `manage_groups`, `del_groups`, `view_folders`, `manage_folders`, `del_folders`) are available in the Enterprise edition; `manage_groups` and `manage_folders` work on both editions.
 - `preferences` (Attributes) Admin preferences. (see [below for nested schema](#nestedatt--admins--preferences))
 - `role` (String) Role name. If set the admin can only administer users with the same role.
 - `status` (Number) 1 enabled, 0 disabled (login is not allowed).

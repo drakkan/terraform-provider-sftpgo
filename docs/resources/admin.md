@@ -17,7 +17,7 @@ Admin
 
 ### Required
 
-- `permissions` (List of String) Granted permissions.
+- `permissions` (List of String) Granted permissions. The granular group/folder permissions (`view_groups`, `manage_groups`, `del_groups`, `view_folders`, `manage_folders`, `del_folders`) are available in the Enterprise edition; `manage_groups` and `manage_folders` work on both editions.
 - `status` (Number) 1 enabled, 0 disabled (login is not allowed).
 - `username` (String) Unique username. Changing the username after creation forces replacement because the SFTPGo API does not support renaming.
 

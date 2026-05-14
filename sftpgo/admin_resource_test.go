@@ -195,6 +195,42 @@ func TestAccAdminResource_writeOnly(t *testing.T) {
 	})
 }
 
+func TestAccEnterpriseAdminResource(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_admin" "granular" {
+					  username    = "granular_admin"
+					  status      = 1
+					  password    = "pwd"
+					  permissions = ["view_users", "edit_users", "view_groups", "manage_groups", "del_groups", "view_folders", "manage_folders", "del_folders"]
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_admin.granular", "username", "granular_admin"),
+					resource.TestCheckResourceAttr("sftpgo_admin.granular", "permissions.#", "8"),
+					resource.TestCheckTypeSetElemAttr("sftpgo_admin.granular", "permissions.*", "view_groups"),
+					resource.TestCheckTypeSetElemAttr("sftpgo_admin.granular", "permissions.*", "manage_groups"),
+					resource.TestCheckTypeSetElemAttr("sftpgo_admin.granular", "permissions.*", "del_groups"),
+					resource.TestCheckTypeSetElemAttr("sftpgo_admin.granular", "permissions.*", "view_folders"),
+					resource.TestCheckTypeSetElemAttr("sftpgo_admin.granular", "permissions.*", "manage_folders"),
+					resource.TestCheckTypeSetElemAttr("sftpgo_admin.granular", "permissions.*", "del_folders"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccAdminResource_renameForcesReplace(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

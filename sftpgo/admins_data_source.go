@@ -90,7 +90,7 @@ func (d *adminsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 						"permissions": schema.ListAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
-							Description: "Granted permissions.",
+							Description: "Granted permissions. The granular group/folder permissions (`view_groups`, `manage_groups`, `del_groups`, `view_folders`, `manage_folders`, `del_folders`) are available in the Enterprise edition; `manage_groups` and `manage_folders` work on both editions.",
 						},
 						"description": schema.StringAttribute{
 							Computed:    true,
