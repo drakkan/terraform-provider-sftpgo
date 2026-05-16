@@ -50,12 +50,13 @@ func New() provider.Provider {
 
 // sftpgoProviderModel maps provider schema data to a Go type.
 type sftpgoProviderModel struct {
-	Host     types.String `tfsdk:"host"`
-	Username types.String `tfsdk:"username"`
-	Password types.String `tfsdk:"password"`
-	APIKey   types.String `tfsdk:"api_key"`
-	Headers  []keyValue   `tfsdk:"headers"`
-	Edition  types.Int64  `tfsdk:"edition"`
+	Host            types.String `tfsdk:"host"`
+	Username        types.String `tfsdk:"username"`
+	Password        types.String `tfsdk:"password"`
+	APIKey          types.String `tfsdk:"api_key"`
+	Headers         []keyValue   `tfsdk:"headers"`
+	Edition         types.Int64  `tfsdk:"edition"`
+	TLSVerification types.Bool   `tfsdk:"tls_verification"`
 }
 
 // sftpgoProvider is the provider implementation.
@@ -112,6 +113,10 @@ func (p *sftpgoProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 					int64validator.Between(0, 1),
 				},
 			},
+			"tls_verification": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Enable or disable TLS verification for the SFTPGo API. Set to false to disable TLS verification (e.g., for self-signed certificates). May also be provided via SFTPGO_TLS_VERIFICATION environment variable.",
+			},
 		},
 	}
 }
@@ -129,7 +134,7 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	if config.Host.IsUnknown() || config.Username.IsUnknown() || config.Password.IsUnknown() || config.APIKey.IsUnknown() || config.Edition.IsUnknown() {
+	if config.Host.IsUnknown() || config.Username.IsUnknown() || config.Password.IsUnknown() || config.APIKey.IsUnknown() || config.Edition.IsUnknown() || config.TLSVerification.IsUnknown() {
 		tflog.Info(ctx, "Configuration contains unknown values, deferring client creation until Apply phase")
 		return
 	}
@@ -147,6 +152,7 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	apiKey := os.Getenv("SFTPGO_API_KEY")
 	headers := getHeadersFromEnv()
 	edition := getIntFromEnv("SFTPGO_EDITION", 0)
+	tlsVerification := getEnvAsBool("SFTPGO_TLS_VERIFICATION", true)
 
 	if !config.Host.IsNull() {
 		host = config.Host.ValueString()
@@ -166,6 +172,10 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	if !config.Edition.IsNull() {
 		edition = config.Edition.ValueInt64()
+	}
+
+	if !config.TLSVerification.IsNull() {
+		tlsVerification = config.TLSVerification.ValueBool()
 	}
 
 	if len(config.Headers) > 0 {
@@ -230,7 +240,7 @@ func (p *sftpgoProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	tflog.Debug(ctx, "Creating SFTPGo client")
 
 	// Create a new SFTPGo client using the configuration values
-	client, err := client.NewClient(host, username, password, apiKey, headers, edition)
+	client, err := client.NewClient(host, username, password, apiKey, headers, edition, tlsVerification)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create SFTPGo API Client",
@@ -285,6 +295,14 @@ func (p *sftpgoProvider) Resources(_ context.Context) []func() resource.Resource
 
 func getIntFromEnv(name string, defaultValue int64) int64 {
 	val, err := strconv.ParseInt(os.Getenv(name), 10, 64)
+	if err != nil {
+		return defaultValue
+	}
+	return val
+}
+
+func getEnvAsBool(name string, defaultValue bool) bool {
+	val, err := strconv.ParseBool(os.Getenv(name))
 	if err != nil {
 		return defaultValue
 	}

@@ -61,3 +61,45 @@ func TestIsNotFound(t *testing.T) {
 		})
 	}
 }
+
+func TestNewClientTLSVerification(t *testing.T) {
+	tests := []struct {
+		name           string
+		tlsSkipVerify  bool
+		expectInsecure bool
+	}{
+		{
+			name:           "TLS verification enabled",
+			tlsSkipVerify:  false,
+			expectInsecure: false,
+		},
+		{
+			name:           "TLS verification disabled",
+			tlsSkipVerify:  true,
+			expectInsecure: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, err := NewClient("http://localhost:8080", "admin", "password", "", nil, 0, tt.tlsSkipVerify)
+			require.NoError(t, err)
+			require.NotNil(t, client)
+
+			if tt.expectInsecure {
+				require.NotNil(t, client.HTTPClient.Transport)
+				transport, ok := client.HTTPClient.Transport.(*http.Transport)
+				require.True(t, ok, "Expected *http.Transport")
+				require.NotNil(t, transport.TLSClientConfig)
+				require.True(t, transport.TLSClientConfig.InsecureSkipVerify, "InsecureSkipVerify should be true")
+			} else {
+				if client.HTTPClient.Transport != nil {
+					transport, ok := client.HTTPClient.Transport.(*http.Transport)
+					if ok && transport.TLSClientConfig != nil {
+						require.False(t, transport.TLSClientConfig.InsecureSkipVerify, "InsecureSkipVerify should be false")
+					}
+				}
+			}
+		})
+	}
+}
