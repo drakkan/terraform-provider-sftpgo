@@ -2086,6 +2086,36 @@ func (e *rlSafeListEntryResourceModel) fromSFTPGo(_ context.Context, entry *clie
 	return nil
 }
 
+type trustedListEntryResourceModel struct {
+	ID          types.String `tfsdk:"id"`
+	IPOrNet     types.String `tfsdk:"ipornet"`
+	Description types.String `tfsdk:"description"`
+	Protocols   types.Int64  `tfsdk:"protocols"`
+	CreatedAt   types.Int64  `tfsdk:"created_at"`
+	UpdatedAt   types.Int64  `tfsdk:"updated_at"`
+}
+
+func (e *trustedListEntryResourceModel) toSFTPGo(_ context.Context) (*client.IPListEntry, diag.Diagnostics) {
+	entry := &client.IPListEntry{
+		IPOrNet:     e.IPOrNet.ValueString(),
+		Description: e.Description.ValueString(),
+		Type:        4,
+		Mode:        1,
+		Protocols:   int(e.Protocols.ValueInt64()),
+	}
+	return entry, nil
+}
+
+func (e *trustedListEntryResourceModel) fromSFTPGo(_ context.Context, entry *client.IPListEntry) diag.Diagnostics {
+	e.IPOrNet = types.StringValue(entry.IPOrNet)
+	e.ID = e.IPOrNet
+	e.Description = getOptionalString(entry.Description)
+	e.Protocols = types.Int64Value(int64(entry.Protocols))
+	e.CreatedAt = types.Int64Value(entry.CreatedAt)
+	e.UpdatedAt = types.Int64Value(entry.UpdatedAt)
+	return nil
+}
+
 type keyValue struct {
 	Key   types.String `tfsdk:"key"`
 	Value types.String `tfsdk:"value"`
