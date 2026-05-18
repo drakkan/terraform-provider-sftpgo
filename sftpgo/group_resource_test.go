@@ -233,7 +233,7 @@ func TestAccGroupResource(t *testing.T) {
 					filesystem = {
 					  provider = 4
 					  cryptconfig = {
-						passphrase = "pwd"
+						passphrase = "vm1g27QPOVAydYn0KrFh"
 					    write_buffer_size = 5
 					  }
 					}
@@ -265,7 +265,7 @@ func TestAccGroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.access_time.1.to", "18:00"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.bandwidth_limits.#", "0"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.provider", "4"),
-					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.cryptconfig.passphrase", "pwd"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.cryptconfig.passphrase", "vm1g27QPOVAydYn0KrFh"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.cryptconfig.write_buffer_size", "5"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.cryptconfig.read_buffer_size"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.osconfig"),
@@ -490,7 +490,7 @@ func TestAccGroupResource_writeOnly(t *testing.T) {
 					    filesystem = {
 					      provider = 4
 					      cryptconfig = {
-					        passphrase_wo         = "initial_passphrase"
+					        passphrase_wo         = "vm1g27QPOVAydYn0KrFh"
 					        passphrase_wo_version = "1"
 					      }
 					    }
@@ -509,7 +509,7 @@ func TestAccGroupResource_writeOnly(t *testing.T) {
 					    filesystem = {
 					      provider = 4
 					      cryptconfig = {
-					        passphrase_wo         = "rotated_passphrase"
+					        passphrase_wo         = "QWnxdP1dFbew9dUo9usm"
 					        passphrase_wo_version = "2"
 					      }
 					    }

@@ -356,7 +356,7 @@ func TestAccUserResource(t *testing.T) {
 				  filesystem = {
 					  provider = 4
 					  cryptconfig = {
-						passphrase = "test pwd"
+						passphrase = "idGeThJapxSF7QQHfvXz"
 					    read_buffer_size = 4
 					    write_buffer_size = 3
 					  }
@@ -375,7 +375,7 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "permissions./", "list,download"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.provider", "4"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.%", "5"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.passphrase", "test pwd"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.passphrase", "idGeThJapxSF7QQHfvXz"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.read_buffer_size", "4"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.cryptconfig.write_buffer_size", "3"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.osconfig"),

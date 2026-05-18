@@ -45,7 +45,7 @@ var (
 				CryptConfig: sdk.CryptFsConfig{
 					Passphrase: kms.BaseSecret{
 						Status:  kms.SecretStatusPlain,
-						Payload: "secret passphrase",
+						Payload: "idGeThJapxSF7QQHfvXz",
 					},
 					OSFsConfig: sdk.OSFsConfig{
 						ReadBufferSize:  5,

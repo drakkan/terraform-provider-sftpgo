@@ -53,7 +53,7 @@ var (
 				},
 				SSECustomerKey: kms.BaseSecret{
 					Status:  kms.SecretStatusPlain,
-					Payload: "secretk3y",
+					Payload: "ViF4wkawmlDCzijCymTh",
 				},
 			},
 		},

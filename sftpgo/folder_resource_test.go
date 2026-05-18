@@ -142,7 +142,7 @@ func TestAccFolderResource(t *testing.T) {
 					  filesystem = {
 					    provider = 4
 						cryptconfig = {
-							passphrase = "pwd"
+							passphrase = "ViF4wkawmlDCzijCymTh"
 							read_buffer_size = 4
 						  }
 					  }
@@ -159,7 +159,7 @@ func TestAccFolderResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.osconfig"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.s3config"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.gcsconfig"),
-					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.cryptconfig.passphrase", "pwd"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.cryptconfig.passphrase", "ViF4wkawmlDCzijCymTh"),
 					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.cryptconfig.read_buffer_size", "4"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.cryptconfig.write_buffer_size"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig"),
@@ -289,7 +289,7 @@ func TestAccFolderResource_writeOnly(t *testing.T) {
 					  filesystem = {
 					    provider = 4
 					    cryptconfig = {
-					      passphrase_wo         = "initial_passphrase"
+					      passphrase_wo         = "ViF4wkawmlDCzijCymTh"
 					      passphrase_wo_version = "1"
 					    }
 					  }
@@ -307,7 +307,7 @@ func TestAccFolderResource_writeOnly(t *testing.T) {
 					  filesystem = {
 					    provider = 4
 					    cryptconfig = {
-					      passphrase_wo         = "rotated_passphrase"
+					      passphrase_wo         = "vm1g27QPOVAydYn0KrFh"
 					      passphrase_wo_version = "2"
 					    }
 					  }
