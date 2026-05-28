@@ -299,7 +299,6 @@ func TestAccUserResource(t *testing.T) {
 				  filters = {
 					denied_protocols = ["SSH", "HTTP"]
 					denied_login_methods = ["publickey", "password-over-SSH", "keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "TLSCertificate", "TLSCertificate+password"]
-					is_anonymous = true
 					access_time = [
 						{
 							day_of_week = 2
@@ -331,7 +330,6 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "groups"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "virtual_folders"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "role"),
-					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.is_anonymous", "true"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_protocols.#", "2"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_protocols.0", "SSH"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_protocols.1", "HTTP"),
@@ -434,6 +432,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
       				    }
     				  }
     				  filters = {
+					    denied_login_methods = ["password+publickey", "publickey+keyboard-interactive", "keyboard-interactive+publickey"]
       					web_client = ["shares-require-email-auth", "wopi-disabled", "rest-api-disabled","shares-policy-change-disabled"]
 						custom1 = "testvalue"
 						custom_placeholders = ["testvalue","testvalue1"]
@@ -496,6 +495,10 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.digits", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.password_policy.specials", "1"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filters.enforce_secure_algorithms"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.#", "3"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.0", "password+publickey"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.1", "publickey+keyboard-interactive"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.denied_login_methods.2", "keyboard-interactive+publickey"),
 				),
 			},
 			// ImportState testing

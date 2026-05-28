@@ -253,7 +253,7 @@ Optional:
 - `check_password_disabled` (Boolean) If set, check password hook will not be executed.
 - `default_shares_expiration` (Number) Default expiration for newly created shares as number of days. Not set means no default expiration.
 - `denied_ip` (List of String) Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.
-- `denied_login_methods` (List of String) Disabled login methods. Valid values: "publickey", "password", "password-over-SSH", "keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "TLSCertificate", "TLSCertificate+password"
+- `denied_login_methods` (List of String) Disabled login methods. Valid values: "publickey", "password", "password-over-SSH", "keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "password+publickey", "keyboard-interactive+publickey", "TLSCertificate", "TLSCertificate+password". The "password+publickey" and "keyboard-interactive+publickey" multi-step variants are available in the Enterprise edition only.
 - `denied_protocols` (List of String) Disabled protocols. Valid values: SSH, FTP, DAV, HTTP
 - `denied_share_paths` (List of String) Virtual paths that cannot be shared. If a path is denied, shares for that path and any sub-path are rejected. Available in the Enterprise edition.
 - `denied_share_scopes` (List of String) Share scopes that users are not allowed to use. Valid values: read, write, read_write. If all scopes are denied, sharing is completely disabled. Available in the Enterprise edition.

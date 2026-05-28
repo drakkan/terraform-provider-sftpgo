@@ -1220,12 +1220,13 @@ func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 			"denied_login_methods": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-				Description: `Disabled login methods. Valid values: "publickey", "password", "password-over-SSH", "keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "TLSCertificate", "TLSCertificate+password"`,
+				Description: `Disabled login methods. Valid values: "publickey", "password", "password-over-SSH", "keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "password+publickey", "keyboard-interactive+publickey", "TLSCertificate", "TLSCertificate+password". The "password+publickey" and "keyboard-interactive+publickey" multi-step variants are available in the Enterprise edition only.`,
 				Validators: []validator.List{
 					listvalidator.UniqueValues(),
 					listvalidator.ValueStringsAre(stringvalidator.OneOf("publickey", "password", "password-over-SSH",
-						"keyboard-interactive", "publickey+password", "publickey+keyboard-interactive", "TLSCertificate",
-						"TLSCertificate+password")),
+						"keyboard-interactive", "publickey+password", "publickey+keyboard-interactive",
+						"password+publickey", "keyboard-interactive+publickey",
+						"TLSCertificate", "TLSCertificate+password")),
 				},
 			},
 			"denied_protocols": schema.ListAttribute{
