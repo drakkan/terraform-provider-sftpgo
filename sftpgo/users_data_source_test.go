@@ -62,10 +62,8 @@ func TestAccUsersDataSource(t *testing.T) {
 		Password: "Cheiha0ahy7Ieghatiet4phei",
 		FsConfig: client.Filesystem{
 			Provider: 6,
-			HTTPConfig: sdk.HTTPFsConfig{
-				BaseHTTPFsConfig: sdk.BaseHTTPFsConfig{
-					Endpoint: "http://127.0.0.1:8080",
-				},
+			HTTPConfig: client.HTTPFsConfig{
+				Endpoint: "http://127.0.0.1:8080",
 				APIKey: kms.BaseSecret{
 					Status:  kms.SecretStatusPlain,
 					Payload: "api key",

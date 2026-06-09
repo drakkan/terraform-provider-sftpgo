@@ -689,6 +689,85 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 	})
 }
 
+func TestAccEnterpriseUserRemoteDirectory(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create with an FTP backend and a remote directory
+			{
+				Config: `
+					resource "sftpgo_user" "rdir" {
+					  username    = "rdir user"
+					  status      = 1
+					  password    = "secret pwd"
+					  home_dir    = "/tmp/rdir_user"
+					  permissions = {
+					    "/" = "*"
+					  }
+					  filesystem = {
+					    provider = 7
+					    ftpconfig = {
+					      endpoint         = "127.0.0.1:21"
+					      username         = "ftpuser"
+					      password         = "ftppwd"
+					      remote_directory = "/remote/dir"
+					    }
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.rdir", "username", "rdir user"),
+					resource.TestCheckResourceAttr("sftpgo_user.rdir", "filesystem.provider", "7"),
+					resource.TestCheckResourceAttr("sftpgo_user.rdir", "filesystem.ftpconfig.endpoint", "127.0.0.1:21"),
+					resource.TestCheckResourceAttr("sftpgo_user.rdir", "filesystem.ftpconfig.remote_directory", "/remote/dir"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.rdir", "filesystem.httpconfig"),
+				),
+			},
+			// Switch to an HTTP backend with a different remote directory
+			{
+				Config: `
+					resource "sftpgo_user" "rdir" {
+					  username    = "rdir user"
+					  status      = 1
+					  password    = "secret pwd"
+					  home_dir    = "/tmp/rdir_user"
+					  permissions = {
+					    "/" = "*"
+					  }
+					  filesystem = {
+					    provider = 6
+					    httpconfig = {
+					      endpoint         = "http://127.0.0.1/api"
+					      username         = "httpuser"
+					      password         = "httppwd"
+					      remote_directory = "/http/remote"
+					    }
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_user.rdir", "filesystem.provider", "6"),
+					resource.TestCheckResourceAttr("sftpgo_user.rdir", "filesystem.httpconfig.endpoint", "http://127.0.0.1/api"),
+					resource.TestCheckResourceAttr("sftpgo_user.rdir", "filesystem.httpconfig.remote_directory", "/http/remote"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.rdir", "filesystem.ftpconfig"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_user.rdir",
+				ImportState:       true,
+				ImportStateVerify: false, // SFTPGo will not return plain text password/secrets
+			},
+		},
+	})
+}
+
 func TestAccUserResource_writeOnly(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")

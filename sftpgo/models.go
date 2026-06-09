@@ -814,30 +814,30 @@ type osFsConfig struct {
 }
 
 type s3FsConfig struct {
-	Bucket                    types.String `tfsdk:"bucket"`
-	KeyPrefix                 types.String `tfsdk:"key_prefix"`
-	Region                    types.String `tfsdk:"region"`
-	AccessKey                 types.String `tfsdk:"access_key"`
-	AccessSecret              types.String `tfsdk:"access_secret"`
-	AccessSecretWO            types.String `tfsdk:"access_secret_wo"`
-	AccessSecretWOVersion     types.String `tfsdk:"access_secret_wo_version"`
-	SSECustomerKey            types.String `tfsdk:"sse_customer_key"`
-	SSECustomerKeyWO          types.String `tfsdk:"sse_customer_key_wo"`
-	SSECustomerKeyWOVersion   types.String `tfsdk:"sse_customer_key_wo_version"`
-	RoleARN                   types.String `tfsdk:"role_arn"`
-	SessionToken              types.String `tfsdk:"session_token"`
-	Endpoint                  types.String `tfsdk:"endpoint"`
-	StorageClass              types.String `tfsdk:"storage_class"`
-	ACL                       types.String `tfsdk:"acl"`
-	UploadPartSize            types.Int64  `tfsdk:"upload_part_size"`
-	UploadConcurrency         types.Int64  `tfsdk:"upload_concurrency"`
-	DownloadPartSize          types.Int64  `tfsdk:"download_part_size"`
-	UploadPartMaxTime         types.Int64  `tfsdk:"upload_part_max_time"`
-	DownloadConcurrency       types.Int64  `tfsdk:"download_concurrency"`
-	DownloadPartMaxTime       types.Int64  `tfsdk:"download_part_max_time"`
-	ForcePathStyle            types.Bool   `tfsdk:"force_path_style"`
-	SkipTLSVerify             types.Bool   `tfsdk:"skip_tls_verify"`
-	ChecksumAlgorithm         types.String `tfsdk:"checksum_algorithm"`
+	Bucket                  types.String `tfsdk:"bucket"`
+	KeyPrefix               types.String `tfsdk:"key_prefix"`
+	Region                  types.String `tfsdk:"region"`
+	AccessKey               types.String `tfsdk:"access_key"`
+	AccessSecret            types.String `tfsdk:"access_secret"`
+	AccessSecretWO          types.String `tfsdk:"access_secret_wo"`
+	AccessSecretWOVersion   types.String `tfsdk:"access_secret_wo_version"`
+	SSECustomerKey          types.String `tfsdk:"sse_customer_key"`
+	SSECustomerKeyWO        types.String `tfsdk:"sse_customer_key_wo"`
+	SSECustomerKeyWOVersion types.String `tfsdk:"sse_customer_key_wo_version"`
+	RoleARN                 types.String `tfsdk:"role_arn"`
+	SessionToken            types.String `tfsdk:"session_token"`
+	Endpoint                types.String `tfsdk:"endpoint"`
+	StorageClass            types.String `tfsdk:"storage_class"`
+	ACL                     types.String `tfsdk:"acl"`
+	UploadPartSize          types.Int64  `tfsdk:"upload_part_size"`
+	UploadConcurrency       types.Int64  `tfsdk:"upload_concurrency"`
+	DownloadPartSize        types.Int64  `tfsdk:"download_part_size"`
+	UploadPartMaxTime       types.Int64  `tfsdk:"upload_part_max_time"`
+	DownloadConcurrency     types.Int64  `tfsdk:"download_concurrency"`
+	DownloadPartMaxTime     types.Int64  `tfsdk:"download_part_max_time"`
+	ForcePathStyle          types.Bool   `tfsdk:"force_path_style"`
+	SkipTLSVerify           types.Bool   `tfsdk:"skip_tls_verify"`
+	ChecksumAlgorithm       types.String `tfsdk:"checksum_algorithm"`
 }
 
 type gcsFsConfig struct {
@@ -856,54 +856,54 @@ type gcsFsConfig struct {
 }
 
 type azBlobFsConfig struct {
-	Container            types.String `tfsdk:"container"`
-	AccountName          types.String `tfsdk:"account_name"`
-	AccountKey           types.String `tfsdk:"account_key"`
-	AccountKeyWO         types.String `tfsdk:"account_key_wo"`
-	AccountKeyWOVersion  types.String `tfsdk:"account_key_wo_version"`
-	SASURL               types.String `tfsdk:"sas_url"`
-	SASURLWO             types.String `tfsdk:"sas_url_wo"`
-	SASURLWOVersion      types.String `tfsdk:"sas_url_wo_version"`
-	Endpoint             types.String `tfsdk:"endpoint"`
-	KeyPrefix            types.String `tfsdk:"key_prefix"`
-	UploadPartSize       types.Int64  `tfsdk:"upload_part_size"`
-	UploadConcurrency    types.Int64  `tfsdk:"upload_concurrency"`
-	DownloadPartSize     types.Int64  `tfsdk:"download_part_size"`
-	DownloadConcurrency  types.Int64  `tfsdk:"download_concurrency"`
-	UseEmulator          types.Bool   `tfsdk:"use_emulator"`
-	AccessTier           types.String `tfsdk:"access_tier"`
+	Container           types.String `tfsdk:"container"`
+	AccountName         types.String `tfsdk:"account_name"`
+	AccountKey          types.String `tfsdk:"account_key"`
+	AccountKeyWO        types.String `tfsdk:"account_key_wo"`
+	AccountKeyWOVersion types.String `tfsdk:"account_key_wo_version"`
+	SASURL              types.String `tfsdk:"sas_url"`
+	SASURLWO            types.String `tfsdk:"sas_url_wo"`
+	SASURLWOVersion     types.String `tfsdk:"sas_url_wo_version"`
+	Endpoint            types.String `tfsdk:"endpoint"`
+	KeyPrefix           types.String `tfsdk:"key_prefix"`
+	UploadPartSize      types.Int64  `tfsdk:"upload_part_size"`
+	UploadConcurrency   types.Int64  `tfsdk:"upload_concurrency"`
+	DownloadPartSize    types.Int64  `tfsdk:"download_part_size"`
+	DownloadConcurrency types.Int64  `tfsdk:"download_concurrency"`
+	UseEmulator         types.Bool   `tfsdk:"use_emulator"`
+	AccessTier          types.String `tfsdk:"access_tier"`
 }
 
 type cryptFsConfig struct {
-	Passphrase           types.String `tfsdk:"passphrase"`
-	PassphraseWO         types.String `tfsdk:"passphrase_wo"`
-	PassphraseWOVersion  types.String `tfsdk:"passphrase_wo_version"`
-	ReadBufferSize       types.Int64  `tfsdk:"read_buffer_size"`
-	WriteBufferSize      types.Int64  `tfsdk:"write_buffer_size"`
+	Passphrase          types.String `tfsdk:"passphrase"`
+	PassphraseWO        types.String `tfsdk:"passphrase_wo"`
+	PassphraseWOVersion types.String `tfsdk:"passphrase_wo_version"`
+	ReadBufferSize      types.Int64  `tfsdk:"read_buffer_size"`
+	WriteBufferSize     types.Int64  `tfsdk:"write_buffer_size"`
 }
 
 type sftpFsConfig struct {
-	Endpoint                 types.String `tfsdk:"endpoint"`
-	Username                 types.String `tfsdk:"username"`
-	Password                 types.String `tfsdk:"password"`
-	PasswordWO               types.String `tfsdk:"password_wo"`
-	PasswordWOVersion        types.String `tfsdk:"password_wo_version"`
-	PrivateKey               types.String `tfsdk:"private_key"`
-	PrivateKeyWO             types.String `tfsdk:"private_key_wo"`
-	PrivateKeyWOVersion      types.String `tfsdk:"private_key_wo_version"`
-	KeyPassphrase            types.String `tfsdk:"key_passphrase"`
-	KeyPassphraseWO          types.String `tfsdk:"key_passphrase_wo"`
-	KeyPassphraseWOVersion   types.String `tfsdk:"key_passphrase_wo_version"`
-	Fingerprints             types.List   `tfsdk:"fingerprints"`
-	Prefix                   types.String `tfsdk:"prefix"`
-	DisableCouncurrentReads  types.Bool   `tfsdk:"disable_concurrent_reads"`
-	BufferSize               types.Int64  `tfsdk:"buffer_size"`
-	EqualityCheckMode        types.Int64  `tfsdk:"equality_check_mode"`
-	SocksProxy               types.String `tfsdk:"socks_proxy"`
-	SocksUsername            types.String `tfsdk:"socks_username"`
-	SocksPassword            types.String `tfsdk:"socks_password"`
-	SocksPasswordWO          types.String `tfsdk:"socks_password_wo"`
-	SocksPasswordWOVersion   types.String `tfsdk:"socks_password_wo_version"`
+	Endpoint                types.String `tfsdk:"endpoint"`
+	Username                types.String `tfsdk:"username"`
+	Password                types.String `tfsdk:"password"`
+	PasswordWO              types.String `tfsdk:"password_wo"`
+	PasswordWOVersion       types.String `tfsdk:"password_wo_version"`
+	PrivateKey              types.String `tfsdk:"private_key"`
+	PrivateKeyWO            types.String `tfsdk:"private_key_wo"`
+	PrivateKeyWOVersion     types.String `tfsdk:"private_key_wo_version"`
+	KeyPassphrase           types.String `tfsdk:"key_passphrase"`
+	KeyPassphraseWO         types.String `tfsdk:"key_passphrase_wo"`
+	KeyPassphraseWOVersion  types.String `tfsdk:"key_passphrase_wo_version"`
+	Fingerprints            types.List   `tfsdk:"fingerprints"`
+	Prefix                  types.String `tfsdk:"prefix"`
+	DisableCouncurrentReads types.Bool   `tfsdk:"disable_concurrent_reads"`
+	BufferSize              types.Int64  `tfsdk:"buffer_size"`
+	EqualityCheckMode       types.Int64  `tfsdk:"equality_check_mode"`
+	SocksProxy              types.String `tfsdk:"socks_proxy"`
+	SocksUsername           types.String `tfsdk:"socks_username"`
+	SocksPassword           types.String `tfsdk:"socks_password"`
+	SocksPasswordWO         types.String `tfsdk:"socks_password_wo"`
+	SocksPasswordWOVersion  types.String `tfsdk:"socks_password_wo_version"`
 }
 
 type ftpFsConfig struct {
@@ -914,19 +914,21 @@ type ftpFsConfig struct {
 	PasswordWOVersion types.String `tfsdk:"password_wo_version"`
 	TLSMode           types.Int64  `tfsdk:"tls_mode"`
 	SkipTLSVerify     types.Bool   `tfsdk:"skip_tls_verify"`
+	RemoteDirectory   types.String `tfsdk:"remote_directory"`
 }
 
 type httpFsConfig struct {
-	Endpoint           types.String `tfsdk:"endpoint"`
-	Username           types.String `tfsdk:"username"`
-	Password           types.String `tfsdk:"password"`
-	PasswordWO         types.String `tfsdk:"password_wo"`
-	PasswordWOVersion  types.String `tfsdk:"password_wo_version"`
-	APIKey             types.String `tfsdk:"api_key"`
-	APIKeyWO           types.String `tfsdk:"api_key_wo"`
-	APIKeyWOVersion    types.String `tfsdk:"api_key_wo_version"`
-	SkipTLSVerify      types.Bool   `tfsdk:"skip_tls_verify"`
-	EqualityCheckMode  types.Int64  `tfsdk:"equality_check_mode"`
+	Endpoint          types.String `tfsdk:"endpoint"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.String `tfsdk:"password_wo_version"`
+	APIKey            types.String `tfsdk:"api_key"`
+	APIKeyWO          types.String `tfsdk:"api_key_wo"`
+	APIKeyWOVersion   types.String `tfsdk:"api_key_wo_version"`
+	SkipTLSVerify     types.Bool   `tfsdk:"skip_tls_verify"`
+	EqualityCheckMode types.Int64  `tfsdk:"equality_check_mode"`
+	RemoteDirectory   types.String `tfsdk:"remote_directory"`
 }
 
 type filesystem struct {
@@ -1086,6 +1088,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"password_wo_version": types.StringType,
 				"tls_mode":            types.Int64Type,
 				"skip_tls_verify":     types.BoolType,
+				"remote_directory":    types.StringType,
 			},
 		},
 		"httpconfig": types.ObjectType{
@@ -1100,6 +1103,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				"api_key_wo_version":  types.StringType,
 				"skip_tls_verify":     types.BoolType,
 				"equality_check_mode": types.Int64Type,
+				"remote_directory":    types.StringType,
 			},
 		},
 	}
@@ -1193,21 +1197,21 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 			SocksPassword: getSFTPGoSecret(resolveSecret(f.SFTPConfig.SocksPassword, f.SFTPConfig.SocksPasswordWO)),
 		},
 		FTPConfig: client.FTPFsConfig{
-			Endpoint:      f.FTPConfig.Endpoint.ValueString(),
-			Username:      f.FTPConfig.Username.ValueString(),
-			Password:      getSFTPGoSecret(resolveSecret(f.FTPConfig.Password, f.FTPConfig.PasswordWO)),
-			TLSMode:       int(f.FTPConfig.TLSMode.ValueInt64()),
-			SkipTLSVerify: f.FTPConfig.SkipTLSVerify.ValueBool(),
+			Endpoint:        f.FTPConfig.Endpoint.ValueString(),
+			Username:        f.FTPConfig.Username.ValueString(),
+			Password:        getSFTPGoSecret(resolveSecret(f.FTPConfig.Password, f.FTPConfig.PasswordWO)),
+			TLSMode:         int(f.FTPConfig.TLSMode.ValueInt64()),
+			SkipTLSVerify:   f.FTPConfig.SkipTLSVerify.ValueBool(),
+			RemoteDirectory: f.FTPConfig.RemoteDirectory.ValueString(),
 		},
-		HTTPConfig: sdk.HTTPFsConfig{
-			BaseHTTPFsConfig: sdk.BaseHTTPFsConfig{
-				Endpoint:          f.HTTPConfig.Endpoint.ValueString(),
-				Username:          f.HTTPConfig.Username.ValueString(),
-				SkipTLSVerify:     f.HTTPConfig.SkipTLSVerify.ValueBool(),
-				EqualityCheckMode: int(f.HTTPConfig.EqualityCheckMode.ValueInt64()),
-			},
-			Password: getSFTPGoSecret(resolveSecret(f.HTTPConfig.Password, f.HTTPConfig.PasswordWO)),
-			APIKey:   getSFTPGoSecret(resolveSecret(f.HTTPConfig.APIKey, f.HTTPConfig.APIKeyWO)),
+		HTTPConfig: client.HTTPFsConfig{
+			Endpoint:          f.HTTPConfig.Endpoint.ValueString(),
+			Username:          f.HTTPConfig.Username.ValueString(),
+			SkipTLSVerify:     f.HTTPConfig.SkipTLSVerify.ValueBool(),
+			EqualityCheckMode: int(f.HTTPConfig.EqualityCheckMode.ValueInt64()),
+			RemoteDirectory:   f.HTTPConfig.RemoteDirectory.ValueString(),
+			Password:          getSFTPGoSecret(resolveSecret(f.HTTPConfig.Password, f.HTTPConfig.PasswordWO)),
+			APIKey:            getSFTPGoSecret(resolveSecret(f.HTTPConfig.APIKey, f.HTTPConfig.APIKeyWO)),
 		},
 	}
 
@@ -1317,11 +1321,12 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *client.Filesystem) diag
 		f.SFTPConfig.Fingerprints = fingerprints
 	case client.FTPFilesystemProvider:
 		f.FTPConfig = &ftpFsConfig{
-			Endpoint:      getOptionalString(fs.FTPConfig.Endpoint),
-			Username:      getOptionalString(fs.FTPConfig.Username),
-			Password:      getOptionalString(getSecretFromSFTPGo(fs.FTPConfig.Password)),
-			TLSMode:       getOptionalInt64(int64(fs.FTPConfig.TLSMode)),
-			SkipTLSVerify: getOptionalBool(fs.FTPConfig.SkipTLSVerify),
+			Endpoint:        getOptionalString(fs.FTPConfig.Endpoint),
+			Username:        getOptionalString(fs.FTPConfig.Username),
+			Password:        getOptionalString(getSecretFromSFTPGo(fs.FTPConfig.Password)),
+			TLSMode:         getOptionalInt64(int64(fs.FTPConfig.TLSMode)),
+			SkipTLSVerify:   getOptionalBool(fs.FTPConfig.SkipTLSVerify),
+			RemoteDirectory: getOptionalString(fs.FTPConfig.RemoteDirectory),
 		}
 	case sdk.HTTPFilesystemProvider:
 		f.HTTPConfig = &httpFsConfig{
@@ -1331,6 +1336,7 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *client.Filesystem) diag
 			APIKey:            getOptionalString(getSecretFromSFTPGo(fs.HTTPConfig.APIKey)),
 			SkipTLSVerify:     getOptionalBool(fs.HTTPConfig.SkipTLSVerify),
 			EqualityCheckMode: getOptionalInt64(int64(fs.HTTPConfig.EqualityCheckMode)),
+			RemoteDirectory:   getOptionalString(fs.HTTPConfig.RemoteDirectory),
 		}
 	}
 

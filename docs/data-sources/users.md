@@ -124,6 +124,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
+- `remote_directory` (String) Server-side path used as the starting directory for all operations. Not a security boundary: server-side symlinks may resolve outside it. Honored only while the `ftp` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. Available in the Enterprise edition.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the FTP server is not verified.
 - `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
 - `username` (String) Username for FTP authentication.
@@ -161,6 +162,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
+- `remote_directory` (String) Server-side path used as the starting directory for all operations. Not a security boundary: the remote backend may resolve server-side symlinks outside it. Honored only while the `http` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. Available in the Enterprise edition.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.
 - `username` (String) Username for HTTP basic authentication.
 
@@ -404,6 +406,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
+- `remote_directory` (String) Server-side path used as the starting directory for all operations. Not a security boundary: server-side symlinks may resolve outside it. Honored only while the `ftp` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. Available in the Enterprise edition.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the FTP server is not verified.
 - `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
 - `username` (String) Username for FTP authentication.
@@ -441,6 +444,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
+- `remote_directory` (String) Server-side path used as the starting directory for all operations. Not a security boundary: the remote backend may resolve server-side symlinks outside it. Honored only while the `http` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. Available in the Enterprise edition.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.
 - `username` (String) Username for HTTP basic authentication.
 

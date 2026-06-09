@@ -85,7 +85,7 @@ Optional:
 - `download_concurrency` (Number) How many parts are downloaded in parallel. Default: 5.
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads. If this value is not set, the default value (5MB) will be used.
 - `endpoint` (String) Optional endpoint. Default is "blob.core.windows.net". If you use the emulator the endpoint must include the protocol, for example "http://127.0.0.1:10000".
-- `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"
+- `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix is normalized on save: a leading "/" is removed and a trailing "/" is added; a non-empty value that resolves to the storage root is rejected. Provide it already normalized (no leading "/", trailing "/") to avoid plan drift
 - `sas_url` (String, Sensitive, Deprecated) Plain text SAS URL. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `sas_url_wo`.
 - `sas_url_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `sas_url`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
 - `sas_url_wo_version` (String) Trigger attribute for `sas_url_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
@@ -119,6 +119,7 @@ Optional:
 - `password` (String, Sensitive, Deprecated) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `password_wo`.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
 - `password_wo_version` (String) Trigger attribute for `password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
+- `remote_directory` (String) Server-side path used as the starting directory for all operations. Not a security boundary: server-side symlinks may resolve outside it. Honored only while the `ftp` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. Available in the Enterprise edition.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the FTP server is not verified.
 - `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
 
@@ -138,7 +139,7 @@ Optional:
 - `credentials_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `credentials`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
 - `credentials_wo_version` (String) Trigger attribute for `credentials_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `hns` (Number) Set to 1 if Hierarchical namespace is enabled for the bucket. Available in the Enterprise edition.
-- `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"
+- `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix is normalized on save: a leading "/" is removed and a trailing "/" is added; a non-empty value that resolves to the storage root is rejected. Provide it already normalized (no leading "/", trailing "/") to avoid plan drift
 - `storage_class` (String) The storage class to use when storing objects. Leave not set for default.
 - `universe_domain` (String) The universe domain to use for Google Cloud API requests. If omitted or empty, the default public domain (googleapis.com) is used. Set this value if you need to connect to a custom Google Cloud environment, such as Google Distributed Cloud or a Sovereign Cloud. Available in the Enterprise edition
 - `upload_part_max_time` (Number) The maximum time allowed, in seconds, to upload a single chunk. The default value is 32. Not set means use the default.
@@ -161,6 +162,7 @@ Optional:
 - `password` (String, Sensitive, Deprecated) Plain text password. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `password_wo`.
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
 - `password_wo_version` (String) Trigger attribute for `password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
+- `remote_directory` (String) Server-side path used as the starting directory for all operations. Not a security boundary: the remote backend may resolve server-side symlinks outside it. Honored only while the `http` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. Available in the Enterprise edition.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.
 - `username` (String) Username for HTTP basic authentication.
 
@@ -194,7 +196,7 @@ Optional:
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads. If this value is not set, the default value (5MB) will be used.
 - `endpoint` (String) The endpoint is generally required for S3 compatible backends. For AWS S3, leave not set to use the default endpoint for the specified region.
 - `force_path_style` (Boolean) If set path-style addressing is used, i.e. http://s3.amazonaws.com/BUCKET/KEY
-- `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"
+- `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix is normalized on save: a leading "/" is removed and a trailing "/" is added; a non-empty value that resolves to the storage root is rejected. Provide it already normalized (no leading "/", trailing "/") to avoid plan drift
 - `region` (String) S3 region.
 - `role_arn` (String) Optional IAM Role ARN to assume.
 - `session_token` (String) Optional Session token that is a part of temporary security credentials provisioned by AWS STS.
@@ -430,6 +432,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
+- `remote_directory` (String) Server-side path used as the starting directory for all operations. Not a security boundary: server-side symlinks may resolve outside it. Honored only while the `ftp` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. Available in the Enterprise edition.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the FTP server is not verified.
 - `tls_mode` (Number) 0 disabled, 1 Explicit, 2 Implicit.
 - `username` (String) Username for FTP authentication.
@@ -467,6 +470,7 @@ Read-Only:
 - `password` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `password_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `password_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
+- `remote_directory` (String) Server-side path used as the starting directory for all operations. Not a security boundary: the remote backend may resolve server-side symlinks outside it. Honored only while the `http` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. Available in the Enterprise edition.
 - `skip_tls_verify` (Boolean) If true, the TLS certificate of the HTTP endpoint is not verified. Use with caution.
 - `username` (String) Username for HTTP basic authentication.
 

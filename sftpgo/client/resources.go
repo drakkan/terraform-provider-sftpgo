@@ -40,7 +40,7 @@ type Filesystem struct {
 	CryptConfig  sdk.CryptFsConfig      `json:"cryptconfig,omitempty"`
 	SFTPConfig   SFTPFsConfig           `json:"sftpconfig,omitempty"`
 	FTPConfig    FTPFsConfig            `json:"ftpconfig,omitempty"`
-	HTTPConfig   sdk.HTTPFsConfig       `json:"httpconfig,omitempty"`
+	HTTPConfig   HTTPFsConfig           `json:"httpconfig,omitempty"`
 }
 
 // BaseS3FsConfig extends sdk.BaseS3FsConfig with SFTPGo Enterprise only fields.
@@ -106,8 +106,20 @@ type FTPFsConfig struct {
 	Username string         `json:"username,omitempty"`
 	Password kms.BaseSecret `json:"password,omitempty"`
 	// 0 disabled, 1 explicit, 2 implicit
-	TLSMode       int  `json:"tls_mode,omitempty"`
-	SkipTLSVerify bool `json:"skip_tls_verify,omitempty"`
+	TLSMode         int    `json:"tls_mode,omitempty"`
+	SkipTLSVerify   bool   `json:"skip_tls_verify,omitempty"`
+	RemoteDirectory string `json:"remote_directory,omitempty"`
+}
+
+// HTTPFsConfig defines the configuration for HTTP based filesystem
+type HTTPFsConfig struct {
+	Endpoint          string         `json:"endpoint,omitempty"`
+	Username          string         `json:"username,omitempty"`
+	Password          kms.BaseSecret `json:"password,omitempty"`
+	APIKey            kms.BaseSecret `json:"api_key,omitempty"`
+	SkipTLSVerify     bool           `json:"skip_tls_verify,omitempty"`
+	EqualityCheckMode int            `json:"equality_check_mode,omitempty"`
+	RemoteDirectory   string         `json:"remote_directory,omitempty"`
 }
 
 type BaseVirtualFolder struct {

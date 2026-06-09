@@ -35,11 +35,11 @@ import (
 )
 
 const (
-	computedSecretDescription    = `SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".`
-	secretDescriptionGeneric     = `If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).`
-	writeOnlyDescriptionGeneric  = `Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.`
-	writeOnlyVersionDescGeneric  = `Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.`
-	enterpriseFeatureNote        = `Available in the Enterprise edition`
+	computedSecretDescription   = `SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".`
+	secretDescriptionGeneric    = `If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource).`
+	writeOnlyDescriptionGeneric = `Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.`
+	writeOnlyVersionDescGeneric = `Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.`
+	enterpriseFeatureNote       = `Available in the Enterprise edition`
 )
 
 func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
@@ -84,8 +84,8 @@ func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
 						Computed:    true,
 						Description: computedSecretDescription,
 					},
-					"access_secret_wo":            computedWOPlaceholder(false),
-					"access_secret_wo_version":    computedWOPlaceholder(true),
+					"access_secret_wo":         computedWOPlaceholder(false),
+					"access_secret_wo_version": computedWOPlaceholder(true),
 					"sse_customer_key": dsschema.StringAttribute{
 						Computed:    true,
 						Description: computedSecretDescription,
@@ -373,6 +373,10 @@ func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
 						Computed:    true,
 						Description: "If true, the TLS certificate of the FTP server is not verified.",
 					},
+					"remote_directory": dsschema.StringAttribute{
+						Computed:    true,
+						Description: "Server-side path used as the starting directory for all operations. Not a security boundary: server-side symlinks may resolve outside it. Honored only while the `ftp` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. " + enterpriseFeatureNote + ".",
+					},
 				},
 			},
 			"httpconfig": dsschema.SingleNestedAttribute{
@@ -406,6 +410,10 @@ func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
 					"equality_check_mode": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.",
+					},
+					"remote_directory": dsschema.StringAttribute{
+						Computed:    true,
+						Description: "Server-side path used as the starting directory for all operations. Not a security boundary: the remote backend may resolve server-side symlinks outside it. Honored only while the `http` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. " + enterpriseFeatureNote + ".",
 					},
 				},
 			},
@@ -480,7 +488,7 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"sse_customer_key_wo_version": writeOnlyVersionAttr("sse_customer_key"),
 					"key_prefix": schema.StringAttribute{
 						Optional:    true,
-						Description: `If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"`,
+						Description: `If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix is normalized on save: a leading "/" is removed and a trailing "/" is added; a non-empty value that resolves to the storage root is rejected. Provide it already normalized (no leading "/", trailing "/") to avoid plan drift`,
 					},
 					"role_arn": schema.StringAttribute{
 						Optional:    true,
@@ -574,7 +582,7 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					},
 					"key_prefix": schema.StringAttribute{
 						Optional:    true,
-						Description: `If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"`,
+						Description: `If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix is normalized on save: a leading "/" is removed and a trailing "/" is added; a non-empty value that resolves to the storage root is rejected. Provide it already normalized (no leading "/", trailing "/") to avoid plan drift`,
 					},
 					"storage_class": schema.StringAttribute{
 						Optional:    true,
@@ -630,7 +638,7 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					},
 					"key_prefix": schema.StringAttribute{
 						Optional:    true,
-						Description: `If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix must not start with "/" and must end with "/"`,
+						Description: `If specified then the SFTPGo user will be restricted to objects starting with the specified prefix. The prefix is normalized on save: a leading "/" is removed and a trailing "/" is added; a non-empty value that resolves to the storage root is rejected. Provide it already normalized (no leading "/", trailing "/") to avoid plan drift`,
 					},
 					"upload_part_size": schema.Int64Attribute{
 						Optional:    true,
@@ -797,6 +805,10 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 						Optional:    true,
 						Description: "If true, the TLS certificate of the FTP server is not verified.",
 					},
+					"remote_directory": schema.StringAttribute{
+						Optional:    true,
+						Description: "Server-side path used as the starting directory for all operations. Not a security boundary: server-side symlinks may resolve outside it. Honored only while the `ftp` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. " + enterpriseFeatureNote + ".",
+					},
 				},
 			},
 			"httpconfig": schema.SingleNestedAttribute{
@@ -836,6 +848,10 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"equality_check_mode": schema.Int64Attribute{
 						Optional:    true,
 						Description: "Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.",
+					},
+					"remote_directory": schema.StringAttribute{
+						Optional:    true,
+						Description: "Server-side path used as the starting directory for all operations. Not a security boundary: the remote backend may resolve server-side symlinks outside it. Honored only while the `http` backend is enabled in the `allow_remote_directory` setting of the common configuration; it is still stored when the backend is disabled, but connections using it are rejected. " + enterpriseFeatureNote + ".",
 					},
 				},
 			},
