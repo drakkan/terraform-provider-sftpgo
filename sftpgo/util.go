@@ -258,6 +258,10 @@ func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
 						Computed:    true,
 						Description: "Blob access tier. Valid values: empty, Archive, Hot, Cool.",
 					},
+					"managed_identity_client_id": dsschema.StringAttribute{
+						Computed:    true,
+						Description: "Client ID of the user-assigned managed identity to authenticate with. " + enterpriseFeatureNote + ".",
+					},
 				},
 			},
 			"cryptconfig": dsschema.SingleNestedAttribute{
@@ -663,6 +667,10 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"access_tier": schema.StringAttribute{
 						Optional:    true,
 						Description: "Blob Access Tier. Not set means the container default.",
+					},
+					"managed_identity_client_id": schema.StringAttribute{
+						Optional:    true,
+						Description: "Client ID of the user-assigned managed identity to authenticate with. Set this when more than one user-assigned managed identity is available and account key/SAS URL are not used. " + enterpriseFeatureNote + ".",
 					},
 				},
 			},

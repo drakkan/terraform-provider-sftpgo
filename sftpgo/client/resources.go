@@ -36,7 +36,7 @@ type Filesystem struct {
 	OSConfig     sdk.OSFsConfig         `json:"osconfig,omitempty"`
 	S3Config     S3FsConfig             `json:"s3config,omitempty"`
 	GCSConfig    GCSFsConfig            `json:"gcsconfig,omitempty"`
-	AzBlobConfig sdk.AzBlobFsConfig     `json:"azblobconfig,omitempty"`
+	AzBlobConfig AzBlobFsConfig         `json:"azblobconfig,omitempty"`
 	CryptConfig  sdk.CryptFsConfig      `json:"cryptconfig,omitempty"`
 	SFTPConfig   SFTPFsConfig           `json:"sftpconfig,omitempty"`
 	FTPConfig    FTPFsConfig            `json:"ftpconfig,omitempty"`
@@ -56,6 +56,19 @@ type S3FsConfig struct {
 	BaseS3FsConfig
 	AccessSecret   kms.BaseSecret `json:"access_secret,omitempty"`
 	SSECustomerKey kms.BaseSecret `json:"sse_customer_key,omitempty"`
+}
+
+// BaseAzBlobFsConfig extends sdk.BaseAzBlobFsConfig with SFTPGo Enterprise only fields.
+type BaseAzBlobFsConfig struct {
+	sdk.BaseAzBlobFsConfig
+	ManagedIdentityClientID string `json:"managed_identity_client_id,omitempty"`
+}
+
+// AzBlobFsConfig defines the configuration for Azure Blob Storage based filesystems.
+type AzBlobFsConfig struct {
+	BaseAzBlobFsConfig
+	AccountKey kms.BaseSecret `json:"account_key,omitempty"`
+	SASURL     kms.BaseSecret `json:"sas_url,omitempty"`
 }
 
 // BaseSFTPFsConfig defines the base configuration for SFTP based filesystem

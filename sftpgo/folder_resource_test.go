@@ -273,6 +273,75 @@ func TestAccEnterpriseFolderResource(t *testing.T) {
 	})
 }
 
+func TestAccEnterpriseFolderAzureManagedIdentity(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: `
+					resource "sftpgo_folder" "test" {
+					  name = "test folder"
+					  mapped_path    = "/tmp/test_folder"
+					  filesystem = {
+						provider = 3
+						azblobconfig = {
+						  container = "fake container"
+						  account_name = "my account"
+						  managed_identity_client_id = "12345678-1234-1234-1234-123456789012"
+						  key_prefix = "prefix/"
+						}
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "name", "test folder"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.provider", "3"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.azblobconfig.container", "fake container"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.azblobconfig.account_name", "my account"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.azblobconfig.managed_identity_client_id", "12345678-1234-1234-1234-123456789012"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.azblobconfig.account_key"),
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.azblobconfig.sas_url"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_folder.test",
+				ImportState:       true,
+				ImportStateVerify: false, // SFTPGo will not return plain text secrets
+			},
+			// Update and Read testing
+			{
+				Config: `
+					resource "sftpgo_folder" "test" {
+					  name = "test folder"
+					  mapped_path    = "/tmp/test_folder"
+					  filesystem = {
+						provider = 3
+						azblobconfig = {
+						  container = "fake container"
+						  account_name = "my account"
+						  managed_identity_client_id = "abcdef00-0000-0000-0000-000000000000"
+						  key_prefix = "prefix/"
+						}
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.azblobconfig.managed_identity_client_id", "abcdef00-0000-0000-0000-000000000000"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
 func TestAccFolderResource_writeOnly(t *testing.T) {
 	if os.Getenv("TF_ACC") == "" {
 		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")

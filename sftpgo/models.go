@@ -856,22 +856,23 @@ type gcsFsConfig struct {
 }
 
 type azBlobFsConfig struct {
-	Container           types.String `tfsdk:"container"`
-	AccountName         types.String `tfsdk:"account_name"`
-	AccountKey          types.String `tfsdk:"account_key"`
-	AccountKeyWO        types.String `tfsdk:"account_key_wo"`
-	AccountKeyWOVersion types.String `tfsdk:"account_key_wo_version"`
-	SASURL              types.String `tfsdk:"sas_url"`
-	SASURLWO            types.String `tfsdk:"sas_url_wo"`
-	SASURLWOVersion     types.String `tfsdk:"sas_url_wo_version"`
-	Endpoint            types.String `tfsdk:"endpoint"`
-	KeyPrefix           types.String `tfsdk:"key_prefix"`
-	UploadPartSize      types.Int64  `tfsdk:"upload_part_size"`
-	UploadConcurrency   types.Int64  `tfsdk:"upload_concurrency"`
-	DownloadPartSize    types.Int64  `tfsdk:"download_part_size"`
-	DownloadConcurrency types.Int64  `tfsdk:"download_concurrency"`
-	UseEmulator         types.Bool   `tfsdk:"use_emulator"`
-	AccessTier          types.String `tfsdk:"access_tier"`
+	Container               types.String `tfsdk:"container"`
+	AccountName             types.String `tfsdk:"account_name"`
+	AccountKey              types.String `tfsdk:"account_key"`
+	AccountKeyWO            types.String `tfsdk:"account_key_wo"`
+	AccountKeyWOVersion     types.String `tfsdk:"account_key_wo_version"`
+	SASURL                  types.String `tfsdk:"sas_url"`
+	SASURLWO                types.String `tfsdk:"sas_url_wo"`
+	SASURLWOVersion         types.String `tfsdk:"sas_url_wo_version"`
+	Endpoint                types.String `tfsdk:"endpoint"`
+	KeyPrefix               types.String `tfsdk:"key_prefix"`
+	UploadPartSize          types.Int64  `tfsdk:"upload_part_size"`
+	UploadConcurrency       types.Int64  `tfsdk:"upload_concurrency"`
+	DownloadPartSize        types.Int64  `tfsdk:"download_part_size"`
+	DownloadConcurrency     types.Int64  `tfsdk:"download_concurrency"`
+	UseEmulator             types.Bool   `tfsdk:"use_emulator"`
+	AccessTier              types.String `tfsdk:"access_tier"`
+	ManagedIdentityClientID types.String `tfsdk:"managed_identity_client_id"`
 }
 
 type cryptFsConfig struct {
@@ -1025,22 +1026,23 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 		},
 		"azblobconfig": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"container":              types.StringType,
-				"account_name":           types.StringType,
-				"account_key":            types.StringType,
-				"account_key_wo":         types.StringType,
-				"account_key_wo_version": types.StringType,
-				"sas_url":                types.StringType,
-				"sas_url_wo":             types.StringType,
-				"sas_url_wo_version":     types.StringType,
-				"endpoint":               types.StringType,
-				"key_prefix":             types.StringType,
-				"upload_part_size":       types.Int64Type,
-				"upload_concurrency":     types.Int64Type,
-				"download_part_size":     types.Int64Type,
-				"download_concurrency":   types.Int64Type,
-				"use_emulator":           types.BoolType,
-				"access_tier":            types.StringType,
+				"container":                  types.StringType,
+				"account_name":               types.StringType,
+				"account_key":                types.StringType,
+				"account_key_wo":             types.StringType,
+				"account_key_wo_version":     types.StringType,
+				"sas_url":                    types.StringType,
+				"sas_url_wo":                 types.StringType,
+				"sas_url_wo_version":         types.StringType,
+				"endpoint":                   types.StringType,
+				"key_prefix":                 types.StringType,
+				"upload_part_size":           types.Int64Type,
+				"upload_concurrency":         types.Int64Type,
+				"download_part_size":         types.Int64Type,
+				"download_concurrency":       types.Int64Type,
+				"use_emulator":               types.BoolType,
+				"access_tier":                types.StringType,
+				"managed_identity_client_id": types.StringType,
 			},
 		},
 		"cryptconfig": types.ObjectType{
@@ -1157,18 +1159,21 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 			},
 			Credentials: getSFTPGoSecret(resolveSecret(f.GCSConfig.Credentials, f.GCSConfig.CredentialsWO)),
 		},
-		AzBlobConfig: sdk.AzBlobFsConfig{
-			BaseAzBlobFsConfig: sdk.BaseAzBlobFsConfig{
-				Container:           f.AzBlobConfig.Container.ValueString(),
-				AccountName:         f.AzBlobConfig.AccountName.ValueString(),
-				Endpoint:            f.AzBlobConfig.Endpoint.ValueString(),
-				KeyPrefix:           f.AzBlobConfig.KeyPrefix.ValueString(),
-				UploadPartSize:      f.AzBlobConfig.UploadPartSize.ValueInt64(),
-				UploadConcurrency:   int(f.AzBlobConfig.UploadConcurrency.ValueInt64()),
-				DownloadPartSize:    f.AzBlobConfig.DownloadPartSize.ValueInt64(),
-				DownloadConcurrency: int(f.AzBlobConfig.DownloadConcurrency.ValueInt64()),
-				UseEmulator:         f.AzBlobConfig.UseEmulator.ValueBool(),
-				AccessTier:          f.AzBlobConfig.AccessTier.ValueString(),
+		AzBlobConfig: client.AzBlobFsConfig{
+			BaseAzBlobFsConfig: client.BaseAzBlobFsConfig{
+				BaseAzBlobFsConfig: sdk.BaseAzBlobFsConfig{
+					Container:           f.AzBlobConfig.Container.ValueString(),
+					AccountName:         f.AzBlobConfig.AccountName.ValueString(),
+					Endpoint:            f.AzBlobConfig.Endpoint.ValueString(),
+					KeyPrefix:           f.AzBlobConfig.KeyPrefix.ValueString(),
+					UploadPartSize:      f.AzBlobConfig.UploadPartSize.ValueInt64(),
+					UploadConcurrency:   int(f.AzBlobConfig.UploadConcurrency.ValueInt64()),
+					DownloadPartSize:    f.AzBlobConfig.DownloadPartSize.ValueInt64(),
+					DownloadConcurrency: int(f.AzBlobConfig.DownloadConcurrency.ValueInt64()),
+					UseEmulator:         f.AzBlobConfig.UseEmulator.ValueBool(),
+					AccessTier:          f.AzBlobConfig.AccessTier.ValueString(),
+				},
+				ManagedIdentityClientID: f.AzBlobConfig.ManagedIdentityClientID.ValueString(),
 			},
 			AccountKey: getSFTPGoSecret(resolveSecret(f.AzBlobConfig.AccountKey, f.AzBlobConfig.AccountKeyWO)),
 			SASURL:     getSFTPGoSecret(resolveSecret(f.AzBlobConfig.SASURL, f.AzBlobConfig.SASURLWO)),
@@ -1280,18 +1285,19 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *client.Filesystem) diag
 		}
 	case sdk.AzureBlobFilesystemProvider:
 		f.AzBlobConfig = &azBlobFsConfig{
-			Container:           getOptionalString(fs.AzBlobConfig.Container),
-			AccountName:         getOptionalString(fs.AzBlobConfig.AccountName),
-			AccountKey:          getOptionalString(getSecretFromSFTPGo(fs.AzBlobConfig.AccountKey)),
-			SASURL:              getOptionalString(getSecretFromSFTPGo(fs.AzBlobConfig.SASURL)),
-			Endpoint:            getOptionalString(fs.AzBlobConfig.Endpoint),
-			KeyPrefix:           getOptionalString(fs.AzBlobConfig.KeyPrefix),
-			UploadPartSize:      getOptionalInt64(fs.AzBlobConfig.UploadPartSize),
-			UploadConcurrency:   getOptionalInt64(int64(fs.AzBlobConfig.UploadConcurrency)),
-			DownloadPartSize:    getOptionalInt64(fs.AzBlobConfig.DownloadPartSize),
-			DownloadConcurrency: getOptionalInt64(int64(fs.AzBlobConfig.DownloadConcurrency)),
-			UseEmulator:         getOptionalBool(fs.AzBlobConfig.UseEmulator),
-			AccessTier:          getOptionalString(fs.AzBlobConfig.AccessTier),
+			Container:               getOptionalString(fs.AzBlobConfig.Container),
+			AccountName:             getOptionalString(fs.AzBlobConfig.AccountName),
+			AccountKey:              getOptionalString(getSecretFromSFTPGo(fs.AzBlobConfig.AccountKey)),
+			SASURL:                  getOptionalString(getSecretFromSFTPGo(fs.AzBlobConfig.SASURL)),
+			Endpoint:                getOptionalString(fs.AzBlobConfig.Endpoint),
+			KeyPrefix:               getOptionalString(fs.AzBlobConfig.KeyPrefix),
+			UploadPartSize:          getOptionalInt64(fs.AzBlobConfig.UploadPartSize),
+			UploadConcurrency:       getOptionalInt64(int64(fs.AzBlobConfig.UploadConcurrency)),
+			DownloadPartSize:        getOptionalInt64(fs.AzBlobConfig.DownloadPartSize),
+			DownloadConcurrency:     getOptionalInt64(int64(fs.AzBlobConfig.DownloadConcurrency)),
+			UseEmulator:             getOptionalBool(fs.AzBlobConfig.UseEmulator),
+			AccessTier:              getOptionalString(fs.AzBlobConfig.AccessTier),
+			ManagedIdentityClientID: getOptionalString(fs.AzBlobConfig.ManagedIdentityClientID),
 		}
 	case sdk.CryptedFilesystemProvider:
 		f.CryptConfig = &cryptFsConfig{

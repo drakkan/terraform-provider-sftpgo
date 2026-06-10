@@ -82,6 +82,7 @@ Read-Only:
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads.
 - `endpoint` (String) Optional endpoint
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
+- `managed_identity_client_id` (String) Client ID of the user-assigned managed identity to authenticate with. Available in the Enterprise edition.
 - `sas_url` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `sas_url_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `sas_url_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
@@ -361,6 +362,7 @@ Read-Only:
 - `download_part_size` (Number) The buffer size (in MB) to use for multipart downloads.
 - `endpoint` (String) Optional endpoint
 - `key_prefix` (String) If specified then the SFTPGo user will be restricted to objects starting with this prefix.
+- `managed_identity_client_id` (String) Client ID of the user-assigned managed identity to authenticate with. Available in the Enterprise edition.
 - `sas_url` (String) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `sas_url_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `sas_url_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
