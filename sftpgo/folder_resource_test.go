@@ -198,6 +198,7 @@ func TestAccEnterpriseFolderResource(t *testing.T) {
 						  password = "sftppwd"
 						  prefix = "/"
 						  socks_proxy = "socks4://127.0.0.1:10080"
+						  disable_concurrent_writes = true		
       				    }
   					  }
 					}`,
@@ -222,6 +223,7 @@ func TestAccEnterpriseFolderResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.socks_proxy", "socks4://127.0.0.1:10080"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.socks_username"),
 					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.socks_password"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "filesystem.sftpconfig.disable_concurrent_writes", "true"),
 				),
 			},
 			// ImportState testing

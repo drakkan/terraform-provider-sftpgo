@@ -429,6 +429,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 						  socks_proxy = "socks5://127.0.0.1:10080"
 						  socks_username = "socksuser"
 						  socks_password = "sockspwd"
+						  disable_concurrent_writes = true
       				    }
     				  }
     				  filters = {
@@ -467,6 +468,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks_proxy", "socks5://127.0.0.1:10080"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks_username", "socksuser"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.socks_password", "sockspwd"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.disable_concurrent_writes", "true"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.private_key"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filesystem.sftpconfig.equality_check_mode", "1"),
 					resource.TestCheckNoResourceAttr("sftpgo_user.test", "filesystem.gcsconfig"),

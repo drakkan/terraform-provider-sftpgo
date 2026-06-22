@@ -327,6 +327,10 @@ func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
 						Computed:    true,
 						Description: "Concurrent reads are safe to use and disabling them will degrade performance. Some servers automatically delete files once they are downloaded; disable concurrent reads for such servers.",
 					},
+					"disable_concurrent_writes": dsschema.BoolAttribute{
+						Computed:    true,
+						Description: "Send write requests to the remote server one at a time, disabling SFTP write pipelining. Enable it for servers that accept only one write request at a time; throughput is then bound by the network round-trip time. " + enterpriseFeatureNote + ".",
+					},
 					"buffer_size": dsschema.Int64Attribute{
 						Computed:    true,
 						Description: "The buffer size (in MB) to use for uploads/downloads.",
@@ -756,6 +760,10 @@ func getSchemaForFilesystem() schema.SingleNestedAttribute {
 					"disable_concurrent_reads": schema.BoolAttribute{
 						Optional:    true,
 						Description: "Concurrent reads are safe to use and disabling them will degrade performance so they are enabled by default. Some servers automatically delete files once they are downloaded. Using concurrent reads is problematic with such servers.",
+					},
+					"disable_concurrent_writes": schema.BoolAttribute{
+						Optional:    true,
+						Description: "Send write requests to the remote server one at a time, disabling SFTP write pipelining. Enable it for servers that accept only one write request at a time; throughput is then bound by the network round-trip time. " + enterpriseFeatureNote + ".",
 					},
 					"buffer_size": schema.Int64Attribute{
 						Optional:    true,

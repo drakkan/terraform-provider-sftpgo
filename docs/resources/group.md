@@ -224,6 +224,7 @@ Optional:
 
 - `buffer_size` (Number) The buffer size (in MB) to use for uploads/downloads. Buffering could improve performance for high latency networks. With buffering enabled upload resume is not supported and a file cannot be opened for both reading and writing at the same time. Not set means disabled.
 - `disable_concurrent_reads` (Boolean) Concurrent reads are safe to use and disabling them will degrade performance so they are enabled by default. Some servers automatically delete files once they are downloaded. Using concurrent reads is problematic with such servers.
+- `disable_concurrent_writes` (Boolean) Send write requests to the remote server one at a time, disabling SFTP write pipelining. Enable it for servers that accept only one write request at a time; throughput is then bound by the network round-trip time. Available in the Enterprise edition.
 - `equality_check_mode` (Number) Defines how to check if this config points to the same server as another config. By default both the endpoint and the username must match. 1 means that only the endpoint must match. If different configs point to the same server the renaming between the fs configs is allowed.
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server. If not set any host key will be accepted: this is a security risk.
 - `key_passphrase` (String, Sensitive, Deprecated) Plain text passphrase for the private key. If you set a string in SFTPGo secret format, SFTPGo will keep the current secret on updates while the Terraform plan will save your value. Don't do this unless you are sure the values match (e.g because you imported an existing resource). Mutually exclusive with `key_passphrase_wo`.
@@ -524,6 +525,7 @@ Read-Only:
 
 - `buffer_size` (Number) The buffer size (in MB) to use for uploads/downloads.
 - `disable_concurrent_reads` (Boolean) Concurrent reads are safe to use and disabling them will degrade performance. Some servers automatically delete files once they are downloaded; disable concurrent reads for such servers.
+- `disable_concurrent_writes` (Boolean) Send write requests to the remote server one at a time, disabling SFTP write pipelining. Enable it for servers that accept only one write request at a time; throughput is then bound by the network round-trip time. Available in the Enterprise edition.
 - `endpoint` (String) SFTP endpoint as host:port.
 - `equality_check_mode` (Number) Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.

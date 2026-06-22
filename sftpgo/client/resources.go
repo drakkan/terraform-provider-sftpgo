@@ -73,15 +73,16 @@ type AzBlobFsConfig struct {
 
 // BaseSFTPFsConfig defines the base configuration for SFTP based filesystem
 type BaseSFTPFsConfig struct {
-	Endpoint                string   `json:"endpoint,omitempty"`
-	Username                string   `json:"username,omitempty"`
-	Fingerprints            []string `json:"fingerprints,omitempty"`
-	Prefix                  string   `json:"prefix,omitempty"`
-	DisableCouncurrentReads bool     `json:"disable_concurrent_reads,omitempty"`
-	BufferSize              int64    `json:"buffer_size,omitempty"`
-	EqualityCheckMode       int      `json:"equality_check_mode,omitempty"`
-	SocksProxy              string   `json:"socks_proxy,omitempty"`
-	SocksUsername           string   `json:"socks_username,omitempty"`
+	Endpoint                 string   `json:"endpoint,omitempty"`
+	Username                 string   `json:"username,omitempty"`
+	Fingerprints             []string `json:"fingerprints,omitempty"`
+	Prefix                   string   `json:"prefix,omitempty"`
+	DisableCouncurrentReads  bool     `json:"disable_concurrent_reads,omitempty"`
+	DisableCouncurrentWrites bool     `json:"disable_concurrent_writes,omitempty"`
+	BufferSize               int64    `json:"buffer_size,omitempty"`
+	EqualityCheckMode        int      `json:"equality_check_mode,omitempty"`
+	SocksProxy               string   `json:"socks_proxy,omitempty"`
+	SocksUsername            string   `json:"socks_username,omitempty"`
 }
 
 // SFTPFsConfig defines the configuration for SFTP based filesystem

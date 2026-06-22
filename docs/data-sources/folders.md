@@ -184,6 +184,7 @@ Read-Only:
 
 - `buffer_size` (Number) The buffer size (in MB) to use for uploads/downloads.
 - `disable_concurrent_reads` (Boolean) Concurrent reads are safe to use and disabling them will degrade performance. Some servers automatically delete files once they are downloaded; disable concurrent reads for such servers.
+- `disable_concurrent_writes` (Boolean) Send write requests to the remote server one at a time, disabling SFTP write pipelining. Enable it for servers that accept only one write request at a time; throughput is then bound by the network round-trip time. Available in the Enterprise edition.
 - `endpoint` (String) SFTP endpoint as host:port.
 - `equality_check_mode` (Number) Defines how to check if two configs point to the same server (enables renaming between matching configs). 0 = username and endpoint must match (default), 1 = only the endpoint must match.
 - `fingerprints` (List of String) SHA256 fingerprints to validate when connecting to the external SFTP server.

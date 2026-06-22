@@ -884,27 +884,28 @@ type cryptFsConfig struct {
 }
 
 type sftpFsConfig struct {
-	Endpoint                types.String `tfsdk:"endpoint"`
-	Username                types.String `tfsdk:"username"`
-	Password                types.String `tfsdk:"password"`
-	PasswordWO              types.String `tfsdk:"password_wo"`
-	PasswordWOVersion       types.String `tfsdk:"password_wo_version"`
-	PrivateKey              types.String `tfsdk:"private_key"`
-	PrivateKeyWO            types.String `tfsdk:"private_key_wo"`
-	PrivateKeyWOVersion     types.String `tfsdk:"private_key_wo_version"`
-	KeyPassphrase           types.String `tfsdk:"key_passphrase"`
-	KeyPassphraseWO         types.String `tfsdk:"key_passphrase_wo"`
-	KeyPassphraseWOVersion  types.String `tfsdk:"key_passphrase_wo_version"`
-	Fingerprints            types.List   `tfsdk:"fingerprints"`
-	Prefix                  types.String `tfsdk:"prefix"`
-	DisableCouncurrentReads types.Bool   `tfsdk:"disable_concurrent_reads"`
-	BufferSize              types.Int64  `tfsdk:"buffer_size"`
-	EqualityCheckMode       types.Int64  `tfsdk:"equality_check_mode"`
-	SocksProxy              types.String `tfsdk:"socks_proxy"`
-	SocksUsername           types.String `tfsdk:"socks_username"`
-	SocksPassword           types.String `tfsdk:"socks_password"`
-	SocksPasswordWO         types.String `tfsdk:"socks_password_wo"`
-	SocksPasswordWOVersion  types.String `tfsdk:"socks_password_wo_version"`
+	Endpoint                 types.String `tfsdk:"endpoint"`
+	Username                 types.String `tfsdk:"username"`
+	Password                 types.String `tfsdk:"password"`
+	PasswordWO               types.String `tfsdk:"password_wo"`
+	PasswordWOVersion        types.String `tfsdk:"password_wo_version"`
+	PrivateKey               types.String `tfsdk:"private_key"`
+	PrivateKeyWO             types.String `tfsdk:"private_key_wo"`
+	PrivateKeyWOVersion      types.String `tfsdk:"private_key_wo_version"`
+	KeyPassphrase            types.String `tfsdk:"key_passphrase"`
+	KeyPassphraseWO          types.String `tfsdk:"key_passphrase_wo"`
+	KeyPassphraseWOVersion   types.String `tfsdk:"key_passphrase_wo_version"`
+	Fingerprints             types.List   `tfsdk:"fingerprints"`
+	Prefix                   types.String `tfsdk:"prefix"`
+	DisableCouncurrentReads  types.Bool   `tfsdk:"disable_concurrent_reads"`
+	DisableCouncurrentWrites types.Bool   `tfsdk:"disable_concurrent_writes"`
+	BufferSize               types.Int64  `tfsdk:"buffer_size"`
+	EqualityCheckMode        types.Int64  `tfsdk:"equality_check_mode"`
+	SocksProxy               types.String `tfsdk:"socks_proxy"`
+	SocksUsername            types.String `tfsdk:"socks_username"`
+	SocksPassword            types.String `tfsdk:"socks_password"`
+	SocksPasswordWO          types.String `tfsdk:"socks_password_wo"`
+	SocksPasswordWOVersion   types.String `tfsdk:"socks_password_wo_version"`
 }
 
 type ftpFsConfig struct {
@@ -1072,6 +1073,7 @@ func (f *filesystem) getTFAttributes() map[string]attr.Type {
 				},
 				"prefix":                    types.StringType,
 				"disable_concurrent_reads":  types.BoolType,
+				"disable_concurrent_writes": types.BoolType,
 				"buffer_size":               types.Int64Type,
 				"equality_check_mode":       types.Int64Type,
 				"socks_proxy":               types.StringType,
@@ -1187,14 +1189,15 @@ func (f *filesystem) toSFTPGo(ctx context.Context) (client.Filesystem, diag.Diag
 		},
 		SFTPConfig: client.SFTPFsConfig{
 			BaseSFTPFsConfig: client.BaseSFTPFsConfig{
-				Endpoint:                f.SFTPConfig.Endpoint.ValueString(),
-				Username:                f.SFTPConfig.Username.ValueString(),
-				Prefix:                  f.SFTPConfig.Prefix.ValueString(),
-				DisableCouncurrentReads: f.SFTPConfig.DisableCouncurrentReads.ValueBool(),
-				BufferSize:              f.SFTPConfig.BufferSize.ValueInt64(),
-				EqualityCheckMode:       int(f.SFTPConfig.EqualityCheckMode.ValueInt64()),
-				SocksProxy:              f.SFTPConfig.SocksProxy.ValueString(),
-				SocksUsername:           f.SFTPConfig.SocksUsername.ValueString(),
+				Endpoint:                 f.SFTPConfig.Endpoint.ValueString(),
+				Username:                 f.SFTPConfig.Username.ValueString(),
+				Prefix:                   f.SFTPConfig.Prefix.ValueString(),
+				DisableCouncurrentReads:  f.SFTPConfig.DisableCouncurrentReads.ValueBool(),
+				DisableCouncurrentWrites: f.SFTPConfig.DisableCouncurrentWrites.ValueBool(),
+				BufferSize:               f.SFTPConfig.BufferSize.ValueInt64(),
+				EqualityCheckMode:        int(f.SFTPConfig.EqualityCheckMode.ValueInt64()),
+				SocksProxy:               f.SFTPConfig.SocksProxy.ValueString(),
+				SocksUsername:            f.SFTPConfig.SocksUsername.ValueString(),
 			},
 			Password:      getSFTPGoSecret(resolveSecret(f.SFTPConfig.Password, f.SFTPConfig.PasswordWO)),
 			PrivateKey:    getSFTPGoSecret(resolveSecret(f.SFTPConfig.PrivateKey, f.SFTPConfig.PrivateKeyWO)),
@@ -1307,18 +1310,19 @@ func (f *filesystem) fromSFTPGo(ctx context.Context, fs *client.Filesystem) diag
 		}
 	case sdk.SFTPFilesystemProvider:
 		f.SFTPConfig = &sftpFsConfig{
-			Endpoint:                getOptionalString(fs.SFTPConfig.Endpoint),
-			Username:                getOptionalString(fs.SFTPConfig.Username),
-			Password:                getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.Password)),
-			PrivateKey:              getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.PrivateKey)),
-			KeyPassphrase:           getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.KeyPassphrase)),
-			Prefix:                  getOptionalString(fs.SFTPConfig.Prefix),
-			DisableCouncurrentReads: getOptionalBool(fs.SFTPConfig.DisableCouncurrentReads),
-			BufferSize:              getOptionalInt64(fs.SFTPConfig.BufferSize),
-			EqualityCheckMode:       getOptionalInt64(int64(fs.SFTPConfig.EqualityCheckMode)),
-			SocksProxy:              getOptionalString(fs.SFTPConfig.SocksProxy),
-			SocksUsername:           getOptionalString(fs.SFTPConfig.SocksUsername),
-			SocksPassword:           getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.SocksPassword)),
+			Endpoint:                 getOptionalString(fs.SFTPConfig.Endpoint),
+			Username:                 getOptionalString(fs.SFTPConfig.Username),
+			Password:                 getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.Password)),
+			PrivateKey:               getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.PrivateKey)),
+			KeyPassphrase:            getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.KeyPassphrase)),
+			Prefix:                   getOptionalString(fs.SFTPConfig.Prefix),
+			DisableCouncurrentReads:  getOptionalBool(fs.SFTPConfig.DisableCouncurrentReads),
+			DisableCouncurrentWrites: getOptionalBool(fs.SFTPConfig.DisableCouncurrentWrites),
+			BufferSize:               getOptionalInt64(fs.SFTPConfig.BufferSize),
+			EqualityCheckMode:        getOptionalInt64(int64(fs.SFTPConfig.EqualityCheckMode)),
+			SocksProxy:               getOptionalString(fs.SFTPConfig.SocksProxy),
+			SocksUsername:            getOptionalString(fs.SFTPConfig.SocksUsername),
+			SocksPassword:            getOptionalString(getSecretFromSFTPGo(fs.SFTPConfig.SocksPassword)),
 		}
 		fingerprints, diags := types.ListValueFrom(ctx, types.StringType, fs.SFTPConfig.Fingerprints)
 		if diags.HasError() {
