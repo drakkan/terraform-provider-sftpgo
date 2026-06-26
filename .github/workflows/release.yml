@@ -9,7 +9,7 @@ on:
       - 'v*'
 
 env:
-  GO_VERSION: 1.26.3
+  GO_VERSION: 1.26.4
 
 # Releases need permissions to read and write the repository contents.
 # GitHub considers creating releases and uploading assets as writing contents.
@@ -20,7 +20,7 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           # Allow goreleaser to access older tag information.
           fetch-depth: 0
