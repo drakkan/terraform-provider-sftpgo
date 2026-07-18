@@ -166,6 +166,7 @@ func TestAccGroupResource(t *testing.T) {
 					{
 						name = "tfolder"
 						virtual_path = "/f1"
+						subpath = "/tenants/%username%"
 						quota_size = 0
 						quota_files = 0
 					}
@@ -203,6 +204,8 @@ func TestAccGroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.name", testFolder.Name),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.virtual_path", "/f1"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.subpath", "/tenants/%username%"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "virtual_folders.0.exposed_subpaths"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.quota_size", "0"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.quota_files", "0"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.filesystem.provider", "1"),
@@ -353,6 +356,15 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 						  }
 					    }
 					  }
+					  virtual_folders = [
+						{
+						  name = "folder1"
+						  virtual_path = "/datasets"
+						  exposed_subpaths = ["/ds1", "/tenants/%username%"]
+						  quota_size = 0
+						  quota_files = 0
+						}
+					  ]
 					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("sftpgo_group.test", "name", "test group"),
@@ -387,7 +399,13 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.disable_concurrent_reads"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.s3config"),
 					resource.TestCheckNoResourceAttr("sftpgo_group.test", "user_settings.filesystem.gcsconfig"),
-					resource.TestCheckNoResourceAttr("sftpgo_group.test", "virtual_folders"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.name", "folder1"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.virtual_path", "/datasets"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.exposed_subpaths.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.exposed_subpaths.0", "/ds1"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "virtual_folders.0.exposed_subpaths.1", "/tenants/%username%"),
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "virtual_folders.0.subpath"),
 				),
 			},
 			// ImportState testing

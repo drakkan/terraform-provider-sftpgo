@@ -893,6 +893,15 @@ func getComputedSchemaForVirtualFolders() dsschema.ListNestedAttribute {
 					Computed:    true,
 					Description: "The folder will be available on this path.",
 				},
+				"subpath": dsschema.StringAttribute{
+					Computed:    true,
+					Description: "The mount at the virtual path serves the folder starting from this sub-path.",
+				},
+				"exposed_subpaths": dsschema.ListAttribute{
+					ElementType: types.StringType,
+					Computed:    true,
+					Description: "Sub-paths of the folder exposed as virtual directories under the virtual path. " + enterpriseFeatureNote + ".",
+				},
 				"description": dsschema.StringAttribute{
 					Computed:    true,
 					Description: "Optional description.",
@@ -935,6 +944,15 @@ func getSchemaForVirtualFolders() schema.ListNestedAttribute {
 				"virtual_path": schema.StringAttribute{
 					Required:    true,
 					Description: "The folder will be available on this path.",
+				},
+				"subpath": schema.StringAttribute{
+					Optional:    true,
+					Description: "Re-roots the mapping: the mount at the virtual path serves the folder starting from this sub-path, which stays invisible in the virtual tree. Canonical POSIX path with a leading slash (e.g. `/tenant1`). The same folder can be mapped multiple times with distinct subpaths; every mapping of the same folder must use the same quota limits. On group mappings the `%username%` and `%role%` placeholders are supported. Mutually exclusive with `exposed_subpaths`.",
+				},
+				"exposed_subpaths": schema.ListAttribute{
+					ElementType: types.StringType,
+					Optional:    true,
+					Description: "Exposes only the listed sub-paths of the folder: each entry is mounted as a virtual directory under the virtual path and serves the matching sub-path of the folder. Canonical POSIX paths with a leading slash, each exposing a distinct subtree. On group mappings the same placeholders as the subpath are supported. Mutually exclusive with `subpath`. " + enterpriseFeatureNote + ".",
 				},
 				"quota_size": schema.Int64Attribute{
 					Required:    true,

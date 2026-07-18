@@ -370,8 +370,10 @@ Required:
 Optional:
 
 - `description` (String) Optional description.
+- `exposed_subpaths` (List of String) Exposes only the listed sub-paths of the folder: each entry is mounted as a virtual directory under the virtual path and serves the matching sub-path of the folder. Canonical POSIX paths with a leading slash, each exposing a distinct subtree. On group mappings the same placeholders as the subpath are supported. Mutually exclusive with `subpath`. Available in the Enterprise edition.
 - `last_quota_update` (Number) Last quota update as unix timestamp in milliseconds
 - `mapped_path` (String) Absolute path to a local directory. This is the folder root path for local storage provider. For non-local filesystems it will store temporary files.
+- `subpath` (String) Re-roots the mapping: the mount at the virtual path serves the folder starting from this sub-path, which stays invisible in the virtual tree. Canonical POSIX path with a leading slash (e.g. `/tenant1`). The same folder can be mapped multiple times with distinct subpaths; every mapping of the same folder must use the same quota limits. On group mappings the `%username%` and `%role%` placeholders are supported. Mutually exclusive with `exposed_subpaths`.
 - `used_quota_files` (Number) Used quota as number of files.
 - `used_quota_size` (Number) Used quota as bytes.
 

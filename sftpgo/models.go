@@ -1426,6 +1426,8 @@ type virtualFolder struct {
 	VirtualPath     types.String `tfsdk:"virtual_path"`
 	QuotaSize       types.Int64  `tfsdk:"quota_size"`
 	QuotaFiles      types.Int64  `tfsdk:"quota_files"`
+	Subpath         types.String `tfsdk:"subpath"`
+	ExposedSubpaths types.List   `tfsdk:"exposed_subpaths"`
 }
 
 func (f *virtualFolder) getBaseFolder() virtualFolderResourceModel {
@@ -1455,6 +1457,13 @@ func (f *virtualFolder) toSFTPGo(ctx context.Context) (client.VirtualFolder, dia
 		VirtualPath: f.VirtualPath.ValueString(),
 		QuotaSize:   f.QuotaSize.ValueInt64(),
 		QuotaFiles:  int(f.QuotaFiles.ValueInt64()),
+		Subpath:     f.Subpath.ValueString(),
+	}
+	if !f.ExposedSubpaths.IsNull() {
+		diags := f.ExposedSubpaths.ElementsAs(ctx, &folder.ExposedSubpaths, false)
+		if diags.HasError() {
+			return folder, diags
+		}
 	}
 	baseFolder := f.getBaseFolder()
 	base, diags := baseFolder.toSFTPGo(ctx)
@@ -1476,6 +1485,12 @@ func (f *virtualFolder) fromSFTPGo(ctx context.Context, folder *client.VirtualFo
 	f.VirtualPath = types.StringValue(folder.VirtualPath)
 	f.QuotaSize = types.Int64Value(folder.QuotaSize)
 	f.QuotaFiles = types.Int64Value(int64(folder.QuotaFiles))
+	f.Subpath = getOptionalString(folder.Subpath)
+	exposedSubpaths, diags := types.ListValueFrom(ctx, types.StringType, folder.ExposedSubpaths)
+	if diags.HasError() {
+		return diags
+	}
+	f.ExposedSubpaths = exposedSubpaths
 	return nil
 }
 

@@ -81,8 +81,9 @@ func TestAccUserResource(t *testing.T) {
                       ]
     				  virtual_folders = [
       					{
-        				  name = "tfolder"
-        				  virtual_path = "/vdir"
+    					  name = "tfolder"
+    					  virtual_path = "/vdir"
+    					  subpath = "/tenant1"
         				  quota_size = -1
         				  quota_files = -1
       					}
@@ -146,6 +147,8 @@ func TestAccUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "virtual_folders.#", "1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "virtual_folders.0.name", testFolder.Name),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "virtual_folders.0.virtual_path", "/vdir"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "virtual_folders.0.subpath", "/tenant1"),
+					resource.TestCheckNoResourceAttr("sftpgo_user.test", "virtual_folders.0.exposed_subpaths"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "virtual_folders.0.quota_size", "-1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "virtual_folders.0.quota_files", "-1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.allowed_ip.0", "192.168.1.0/24"),

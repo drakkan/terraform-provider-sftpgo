@@ -148,6 +148,12 @@ type VirtualFolder struct {
 	QuotaSize int64 `json:"quota_size"`
 	// Maximum number of files allowed. 0 means unlimited, -1 included in user quota
 	QuotaFiles int `json:"quota_files"`
+	// Subpath re-roots the mapping: the mount at VirtualPath serves the folder
+	// starting from this sub-path. Mutually exclusive with ExposedSubpaths
+	Subpath string `json:"subpath,omitempty"`
+	// ExposedSubpaths exposes only the listed sub-paths of the folder, each as
+	// a virtual directory under VirtualPath. Enterprise edition only
+	ExposedSubpaths []string `json:"exposed_subpaths,omitempty"`
 }
 
 type SharePermission int

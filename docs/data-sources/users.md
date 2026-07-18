@@ -339,12 +339,14 @@ Read-Only:
 Read-Only:
 
 - `description` (String) Optional description.
+- `exposed_subpaths` (List of String) Sub-paths of the folder exposed as virtual directories under the virtual path. Available in the Enterprise edition.
 - `filesystem` (Attributes) Filesystem configuration. (see [below for nested schema](#nestedatt--users--virtual_folders--filesystem))
 - `last_quota_update` (Number) Last quota update as unix timestamp in milliseconds
 - `mapped_path` (String) Absolute path to a local directory. This is the folder root path for local storage provider. For non-local filesystems it will store temporary files.
 - `name` (String) Unique folder name
 - `quota_files` (Number) Maximum number of files allowed. Not set means unlimited, -1 included in user quota
 - `quota_size` (Number) Maximum size allowed as bytes. Not set means unlimited, -1 included in user quota
+- `subpath` (String) The mount at the virtual path serves the folder starting from this sub-path.
 - `used_quota_files` (Number) Used quota as number of files.
 - `used_quota_size` (Number) Used quota as bytes.
 - `virtual_path` (String) The folder will be available on this path.
