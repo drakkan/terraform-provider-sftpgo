@@ -49,7 +49,7 @@ func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
 		Attributes: map[string]dsschema.Attribute{
 			"provider": dsschema.Int64Attribute{
 				Computed:    true,
-				Description: "Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP",
+				Description: "Provider. -1 = None (users and groups: the filesystem comes from the primary group / no filesystem override for the members; " + enterpriseFeatureNote + "), 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP, 7 = FTP",
 			},
 			"osconfig": dsschema.SingleNestedAttribute{
 				Computed: true,
@@ -429,16 +429,27 @@ func getComputedSchemaForFilesystem() dsschema.SingleNestedAttribute {
 	}
 }
 
-func getSchemaForFilesystem() schema.SingleNestedAttribute {
+// getSchemaForFilesystem returns the filesystem block schema. withNone
+// selects whether the None (-1) provider is accepted: users and groups
+// support it, virtual folders require a storage backend.
+func getSchemaForFilesystem(withNone bool) schema.SingleNestedAttribute {
+	const storageBackends = "0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP, 7 = FTP"
+	providerDescription := "Provider. " + storageBackends
+	minProvider := int64(0)
+	if withNone {
+		providerDescription = "Provider. -1 = None (on users the filesystem comes from the primary group, on groups no filesystem override for the members; " +
+			enterpriseFeatureNote + "), " + storageBackends
+		minProvider = -1
+	}
 	return schema.SingleNestedAttribute{
 		Required:    true,
 		Description: "Filesystem configuration. This block must be set explicitly: for the default local filesystem pass `filesystem = { provider = 0 }`. Defaults are no longer auto-populated from the server because the block contains write-only attributes.",
 		Attributes: map[string]schema.Attribute{
 			"provider": schema.Int64Attribute{
 				Required:    true,
-				Description: "Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP, 7 = FTP",
+				Description: providerDescription,
 				Validators: []validator.Int64{
-					int64validator.Between(0, 7),
+					int64validator.Between(minProvider, 7),
 				},
 			},
 			"osconfig": schema.SingleNestedAttribute{

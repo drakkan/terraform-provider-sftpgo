@@ -146,7 +146,7 @@ func (r *groupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 						Description: "Defines account expiration in number of days from creation. Not set means no expiration.",
 					},
 					"filters":    getSchemaForUserFilters(true),
-					"filesystem": getSchemaForFilesystem(),
+					"filesystem": getSchemaForFilesystem(true),
 				},
 			},
 			"virtual_folders": getSchemaForVirtualFolders(),

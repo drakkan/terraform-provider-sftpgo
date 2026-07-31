@@ -982,3 +982,55 @@ func TestAccUserResource_renameForcesReplace(t *testing.T) {
 		},
 	})
 }
+
+func TestAccEnterpriseUserResourceFsProviderNone(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "sftpgo_group" "test_none" {
+					  name = "test group none"
+					  user_settings = {
+						filesystem = {
+						  provider = -1
+						}
+					  }
+					}
+
+					resource "sftpgo_user" "test_none" {
+					  username    = "test user none"
+					  status      = 1
+					  password    = "secret pwd"
+					  home_dir    = "/tmp/testusernone"
+					  permissions = {
+						"/" = "*"
+					  }
+					  filesystem = {
+						provider = -1
+					  }
+					  groups = [
+						{
+						  name = sftpgo_group.test_none.name
+						  type = 1
+						}
+					  ]
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_group.test_none", "user_settings.filesystem.provider", "-1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test_none", "filesystem.provider", "-1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test_none", "groups.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_user.test_none", "groups.0.type", "1"),
+				),
+			},
+		},
+	})
+}

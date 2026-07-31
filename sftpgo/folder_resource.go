@@ -99,7 +99,7 @@ func (r *folderResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Computed:    true,
 				Description: "Last quota update as unix timestamp in milliseconds",
 			},
-			"filesystem": getSchemaForFilesystem(),
+			"filesystem": getSchemaForFilesystem(false),
 		},
 	}
 }

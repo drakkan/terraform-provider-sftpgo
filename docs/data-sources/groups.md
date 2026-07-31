@@ -63,7 +63,7 @@ Read-Only:
 - `gcsconfig` (Attributes) Google Cloud Storage configuration details. (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--gcsconfig))
 - `httpconfig` (Attributes) HTTP/S remote filesystem configuration details. (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--httpconfig))
 - `osconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--osconfig))
-- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
+- `provider` (Number) Provider. -1 = None (users and groups: the filesystem comes from the primary group / no filesystem override for the members; Available in the Enterprise edition), 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP, 7 = FTP
 - `s3config` (Attributes) S3 compatible object storage configuration details. (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--s3config))
 - `sftpconfig` (Attributes) Remote SFTP server configuration details. (see [below for nested schema](#nestedatt--groups--user_settings--filesystem--sftpconfig))
 
@@ -346,7 +346,7 @@ Read-Only:
 - `gcsconfig` (Attributes) Google Cloud Storage configuration details. (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--gcsconfig))
 - `httpconfig` (Attributes) HTTP/S remote filesystem configuration details. (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--httpconfig))
 - `osconfig` (Attributes) (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--osconfig))
-- `provider` (Number) Provider. 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP
+- `provider` (Number) Provider. -1 = None (users and groups: the filesystem comes from the primary group / no filesystem override for the members; Available in the Enterprise edition), 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP, 7 = FTP
 - `s3config` (Attributes) S3 compatible object storage configuration details. (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--s3config))
 - `sftpconfig` (Attributes) Remote SFTP server configuration details. (see [below for nested schema](#nestedatt--groups--virtual_folders--filesystem--sftpconfig))
 

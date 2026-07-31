@@ -261,7 +261,7 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			},
 			"filters":         getSchemaForUserFilters(false),
 			"virtual_folders": getSchemaForVirtualFolders(),
-			"filesystem":      getSchemaForFilesystem(),
+			"filesystem":      getSchemaForFilesystem(true),
 		},
 	}
 }
