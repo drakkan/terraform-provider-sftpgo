@@ -32,6 +32,124 @@ type Role struct {
 	CreatedAt int64 `json:"created_at"`
 	// last update time as unix timestamp in milliseconds
 	UpdatedAt int64 `json:"updated_at"`
+	// Resource isolation level: 0 disabled, 1 enabled. Enterprise edition only
+	ResourceIsolation int `json:"resource_isolation,omitempty"`
+	// Additional settings. Enterprise edition only
+	Settings RoleSettings `json:"settings,omitzero"`
+}
+
+// RoleSettings defines the additional settings of a role.
+// Settings granting nothing are omitted: the server reads an absent envelope
+// as an empty one
+type RoleSettings struct {
+	StorageAllowlist RoleStorageAllowlist `json:"storage_allowlist,omitzero"`
+}
+
+// RoleStorageAllowlist defines the storage the resources carrying the role may name.
+type RoleStorageAllowlist struct {
+	AllowedProviders []int             `json:"allowed_providers,omitempty"`
+	Local            LocalRoleScope    `json:"local,omitzero"`
+	S3               S3RoleScope       `json:"s3,omitzero"`
+	Azure            AzureRoleScope    `json:"azure,omitzero"`
+	GCS              GCSRoleScope      `json:"gcs,omitzero"`
+	SFTP             SFTPRoleScope     `json:"sftp,omitzero"`
+	FTP              EndpointRoleScope `json:"ftp,omitzero"`
+	HTTP             EndpointRoleScope `json:"http,omitzero"`
+}
+
+// LocalRoleScope defines the local paths the resources carrying the role may name.
+type LocalRoleScope struct {
+	AllowedPaths []string `json:"allowed_paths,omitempty"`
+	UsersBaseDir string   `json:"users_base_dir,omitempty"`
+}
+
+// IsEmpty returns true if the scope grants nothing.
+func (s LocalRoleScope) IsEmpty() bool {
+	return len(s.AllowedPaths) == 0 && s.UsersBaseDir == ""
+}
+
+// S3BucketRef identifies an S3 resource.
+type S3BucketRef struct {
+	Bucket    string `json:"bucket"`
+	KeyPrefix string `json:"key_prefix,omitempty"`
+	Endpoint  string `json:"endpoint,omitempty"`
+}
+
+// S3RoleScope defines the S3 resources the resources carrying the role may name.
+type S3RoleScope struct {
+	DefaultAllow   bool          `json:"default_allow,omitempty"`
+	AllowedBuckets []S3BucketRef `json:"allowed_buckets,omitempty"`
+	DeniedBuckets  []S3BucketRef `json:"denied_buckets,omitempty"`
+}
+
+// IsEmpty returns true if the scope grants nothing.
+func (s S3RoleScope) IsEmpty() bool {
+	return !s.DefaultAllow && len(s.AllowedBuckets) == 0 && len(s.DeniedBuckets) == 0
+}
+
+// AzureContainerRef identifies an Azure Blob resource.
+type AzureContainerRef struct {
+	Account   string `json:"account"`
+	Container string `json:"container"`
+	KeyPrefix string `json:"key_prefix,omitempty"`
+	Endpoint  string `json:"endpoint,omitempty"`
+}
+
+// AzureRoleScope defines the Azure Blob resources the resources carrying the role may name.
+type AzureRoleScope struct {
+	DefaultAllow      bool                `json:"default_allow,omitempty"`
+	AllowedContainers []AzureContainerRef `json:"allowed_containers,omitempty"`
+	DeniedContainers  []AzureContainerRef `json:"denied_containers,omitempty"`
+}
+
+// IsEmpty returns true if the scope grants nothing.
+func (s AzureRoleScope) IsEmpty() bool {
+	return !s.DefaultAllow && len(s.AllowedContainers) == 0 && len(s.DeniedContainers) == 0
+}
+
+// GCSBucketRef identifies a GCS resource.
+type GCSBucketRef struct {
+	Bucket         string `json:"bucket"`
+	KeyPrefix      string `json:"key_prefix,omitempty"`
+	UniverseDomain string `json:"universe_domain,omitempty"`
+}
+
+// GCSRoleScope defines the GCS resources the resources carrying the role may name.
+type GCSRoleScope struct {
+	DefaultAllow   bool           `json:"default_allow,omitempty"`
+	AllowedBuckets []GCSBucketRef `json:"allowed_buckets,omitempty"`
+	DeniedBuckets  []GCSBucketRef `json:"denied_buckets,omitempty"`
+}
+
+// IsEmpty returns true if the scope grants nothing.
+func (s GCSRoleScope) IsEmpty() bool {
+	return !s.DefaultAllow && len(s.AllowedBuckets) == 0 && len(s.DeniedBuckets) == 0
+}
+
+// EndpointRoleScope defines the remote endpoints the resources carrying the role may name.
+type EndpointRoleScope struct {
+	DefaultAllow     bool     `json:"default_allow,omitempty"`
+	AllowedEndpoints []string `json:"allowed_endpoints,omitempty"`
+	DeniedEndpoints  []string `json:"denied_endpoints,omitempty"`
+}
+
+// IsEmpty returns true if the scope grants nothing.
+func (s EndpointRoleScope) IsEmpty() bool {
+	return !s.DefaultAllow && len(s.AllowedEndpoints) == 0 && len(s.DeniedEndpoints) == 0
+}
+
+// SFTPRoleScope defines the SFTP endpoints and SOCKS proxies the resources
+// carrying the role may name.
+type SFTPRoleScope struct {
+	EndpointRoleScope
+	AllowedProxies []string `json:"allowed_proxies,omitempty"`
+}
+
+// IsEmpty returns true if the scope grants nothing. It shadows the promoted
+// method, which answers for the endpoints alone. Renaming either of them to
+// IsZero makes it the omitzero predicate
+func (s SFTPRoleScope) IsEmpty() bool {
+	return s.EndpointRoleScope.IsEmpty() && len(s.AllowedProxies) == 0
 }
 
 // GetRoles - Returns list of roles

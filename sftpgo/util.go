@@ -1864,3 +1864,598 @@ func contains[T comparable](elems []T, v T) bool {
 	}
 	return false
 }
+
+const (
+	roleSettingsDescription  = "Settings of the role. It carries the storage allowlist. Omit the block when the role carries no settings. " + enterpriseFeatureNote + "."
+	storageAllowlistDesc     = "The storage the resources carrying the role may name. It is enforced when a user, a group or a folder carrying the role is saved, and only while `resource_isolation` is enabled. Omit the block to grant nothing: an allowlist starts from an explicit grant. Each scope resolves its lists by longest prefix match: the more specific entry wins, a tie goes to the denied one, and the default of the scope decides when neither list matches. A denied entry also matches a configuration that contains it."
+	allowedProvidersDesc     = "Storage backends the resources carrying the role may name: 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP, 7 = FTP. A user or group whose `filesystem.provider` is -1 takes its storage from the primary group and needs no entry here."
+	localScopeDesc           = "The local paths the resources carrying the role may name. It applies to every provider: the home directory of an account is a local path whatever its storage backend."
+	allowedPathsDesc         = "Absolute paths. A named path is accepted when it sits under one of them, matching on path separators. Write them in canonical form: the server stores the cleaned path, so `/tmp/a/../b` comes back as `/tmp/b`."
+	usersBaseDirDesc         = "Where the server generates the home directories it is not given a name for, for the accounts carrying the role: it overrides the global `users_base_dir` and is a grant of its own, not measured against `allowed_paths`. Absolute path in canonical form."
+	s3ScopeDesc              = "The S3 resources the resources carrying the role may name."
+	azureScopeDesc           = "The Azure Blob resources the resources carrying the role may name."
+	gcsScopeDesc             = "The Google Cloud Storage resources the resources carrying the role may name."
+	sftpScopeDesc            = "The SFTP endpoints the resources carrying the role may name."
+	ftpScopeDesc             = "The FTP endpoints the resources carrying the role may name."
+	httpScopeDesc            = "The HTTP endpoints the resources carrying the role may name."
+	bucketDefaultAllowDesc   = "Decides the buckets neither list matches. When both lists match a bucket, the more specific entry wins and a tie goes to the denied one."
+	containerDefaultAllowDsc = "Decides the containers neither list matches. When both lists match a container, the more specific entry wins and a tie goes to the denied one."
+	endpointDefaultAllowDesc = "Decides the endpoints neither list matches. When both lists match an endpoint, the more specific entry wins and a tie goes to the denied one."
+	keyPrefixEntryDesc       = "An empty key prefix matches the whole bucket."
+	s3EndpointEntryDesc      = "An empty endpoint matches AWS S3."
+	azEndpointEntryDesc      = "An empty endpoint matches blob.core.windows.net."
+	azKeyPrefixEntryDesc     = "An empty key prefix matches the whole container."
+	universeDomainEntryDesc  = "An empty universe domain matches googleapis.com."
+	hostPortEntriesDesc      = "Entries are `host:port`; an entry with no port matches every port on that host."
+	urlEntriesDesc           = "Entries are base URLs with a scheme and a host; the path of an entry matches the endpoints under it, so an entry with no path matches every path on that host."
+	allowedProxiesDesc       = "The SOCKS proxies an SFTP configuration may name, as `host:port`, with or without the scheme. An empty list with `default_allow` enabled grants every proxy, since the endpoint is scoped on its own."
+	licenseFeaturesDesc      = "The features the license grants."
+	maxTransfersFeatureDesc  = "Maximum concurrent transfers. 0 means the configured limit applies."
+	fsProvidersFeatureDesc   = "The storage backends the license grants, with the values the `provider` attribute of a filesystem configuration uses."
+	eventActionsFeatureDesc  = "The event action types the license grants, with the values the `type` attribute of an event action uses."
+	fsActionsFeatureDesc     = "The filesystem action types the license grants, with the values the `type` attribute of a filesystem action uses."
+	pluginsFeatureDesc       = "-1 unlimited, 0 disabled, > 0 number of allowed plugins."
+	meteringFeatureDesc      = "1 disables metering."
+	wopiUsersFeatureDesc     = "-1 unlimited, 0 disabled, > 0 number of allowed users."
+	haFeatureDesc            = "High availability is granted when the list contains 1."
+	fipsFeatureDesc          = "1 grants the FIPS mode."
+	isolatedRolesFeatureDesc = "-1 unlimited, 0 disabled, > 0 number of roles that can enable resource isolation."
+	resourceIsolationDesc    = "Resource isolation level: 0 disabled, 1 enabled. With isolation enabled the groups and folders carrying the role are visible to the admins carrying the same role, an account reaches the groups and folders of its own role, and the storage allowlist is enforced on every save. Supported data providers: MySQL, MariaDB, PostgreSQL, CockroachDB, SQLite. The number of roles that can enable it is licensed. An isolated role with no `settings` block grants nothing, so it refuses every save of a resource carrying it. " + enterpriseFeatureNote + "."
+	adminRoleDesc            = "Role name. An admin carrying a role administers only the users carrying it. With resource isolation enabled on the role, the groups and folders carrying it are the only ones the admin reads, and the server applies the role to the resources the admin creates."
+	userRoleDesc             = "Role name. With resource isolation enabled on the role, the account reaches the groups and folders carrying it and its storage is measured against the allowlist of the role."
+	roleReferenceDesc        = "Role name. With resource isolation enabled on the role, the resource is visible to the admins carrying the same role and its storage is measured against the allowlist of the role. An admin carrying a role can use only its own role, which the server applies to the resources it creates: name it in the configuration. Reference the role by attribute, for example `sftpgo_role.tenant.name`, so that Terraform orders the operations: the server refuses to remove a role a group or a folder still names. " + enterpriseFeatureNote + "."
+)
+
+func getSchemaForRoleSettings() schema.SingleNestedAttribute {
+	return schema.SingleNestedAttribute{
+		Optional:    true,
+		Description: roleSettingsDescription,
+		Validators: []validator.Object{
+			nonEmptyObjectValidator{},
+		},
+		Attributes: map[string]schema.Attribute{
+			"storage_allowlist": schema.SingleNestedAttribute{
+				Optional:    true,
+				Description: storageAllowlistDesc,
+				Validators: []validator.Object{
+					nonEmptyObjectValidator{},
+				},
+				Attributes: map[string]schema.Attribute{
+					"allowed_providers": schema.ListAttribute{
+						ElementType: types.Int64Type,
+						Optional:    true,
+						Description: allowedProvidersDesc,
+						Validators: []validator.List{
+							listvalidator.SizeAtLeast(1),
+							listvalidator.ValueInt64sAre(int64validator.Between(0, 7)),
+						},
+					},
+					"local": schema.SingleNestedAttribute{
+						Optional:    true,
+						Description: localScopeDesc,
+						Validators: []validator.Object{
+							nonEmptyObjectValidator{},
+						},
+						Attributes: map[string]schema.Attribute{
+							"allowed_paths": schema.ListAttribute{
+								ElementType: types.StringType,
+								Optional:    true,
+								Description: allowedPathsDesc,
+								Validators: []validator.List{
+									listvalidator.SizeAtLeast(1),
+								},
+							},
+							"users_base_dir": schema.StringAttribute{
+								Optional:    true,
+								Description: usersBaseDirDesc,
+							},
+						},
+					},
+					"s3": schema.SingleNestedAttribute{
+						Optional:    true,
+						Description: s3ScopeDesc,
+						Validators: []validator.Object{
+							nonEmptyObjectValidator{},
+						},
+						Attributes: map[string]schema.Attribute{
+							"default_allow": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Description: bucketDefaultAllowDesc,
+							},
+							"allowed_buckets": getSchemaForS3BucketRefs("Buckets granted to the role."),
+							"denied_buckets":  getSchemaForS3BucketRefs("Buckets refused to the role."),
+						},
+					},
+					"azure": schema.SingleNestedAttribute{
+						Optional:    true,
+						Description: azureScopeDesc,
+						Validators: []validator.Object{
+							nonEmptyObjectValidator{},
+						},
+						Attributes: map[string]schema.Attribute{
+							"default_allow": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Description: containerDefaultAllowDsc,
+							},
+							"allowed_containers": getSchemaForAzureContainerRefs("Containers granted to the role."),
+							"denied_containers":  getSchemaForAzureContainerRefs("Containers refused to the role."),
+						},
+					},
+					"gcs": schema.SingleNestedAttribute{
+						Optional:    true,
+						Description: gcsScopeDesc,
+						Validators: []validator.Object{
+							nonEmptyObjectValidator{},
+						},
+						Attributes: map[string]schema.Attribute{
+							"default_allow": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Description: bucketDefaultAllowDesc,
+							},
+							"allowed_buckets": getSchemaForGCSBucketRefs("Buckets granted to the role."),
+							"denied_buckets":  getSchemaForGCSBucketRefs("Buckets refused to the role."),
+						},
+					},
+					"sftp": schema.SingleNestedAttribute{
+						Optional:    true,
+						Description: sftpScopeDesc + " " + hostPortEntriesDesc,
+						Validators: []validator.Object{
+							nonEmptyObjectValidator{},
+						},
+						Attributes: map[string]schema.Attribute{
+							"default_allow": schema.BoolAttribute{
+								Optional:    true,
+								Computed:    true,
+								Description: endpointDefaultAllowDesc,
+							},
+							"allowed_endpoints": schema.ListAttribute{
+								ElementType: types.StringType,
+								Optional:    true,
+								Description: "Endpoints granted to the role.",
+								Validators: []validator.List{
+									listvalidator.SizeAtLeast(1),
+								},
+							},
+							"denied_endpoints": schema.ListAttribute{
+								ElementType: types.StringType,
+								Optional:    true,
+								Description: "Endpoints refused to the role.",
+								Validators: []validator.List{
+									listvalidator.SizeAtLeast(1),
+								},
+							},
+							"allowed_proxies": schema.ListAttribute{
+								ElementType: types.StringType,
+								Optional:    true,
+								Description: allowedProxiesDesc,
+								Validators: []validator.List{
+									listvalidator.SizeAtLeast(1),
+								},
+							},
+						},
+					},
+					"ftp":  getSchemaForEndpointRoleScope(ftpScopeDesc + " " + hostPortEntriesDesc),
+					"http": getSchemaForEndpointRoleScope(httpScopeDesc + " " + urlEntriesDesc),
+				},
+			},
+		},
+	}
+}
+
+func getSchemaForS3BucketRefs(description string) schema.ListNestedAttribute {
+	return schema.ListNestedAttribute{
+		Optional:    true,
+		Description: description,
+		Validators: []validator.List{
+			listvalidator.SizeAtLeast(1),
+		},
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"bucket": schema.StringAttribute{
+					Required:    true,
+					Description: "Bucket name.",
+				},
+				"key_prefix": schema.StringAttribute{
+					Optional:    true,
+					Description: keyPrefixEntryDesc,
+				},
+				"endpoint": schema.StringAttribute{
+					Optional:    true,
+					Description: s3EndpointEntryDesc,
+				},
+			},
+		},
+	}
+}
+
+func getSchemaForAzureContainerRefs(description string) schema.ListNestedAttribute {
+	return schema.ListNestedAttribute{
+		Optional:    true,
+		Description: description,
+		Validators: []validator.List{
+			listvalidator.SizeAtLeast(1),
+		},
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"account": schema.StringAttribute{
+					Required:    true,
+					Description: "Storage account name.",
+				},
+				"container": schema.StringAttribute{
+					Required:    true,
+					Description: "Container name.",
+				},
+				"key_prefix": schema.StringAttribute{
+					Optional:    true,
+					Description: azKeyPrefixEntryDesc,
+				},
+				"endpoint": schema.StringAttribute{
+					Optional:    true,
+					Description: azEndpointEntryDesc,
+				},
+			},
+		},
+	}
+}
+
+func getSchemaForGCSBucketRefs(description string) schema.ListNestedAttribute {
+	return schema.ListNestedAttribute{
+		Optional:    true,
+		Description: description,
+		Validators: []validator.List{
+			listvalidator.SizeAtLeast(1),
+		},
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"bucket": schema.StringAttribute{
+					Required:    true,
+					Description: "Bucket name.",
+				},
+				"key_prefix": schema.StringAttribute{
+					Optional:    true,
+					Description: keyPrefixEntryDesc,
+				},
+				"universe_domain": schema.StringAttribute{
+					Optional:    true,
+					Description: universeDomainEntryDesc,
+				},
+			},
+		},
+	}
+}
+
+func getSchemaForEndpointRoleScope(description string) schema.SingleNestedAttribute {
+	return schema.SingleNestedAttribute{
+		Optional:    true,
+		Description: description,
+		Validators: []validator.Object{
+			nonEmptyObjectValidator{},
+		},
+		Attributes: map[string]schema.Attribute{
+			"default_allow": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: endpointDefaultAllowDesc,
+			},
+			"allowed_endpoints": schema.ListAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Description: "Endpoints granted to the role.",
+				Validators: []validator.List{
+					listvalidator.SizeAtLeast(1),
+				},
+			},
+			"denied_endpoints": schema.ListAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Description: "Endpoints refused to the role.",
+				Validators: []validator.List{
+					listvalidator.SizeAtLeast(1),
+				},
+			},
+		},
+	}
+}
+
+func getComputedSchemaForRoleSettings() dsschema.SingleNestedAttribute {
+	return dsschema.SingleNestedAttribute{
+		Computed:    true,
+		Description: roleSettingsDescription,
+		Attributes: map[string]dsschema.Attribute{
+			"storage_allowlist": dsschema.SingleNestedAttribute{
+				Computed:    true,
+				Description: storageAllowlistDesc,
+				Attributes: map[string]dsschema.Attribute{
+					"allowed_providers": dsschema.ListAttribute{
+						ElementType: types.Int64Type,
+						Computed:    true,
+						Description: allowedProvidersDesc,
+					},
+					"local": dsschema.SingleNestedAttribute{
+						Computed:    true,
+						Description: localScopeDesc,
+						Attributes: map[string]dsschema.Attribute{
+							"allowed_paths": dsschema.ListAttribute{
+								ElementType: types.StringType,
+								Computed:    true,
+								Description: allowedPathsDesc,
+							},
+							"users_base_dir": dsschema.StringAttribute{
+								Computed:    true,
+								Description: usersBaseDirDesc,
+							},
+						},
+					},
+					"s3": dsschema.SingleNestedAttribute{
+						Computed:    true,
+						Description: s3ScopeDesc,
+						Attributes: map[string]dsschema.Attribute{
+							"default_allow": dsschema.BoolAttribute{
+								Computed:    true,
+								Description: bucketDefaultAllowDesc,
+							},
+							"allowed_buckets": getComputedSchemaForS3BucketRefs("Buckets granted to the role."),
+							"denied_buckets":  getComputedSchemaForS3BucketRefs("Buckets refused to the role."),
+						},
+					},
+					"azure": dsschema.SingleNestedAttribute{
+						Computed:    true,
+						Description: azureScopeDesc,
+						Attributes: map[string]dsschema.Attribute{
+							"default_allow": dsschema.BoolAttribute{
+								Computed:    true,
+								Description: containerDefaultAllowDsc,
+							},
+							"allowed_containers": getComputedSchemaForAzureContainerRefs("Containers granted to the role."),
+							"denied_containers":  getComputedSchemaForAzureContainerRefs("Containers refused to the role."),
+						},
+					},
+					"gcs": dsschema.SingleNestedAttribute{
+						Computed:    true,
+						Description: gcsScopeDesc,
+						Attributes: map[string]dsschema.Attribute{
+							"default_allow": dsschema.BoolAttribute{
+								Computed:    true,
+								Description: bucketDefaultAllowDesc,
+							},
+							"allowed_buckets": getComputedSchemaForGCSBucketRefs("Buckets granted to the role."),
+							"denied_buckets":  getComputedSchemaForGCSBucketRefs("Buckets refused to the role."),
+						},
+					},
+					"sftp": dsschema.SingleNestedAttribute{
+						Computed:    true,
+						Description: sftpScopeDesc + " " + hostPortEntriesDesc,
+						Attributes: map[string]dsschema.Attribute{
+							"default_allow": dsschema.BoolAttribute{
+								Computed:    true,
+								Description: endpointDefaultAllowDesc,
+							},
+							"allowed_endpoints": dsschema.ListAttribute{
+								ElementType: types.StringType,
+								Computed:    true,
+								Description: "Endpoints granted to the role.",
+							},
+							"denied_endpoints": dsschema.ListAttribute{
+								ElementType: types.StringType,
+								Computed:    true,
+								Description: "Endpoints refused to the role.",
+							},
+							"allowed_proxies": dsschema.ListAttribute{
+								ElementType: types.StringType,
+								Computed:    true,
+								Description: allowedProxiesDesc,
+							},
+						},
+					},
+					"ftp":  getComputedSchemaForEndpointRoleScope(ftpScopeDesc + " " + hostPortEntriesDesc),
+					"http": getComputedSchemaForEndpointRoleScope(httpScopeDesc + " " + urlEntriesDesc),
+				},
+			},
+		},
+	}
+}
+
+func getComputedSchemaForS3BucketRefs(description string) dsschema.ListNestedAttribute {
+	return dsschema.ListNestedAttribute{
+		Computed:    true,
+		Description: description,
+		NestedObject: dsschema.NestedAttributeObject{
+			Attributes: map[string]dsschema.Attribute{
+				"bucket": dsschema.StringAttribute{
+					Computed:    true,
+					Description: "Bucket name.",
+				},
+				"key_prefix": dsschema.StringAttribute{
+					Computed:    true,
+					Description: keyPrefixEntryDesc,
+				},
+				"endpoint": dsschema.StringAttribute{
+					Computed:    true,
+					Description: s3EndpointEntryDesc,
+				},
+			},
+		},
+	}
+}
+
+func getComputedSchemaForAzureContainerRefs(description string) dsschema.ListNestedAttribute {
+	return dsschema.ListNestedAttribute{
+		Computed:    true,
+		Description: description,
+		NestedObject: dsschema.NestedAttributeObject{
+			Attributes: map[string]dsschema.Attribute{
+				"account": dsschema.StringAttribute{
+					Computed:    true,
+					Description: "Storage account name.",
+				},
+				"container": dsschema.StringAttribute{
+					Computed:    true,
+					Description: "Container name.",
+				},
+				"key_prefix": dsschema.StringAttribute{
+					Computed:    true,
+					Description: azKeyPrefixEntryDesc,
+				},
+				"endpoint": dsschema.StringAttribute{
+					Computed:    true,
+					Description: azEndpointEntryDesc,
+				},
+			},
+		},
+	}
+}
+
+func getComputedSchemaForGCSBucketRefs(description string) dsschema.ListNestedAttribute {
+	return dsschema.ListNestedAttribute{
+		Computed:    true,
+		Description: description,
+		NestedObject: dsschema.NestedAttributeObject{
+			Attributes: map[string]dsschema.Attribute{
+				"bucket": dsschema.StringAttribute{
+					Computed:    true,
+					Description: "Bucket name.",
+				},
+				"key_prefix": dsschema.StringAttribute{
+					Computed:    true,
+					Description: keyPrefixEntryDesc,
+				},
+				"universe_domain": dsschema.StringAttribute{
+					Computed:    true,
+					Description: universeDomainEntryDesc,
+				},
+			},
+		},
+	}
+}
+
+func getComputedSchemaForEndpointRoleScope(description string) dsschema.SingleNestedAttribute {
+	return dsschema.SingleNestedAttribute{
+		Computed:    true,
+		Description: description,
+		Attributes: map[string]dsschema.Attribute{
+			"default_allow": dsschema.BoolAttribute{
+				Computed:    true,
+				Description: endpointDefaultAllowDesc,
+			},
+			"allowed_endpoints": dsschema.ListAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+				Description: "Endpoints granted to the role.",
+			},
+			"denied_endpoints": dsschema.ListAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+				Description: "Endpoints refused to the role.",
+			},
+		},
+	}
+}
+
+func getSchemaForLicenseFeatures() schema.SingleNestedAttribute {
+	return schema.SingleNestedAttribute{
+		Computed:    true,
+		Description: licenseFeaturesDesc,
+		Attributes: map[string]schema.Attribute{
+			"max_concurrent_transfers": schema.Int64Attribute{
+				Computed:    true,
+				Description: maxTransfersFeatureDesc,
+			},
+			"fs_providers": schema.ListAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
+				Description: fsProvidersFeatureDesc,
+			},
+			"event_actions": schema.ListAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
+				Description: eventActionsFeatureDesc,
+			},
+			"fs_actions": schema.ListAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
+				Description: fsActionsFeatureDesc,
+			},
+			"plugins": schema.Int64Attribute{
+				Computed:    true,
+				Description: pluginsFeatureDesc,
+			},
+			"metering": schema.Int64Attribute{
+				Computed:    true,
+				Description: meteringFeatureDesc,
+			},
+			"wopi_users": schema.Int64Attribute{
+				Computed:    true,
+				Description: wopiUsersFeatureDesc,
+			},
+			"ha": schema.ListAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
+				Description: haFeatureDesc,
+			},
+			"fips": schema.Int64Attribute{
+				Computed:    true,
+				Description: fipsFeatureDesc,
+			},
+			"isolated_roles": schema.Int64Attribute{
+				Computed:    true,
+				Description: isolatedRolesFeatureDesc,
+			},
+		},
+	}
+}
+
+func getComputedSchemaForLicenseFeatures() dsschema.SingleNestedAttribute {
+	return dsschema.SingleNestedAttribute{
+		Computed:    true,
+		Description: licenseFeaturesDesc,
+		Attributes: map[string]dsschema.Attribute{
+			"max_concurrent_transfers": dsschema.Int64Attribute{
+				Computed:    true,
+				Description: maxTransfersFeatureDesc,
+			},
+			"fs_providers": dsschema.ListAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
+				Description: fsProvidersFeatureDesc,
+			},
+			"event_actions": dsschema.ListAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
+				Description: eventActionsFeatureDesc,
+			},
+			"fs_actions": dsschema.ListAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
+				Description: fsActionsFeatureDesc,
+			},
+			"plugins": dsschema.Int64Attribute{
+				Computed:    true,
+				Description: pluginsFeatureDesc,
+			},
+			"metering": dsschema.Int64Attribute{
+				Computed:    true,
+				Description: meteringFeatureDesc,
+			},
+			"wopi_users": dsschema.Int64Attribute{
+				Computed:    true,
+				Description: wopiUsersFeatureDesc,
+			},
+			"ha": dsschema.ListAttribute{
+				ElementType: types.Int64Type,
+				Computed:    true,
+				Description: haFeatureDesc,
+			},
+			"fips": dsschema.Int64Attribute{
+				Computed:    true,
+				Description: fipsFeatureDesc,
+			},
+			"isolated_roles": dsschema.Int64Attribute{
+				Computed:    true,
+				Description: isolatedRolesFeatureDesc,
+			},
+		},
+	}
+}

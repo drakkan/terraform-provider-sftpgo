@@ -31,6 +31,7 @@ Read-Only:
 - `last_quota_update` (Number) Last quota update as unix timestamp in milliseconds
 - `mapped_path` (String) Absolute path to a local directory. This is the folder root path for local storage provider. For non-local filesystems it will store temporary files.
 - `name` (String) Unique name
+- `role` (String) Role name. With resource isolation enabled on the role, the resource is visible to the admins carrying the same role and its storage is measured against the allowlist of the role. An admin carrying a role can use only its own role, which the server applies to the resources it creates: name it in the configuration. Reference the role by attribute, for example `sftpgo_role.tenant.name`, so that Terraform orders the operations: the server refuses to remove a role a group or a folder still names. Available in the Enterprise edition.
 - `used_quota_files` (Number) Used quota as number of files.
 - `used_quota_size` (Number) Used quota as bytes.
 

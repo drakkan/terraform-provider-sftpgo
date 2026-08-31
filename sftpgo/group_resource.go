@@ -96,6 +96,10 @@ func (r *groupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Computed:    true,
 				Description: "Last update time as unix timestamp in milliseconds.",
 			},
+			"role": schema.StringAttribute{
+				Optional:    true,
+				Description: roleReferenceDesc,
+			},
 			"user_settings": schema.SingleNestedAttribute{
 				Optional:    true,
 				Description: "Settings to apply to users. Omit this block entirely to create a group with no default settings. When present, the nested `filesystem` block must be set explicitly (e.g. `filesystem = { provider = 0 }` for local). Defaults are no longer auto-populated from the server because this block contains write-only attributes.",

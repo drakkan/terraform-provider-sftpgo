@@ -34,7 +34,7 @@ Admin
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `password`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
 - `password_wo_version` (String) Trigger attribute for `password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `preferences` (Attributes) Admin preferences. (see [below for nested schema](#nestedatt--preferences))
-- `role` (String) Role name. If set the admin can only administer users with the same role.
+- `role` (String) Role name. An admin carrying a role administers only the users carrying it. With resource isolation enabled on the role, the groups and folders carrying it are the only ones the admin reads, and the server applies the role to the resources the admin creates.
 
 ### Read-Only
 

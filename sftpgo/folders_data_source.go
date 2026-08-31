@@ -87,6 +87,10 @@ func (d *foldersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 							Computed:    true,
 							Description: "Last quota update as unix timestamp in milliseconds",
 						},
+						"role": schema.StringAttribute{
+							Computed:    true,
+							Description: roleReferenceDesc,
+						},
 						"filesystem": getComputedSchemaForFilesystem(),
 					},
 				},

@@ -30,6 +30,8 @@ type LicenseFeatures struct {
 	Metering               int   `json:"metering"`
 	WOPIUsers              int   `json:"wopi_users"`
 	HA                     []int `json:"ha"`
+	FIPS                   int   `json:"fips"`
+	IsolatedRoles          int   `json:"isolated_roles"`
 }
 
 type License struct {

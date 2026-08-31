@@ -79,6 +79,10 @@ func (d *groupsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 							Computed:    true,
 							Description: "Last update time as unix timestamp in milliseconds.",
 						},
+						"role": schema.StringAttribute{
+							Computed:    true,
+							Description: roleReferenceDesc,
+						},
 						"user_settings": schema.SingleNestedAttribute{
 							Computed: true,
 							Attributes: map[string]schema.Attribute{

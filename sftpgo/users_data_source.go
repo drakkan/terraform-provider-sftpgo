@@ -199,7 +199,7 @@ func (d *usersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 						},
 						"role": schema.StringAttribute{
 							Computed:    true,
-							Description: "Role name.",
+							Description: userRoleDesc,
 						},
 						"groups": schema.ListNestedAttribute{
 							Computed:    true,

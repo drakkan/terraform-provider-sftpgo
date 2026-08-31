@@ -78,6 +78,7 @@ func (d *licenseDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 						Computed:    true,
 						Description: "Validity end time in Unix timestamp (milliseconds).",
 					},
+					"features": getComputedSchemaForLicenseFeatures(),
 				},
 			},
 		},

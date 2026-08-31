@@ -238,7 +238,7 @@ func (r *userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			},
 			"role": schema.StringAttribute{
 				Optional:    true,
-				Description: "Role name.",
+				Description: userRoleDesc,
 			},
 			"groups": schema.ListNestedAttribute{
 				Optional:    true,

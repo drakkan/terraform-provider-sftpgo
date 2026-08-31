@@ -1362,6 +1362,7 @@ type virtualFolderResourceModel struct {
 	UsedQuotaFiles  types.Int64  `tfsdk:"used_quota_files"`
 	LastQuotaUpdate types.Int64  `tfsdk:"last_quota_update"`
 	FsConfig        types.Object `tfsdk:"filesystem"`
+	Role            types.String `tfsdk:"role"`
 }
 
 func (f *virtualFolderResourceModel) toSFTPGo(ctx context.Context) (*client.BaseVirtualFolder, diag.Diagnostics) {
@@ -1374,6 +1375,7 @@ func (f *virtualFolderResourceModel) toSFTPGo(ctx context.Context) (*client.Base
 			UsedQuotaFiles:  int(f.UsedQuotaFiles.ValueInt64()),
 			LastQuotaUpdate: f.LastQuotaUpdate.ValueInt64(),
 		},
+		Role: f.Role.ValueString(),
 	}
 	var fs filesystem
 	diags := f.FsConfig.As(ctx, &fs, basetypes.ObjectAsOptions{
@@ -1400,6 +1402,7 @@ func (f *virtualFolderResourceModel) fromSFTPGo(ctx context.Context, folder *cli
 	f.UsedQuotaSize = types.Int64Value(folder.UsedQuotaSize)
 	f.UsedQuotaFiles = types.Int64Value(int64(folder.UsedQuotaFiles))
 	f.LastQuotaUpdate = types.Int64Value(folder.LastQuotaUpdate)
+	f.Role = getOptionalString(folder.Role)
 
 	var fsConfig filesystem
 	diags := fsConfig.fromSFTPGo(ctx, &folder.FsConfig)
@@ -1495,31 +1498,486 @@ func (f *virtualFolder) fromSFTPGo(ctx context.Context, folder *client.VirtualFo
 }
 
 type roleResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	CreatedAt   types.Int64  `tfsdk:"created_at"`
-	UpdatedAt   types.Int64  `tfsdk:"updated_at"`
+	ID                types.String  `tfsdk:"id"`
+	Name              types.String  `tfsdk:"name"`
+	Description       types.String  `tfsdk:"description"`
+	CreatedAt         types.Int64   `tfsdk:"created_at"`
+	UpdatedAt         types.Int64   `tfsdk:"updated_at"`
+	ResourceIsolation types.Int64   `tfsdk:"resource_isolation"`
+	Settings          *roleSettings `tfsdk:"settings"`
 }
 
-func (r *roleResourceModel) toSFTPGo(_ context.Context) (*client.Role, diag.Diagnostics) {
+func (r *roleResourceModel) toSFTPGo(ctx context.Context) (*client.Role, diag.Diagnostics) {
 	role := &client.Role{
-		Name:        r.Name.ValueString(),
-		Description: r.Description.ValueString(),
-		CreatedAt:   r.CreatedAt.ValueInt64(),
-		UpdatedAt:   r.UpdatedAt.ValueInt64(),
+		Name:              r.Name.ValueString(),
+		Description:       r.Description.ValueString(),
+		CreatedAt:         r.CreatedAt.ValueInt64(),
+		UpdatedAt:         r.UpdatedAt.ValueInt64(),
+		ResourceIsolation: int(r.ResourceIsolation.ValueInt64()),
+	}
+	if r.Settings != nil {
+		settings, diags := r.Settings.toSFTPGo(ctx)
+		if diags.HasError() {
+			return role, diags
+		}
+		role.Settings = settings
 	}
 
 	return role, nil
 }
 
-func (r *roleResourceModel) fromSFTPGo(_ context.Context, role *client.Role) diag.Diagnostics {
+func (r *roleResourceModel) fromSFTPGo(ctx context.Context, role *client.Role) diag.Diagnostics {
 	r.Name = types.StringValue(role.Name)
 	r.ID = r.Name
 	r.Description = getOptionalString(role.Description)
 	r.CreatedAt = types.Int64Value(role.CreatedAt)
 	r.UpdatedAt = types.Int64Value(role.UpdatedAt)
+	r.ResourceIsolation = types.Int64Value(int64(role.ResourceIsolation))
+	r.Settings = nil
+	var settings roleSettings
+	diags := settings.fromSFTPGo(ctx, role.Settings)
+	if diags.HasError() {
+		return diags
+	}
+	if settings.StorageAllowlist != nil {
+		r.Settings = &settings
+	}
 	return nil
+}
+
+type roleSettings struct {
+	StorageAllowlist *roleStorageAllowlist `tfsdk:"storage_allowlist"`
+}
+
+func (s *roleSettings) toSFTPGo(ctx context.Context) (client.RoleSettings, diag.Diagnostics) {
+	var settings client.RoleSettings
+	if s.StorageAllowlist != nil {
+		allowlist, diags := s.StorageAllowlist.toSFTPGo(ctx)
+		if diags.HasError() {
+			return settings, diags
+		}
+		settings.StorageAllowlist = allowlist
+	}
+	return settings, nil
+}
+
+// fromSFTPGo leaves the allowlist null when it grants nothing
+func (s *roleSettings) fromSFTPGo(ctx context.Context, settings client.RoleSettings) diag.Diagnostics {
+	s.StorageAllowlist = nil
+	var allowlist roleStorageAllowlist
+	diags := allowlist.fromSFTPGo(ctx, settings.StorageAllowlist)
+	if diags.HasError() {
+		return diags
+	}
+	if !allowlist.isEmpty() {
+		s.StorageAllowlist = &allowlist
+	}
+	return nil
+}
+
+type roleStorageAllowlist struct {
+	AllowedProviders types.List         `tfsdk:"allowed_providers"`
+	Local            *localRoleScope    `tfsdk:"local"`
+	S3               *s3RoleScope       `tfsdk:"s3"`
+	Azure            *azureRoleScope    `tfsdk:"azure"`
+	GCS              *gcsRoleScope      `tfsdk:"gcs"`
+	SFTP             *sftpRoleScope     `tfsdk:"sftp"`
+	FTP              *endpointRoleScope `tfsdk:"ftp"`
+	HTTP             *endpointRoleScope `tfsdk:"http"`
+}
+
+func (a *roleStorageAllowlist) isEmpty() bool {
+	return len(a.AllowedProviders.Elements()) == 0 && a.Local == nil && a.S3 == nil && a.Azure == nil &&
+		a.GCS == nil && a.SFTP == nil && a.FTP == nil && a.HTTP == nil
+}
+
+func (a *roleStorageAllowlist) toSFTPGo(ctx context.Context) (client.RoleStorageAllowlist, diag.Diagnostics) {
+	var allowlist client.RoleStorageAllowlist
+	if !a.AllowedProviders.IsNull() {
+		var providers []int
+		diags := a.AllowedProviders.ElementsAs(ctx, &providers, false)
+		if diags.HasError() {
+			return allowlist, diags
+		}
+		allowlist.AllowedProviders = providers
+	}
+	if a.Local != nil {
+		local, diags := a.Local.toSFTPGo(ctx)
+		if diags.HasError() {
+			return allowlist, diags
+		}
+		allowlist.Local = local
+	}
+	if a.S3 != nil {
+		allowlist.S3 = a.S3.toSFTPGo()
+	}
+	if a.Azure != nil {
+		allowlist.Azure = a.Azure.toSFTPGo()
+	}
+	if a.GCS != nil {
+		allowlist.GCS = a.GCS.toSFTPGo()
+	}
+	if a.SFTP != nil {
+		sftp, diags := a.SFTP.toSFTPGo(ctx)
+		if diags.HasError() {
+			return allowlist, diags
+		}
+		allowlist.SFTP = sftp
+	}
+	if a.FTP != nil {
+		ftp, diags := a.FTP.toSFTPGo(ctx)
+		if diags.HasError() {
+			return allowlist, diags
+		}
+		allowlist.FTP = ftp
+	}
+	if a.HTTP != nil {
+		http, diags := a.HTTP.toSFTPGo(ctx)
+		if diags.HasError() {
+			return allowlist, diags
+		}
+		allowlist.HTTP = http
+	}
+	return allowlist, nil
+}
+
+func (a *roleStorageAllowlist) fromSFTPGo(ctx context.Context, allowlist client.RoleStorageAllowlist) diag.Diagnostics {
+	providers, diags := types.ListValueFrom(ctx, types.Int64Type, allowlist.AllowedProviders)
+	if diags.HasError() {
+		return diags
+	}
+	a.AllowedProviders = providers
+	a.Local, diags = newLocalRoleScope(ctx, allowlist.Local)
+	if diags.HasError() {
+		return diags
+	}
+	a.S3 = newS3RoleScope(allowlist.S3)
+	a.Azure = newAzureRoleScope(allowlist.Azure)
+	a.GCS = newGCSRoleScope(allowlist.GCS)
+	a.SFTP, diags = newSFTPRoleScope(ctx, allowlist.SFTP)
+	if diags.HasError() {
+		return diags
+	}
+	a.FTP, diags = newEndpointRoleScope(ctx, allowlist.FTP)
+	if diags.HasError() {
+		return diags
+	}
+	a.HTTP, diags = newEndpointRoleScope(ctx, allowlist.HTTP)
+	if diags.HasError() {
+		return diags
+	}
+	return nil
+}
+
+type localRoleScope struct {
+	AllowedPaths types.List   `tfsdk:"allowed_paths"`
+	UsersBaseDir types.String `tfsdk:"users_base_dir"`
+}
+
+func (s *localRoleScope) toSFTPGo(ctx context.Context) (client.LocalRoleScope, diag.Diagnostics) {
+	scope := client.LocalRoleScope{
+		UsersBaseDir: s.UsersBaseDir.ValueString(),
+	}
+	if !s.AllowedPaths.IsNull() {
+		diags := s.AllowedPaths.ElementsAs(ctx, &scope.AllowedPaths, false)
+		if diags.HasError() {
+			return scope, diags
+		}
+	}
+	return scope, nil
+}
+
+func newLocalRoleScope(ctx context.Context, scope client.LocalRoleScope) (*localRoleScope, diag.Diagnostics) {
+	if scope.IsEmpty() {
+		return nil, nil
+	}
+	allowedPaths, diags := types.ListValueFrom(ctx, types.StringType, scope.AllowedPaths)
+	if diags.HasError() {
+		return nil, diags
+	}
+	return &localRoleScope{
+		AllowedPaths: allowedPaths,
+		UsersBaseDir: getOptionalString(scope.UsersBaseDir),
+	}, nil
+}
+
+type s3BucketRef struct {
+	Bucket    types.String `tfsdk:"bucket"`
+	KeyPrefix types.String `tfsdk:"key_prefix"`
+	Endpoint  types.String `tfsdk:"endpoint"`
+}
+
+type s3RoleScope struct {
+	DefaultAllow   types.Bool    `tfsdk:"default_allow"`
+	AllowedBuckets []s3BucketRef `tfsdk:"allowed_buckets"`
+	DeniedBuckets  []s3BucketRef `tfsdk:"denied_buckets"`
+}
+
+func (s *s3RoleScope) toSFTPGo() client.S3RoleScope {
+	scope := client.S3RoleScope{
+		DefaultAllow: s.DefaultAllow.ValueBool(),
+	}
+	for _, buckets := range []struct {
+		in  []s3BucketRef
+		out *[]client.S3BucketRef
+	}{
+		{in: s.AllowedBuckets, out: &scope.AllowedBuckets},
+		{in: s.DeniedBuckets, out: &scope.DeniedBuckets},
+	} {
+		for _, b := range buckets.in {
+			*buckets.out = append(*buckets.out, client.S3BucketRef{
+				Bucket:    b.Bucket.ValueString(),
+				KeyPrefix: b.KeyPrefix.ValueString(),
+				Endpoint:  b.Endpoint.ValueString(),
+			})
+		}
+	}
+	return scope
+}
+
+func newS3RoleScope(scope client.S3RoleScope) *s3RoleScope {
+	if scope.IsEmpty() {
+		return nil
+	}
+	result := &s3RoleScope{
+		DefaultAllow: types.BoolValue(scope.DefaultAllow),
+	}
+	for _, buckets := range []struct {
+		in  []client.S3BucketRef
+		out *[]s3BucketRef
+	}{
+		{in: scope.AllowedBuckets, out: &result.AllowedBuckets},
+		{in: scope.DeniedBuckets, out: &result.DeniedBuckets},
+	} {
+		for _, b := range buckets.in {
+			*buckets.out = append(*buckets.out, s3BucketRef{
+				Bucket:    types.StringValue(b.Bucket),
+				KeyPrefix: getOptionalString(b.KeyPrefix),
+				Endpoint:  getOptionalString(b.Endpoint),
+			})
+		}
+	}
+	return result
+}
+
+type azureContainerRef struct {
+	Account   types.String `tfsdk:"account"`
+	Container types.String `tfsdk:"container"`
+	KeyPrefix types.String `tfsdk:"key_prefix"`
+	Endpoint  types.String `tfsdk:"endpoint"`
+}
+
+type azureRoleScope struct {
+	DefaultAllow      types.Bool          `tfsdk:"default_allow"`
+	AllowedContainers []azureContainerRef `tfsdk:"allowed_containers"`
+	DeniedContainers  []azureContainerRef `tfsdk:"denied_containers"`
+}
+
+func (s *azureRoleScope) toSFTPGo() client.AzureRoleScope {
+	scope := client.AzureRoleScope{
+		DefaultAllow: s.DefaultAllow.ValueBool(),
+	}
+	for _, containers := range []struct {
+		in  []azureContainerRef
+		out *[]client.AzureContainerRef
+	}{
+		{in: s.AllowedContainers, out: &scope.AllowedContainers},
+		{in: s.DeniedContainers, out: &scope.DeniedContainers},
+	} {
+		for _, c := range containers.in {
+			*containers.out = append(*containers.out, client.AzureContainerRef{
+				Account:   c.Account.ValueString(),
+				Container: c.Container.ValueString(),
+				KeyPrefix: c.KeyPrefix.ValueString(),
+				Endpoint:  c.Endpoint.ValueString(),
+			})
+		}
+	}
+	return scope
+}
+
+func newAzureRoleScope(scope client.AzureRoleScope) *azureRoleScope {
+	if scope.IsEmpty() {
+		return nil
+	}
+	result := &azureRoleScope{
+		DefaultAllow: types.BoolValue(scope.DefaultAllow),
+	}
+	for _, containers := range []struct {
+		in  []client.AzureContainerRef
+		out *[]azureContainerRef
+	}{
+		{in: scope.AllowedContainers, out: &result.AllowedContainers},
+		{in: scope.DeniedContainers, out: &result.DeniedContainers},
+	} {
+		for _, c := range containers.in {
+			*containers.out = append(*containers.out, azureContainerRef{
+				Account:   types.StringValue(c.Account),
+				Container: types.StringValue(c.Container),
+				KeyPrefix: getOptionalString(c.KeyPrefix),
+				Endpoint:  getOptionalString(c.Endpoint),
+			})
+		}
+	}
+	return result
+}
+
+type gcsBucketRef struct {
+	Bucket         types.String `tfsdk:"bucket"`
+	KeyPrefix      types.String `tfsdk:"key_prefix"`
+	UniverseDomain types.String `tfsdk:"universe_domain"`
+}
+
+type gcsRoleScope struct {
+	DefaultAllow   types.Bool     `tfsdk:"default_allow"`
+	AllowedBuckets []gcsBucketRef `tfsdk:"allowed_buckets"`
+	DeniedBuckets  []gcsBucketRef `tfsdk:"denied_buckets"`
+}
+
+func (s *gcsRoleScope) toSFTPGo() client.GCSRoleScope {
+	scope := client.GCSRoleScope{
+		DefaultAllow: s.DefaultAllow.ValueBool(),
+	}
+	for _, buckets := range []struct {
+		in  []gcsBucketRef
+		out *[]client.GCSBucketRef
+	}{
+		{in: s.AllowedBuckets, out: &scope.AllowedBuckets},
+		{in: s.DeniedBuckets, out: &scope.DeniedBuckets},
+	} {
+		for _, b := range buckets.in {
+			*buckets.out = append(*buckets.out, client.GCSBucketRef{
+				Bucket:         b.Bucket.ValueString(),
+				KeyPrefix:      b.KeyPrefix.ValueString(),
+				UniverseDomain: b.UniverseDomain.ValueString(),
+			})
+		}
+	}
+	return scope
+}
+
+func newGCSRoleScope(scope client.GCSRoleScope) *gcsRoleScope {
+	if scope.IsEmpty() {
+		return nil
+	}
+	result := &gcsRoleScope{
+		DefaultAllow: types.BoolValue(scope.DefaultAllow),
+	}
+	for _, buckets := range []struct {
+		in  []client.GCSBucketRef
+		out *[]gcsBucketRef
+	}{
+		{in: scope.AllowedBuckets, out: &result.AllowedBuckets},
+		{in: scope.DeniedBuckets, out: &result.DeniedBuckets},
+	} {
+		for _, b := range buckets.in {
+			*buckets.out = append(*buckets.out, gcsBucketRef{
+				Bucket:         types.StringValue(b.Bucket),
+				KeyPrefix:      getOptionalString(b.KeyPrefix),
+				UniverseDomain: getOptionalString(b.UniverseDomain),
+			})
+		}
+	}
+	return result
+}
+
+type endpointRoleScope struct {
+	DefaultAllow     types.Bool `tfsdk:"default_allow"`
+	AllowedEndpoints types.List `tfsdk:"allowed_endpoints"`
+	DeniedEndpoints  types.List `tfsdk:"denied_endpoints"`
+}
+
+func (s *endpointRoleScope) toSFTPGo(ctx context.Context) (client.EndpointRoleScope, diag.Diagnostics) {
+	scope := client.EndpointRoleScope{
+		DefaultAllow: s.DefaultAllow.ValueBool(),
+	}
+	if !s.AllowedEndpoints.IsNull() {
+		diags := s.AllowedEndpoints.ElementsAs(ctx, &scope.AllowedEndpoints, false)
+		if diags.HasError() {
+			return scope, diags
+		}
+	}
+	if !s.DeniedEndpoints.IsNull() {
+		diags := s.DeniedEndpoints.ElementsAs(ctx, &scope.DeniedEndpoints, false)
+		if diags.HasError() {
+			return scope, diags
+		}
+	}
+	return scope, nil
+}
+
+func newEndpointRoleScope(ctx context.Context, scope client.EndpointRoleScope) (*endpointRoleScope, diag.Diagnostics) {
+	if scope.IsEmpty() {
+		return nil, nil
+	}
+	result := &endpointRoleScope{
+		DefaultAllow: types.BoolValue(scope.DefaultAllow),
+	}
+	allowed, diags := types.ListValueFrom(ctx, types.StringType, scope.AllowedEndpoints)
+	if diags.HasError() {
+		return nil, diags
+	}
+	result.AllowedEndpoints = allowed
+	denied, diags := types.ListValueFrom(ctx, types.StringType, scope.DeniedEndpoints)
+	if diags.HasError() {
+		return nil, diags
+	}
+	result.DeniedEndpoints = denied
+	return result, nil
+}
+
+type sftpRoleScope struct {
+	DefaultAllow     types.Bool `tfsdk:"default_allow"`
+	AllowedEndpoints types.List `tfsdk:"allowed_endpoints"`
+	DeniedEndpoints  types.List `tfsdk:"denied_endpoints"`
+	AllowedProxies   types.List `tfsdk:"allowed_proxies"`
+}
+
+func (s *sftpRoleScope) toSFTPGo(ctx context.Context) (client.SFTPRoleScope, diag.Diagnostics) {
+	endpoints := endpointRoleScope{
+		DefaultAllow:     s.DefaultAllow,
+		AllowedEndpoints: s.AllowedEndpoints,
+		DeniedEndpoints:  s.DeniedEndpoints,
+	}
+	base, diags := endpoints.toSFTPGo(ctx)
+	if diags.HasError() {
+		return client.SFTPRoleScope{}, diags
+	}
+	scope := client.SFTPRoleScope{
+		EndpointRoleScope: base,
+	}
+	if !s.AllowedProxies.IsNull() {
+		diags := s.AllowedProxies.ElementsAs(ctx, &scope.AllowedProxies, false)
+		if diags.HasError() {
+			return scope, diags
+		}
+	}
+	return scope, nil
+}
+
+func newSFTPRoleScope(ctx context.Context, scope client.SFTPRoleScope) (*sftpRoleScope, diag.Diagnostics) {
+	if scope.IsEmpty() {
+		return nil, nil
+	}
+	result := &sftpRoleScope{
+		DefaultAllow: types.BoolValue(scope.DefaultAllow),
+	}
+	allowed, diags := types.ListValueFrom(ctx, types.StringType, scope.AllowedEndpoints)
+	if diags.HasError() {
+		return nil, diags
+	}
+	result.AllowedEndpoints = allowed
+	denied, diags := types.ListValueFrom(ctx, types.StringType, scope.DeniedEndpoints)
+	if diags.HasError() {
+		return nil, diags
+	}
+	result.DeniedEndpoints = denied
+	proxies, diags := types.ListValueFrom(ctx, types.StringType, scope.AllowedProxies)
+	if diags.HasError() {
+		return nil, diags
+	}
+	result.AllowedProxies = proxies
+	return result, nil
 }
 
 type groupUserSettings struct {
@@ -1682,6 +2140,7 @@ type groupResourceModel struct {
 	UpdatedAt      types.Int64     `tfsdk:"updated_at"`
 	UserSettings   types.Object    `tfsdk:"user_settings"`
 	VirtualFolders []virtualFolder `tfsdk:"virtual_folders"`
+	Role           types.String    `tfsdk:"role"`
 }
 
 func (g *groupResourceModel) toSFTPGo(ctx context.Context) (*client.Group, diag.Diagnostics) {
@@ -1692,6 +2151,7 @@ func (g *groupResourceModel) toSFTPGo(ctx context.Context) (*client.Group, diag.
 			CreatedAt:   g.CreatedAt.ValueInt64(),
 			UpdatedAt:   g.UpdatedAt.ValueInt64(),
 		},
+		Role: g.Role.ValueString(),
 	}
 
 	var settings groupUserSettings
@@ -1725,6 +2185,7 @@ func (g *groupResourceModel) fromSFTPGo(ctx context.Context, group *client.Group
 	g.Description = getOptionalString(group.Description)
 	g.CreatedAt = types.Int64Value(group.CreatedAt)
 	g.UpdatedAt = types.Int64Value(group.UpdatedAt)
+	g.Role = getOptionalString(group.Role)
 
 	var s groupUserSettings
 	diags := s.fromSFTPGo(ctx, &group.UserSettings)
@@ -3665,11 +4126,51 @@ const (
 )
 
 type licenseResourceModel struct {
-	ID        types.String `tfsdk:"id"`
-	Key       types.String `tfsdk:"key"`
-	Type      types.Int64  `tfsdk:"type"`
-	ValidFrom types.Int64  `tfsdk:"valid_from"`
-	ValidTo   types.Int64  `tfsdk:"valid_to"`
+	ID        types.String     `tfsdk:"id"`
+	Key       types.String     `tfsdk:"key"`
+	Type      types.Int64      `tfsdk:"type"`
+	ValidFrom types.Int64      `tfsdk:"valid_from"`
+	ValidTo   types.Int64      `tfsdk:"valid_to"`
+	Features  *licenseFeatures `tfsdk:"features"`
+}
+
+type licenseFeatures struct {
+	MaxConcurrentTransfers types.Int64 `tfsdk:"max_concurrent_transfers"`
+	FSProviders            types.List  `tfsdk:"fs_providers"`
+	EventActions           types.List  `tfsdk:"event_actions"`
+	FSActions              types.List  `tfsdk:"fs_actions"`
+	Plugins                types.Int64 `tfsdk:"plugins"`
+	Metering               types.Int64 `tfsdk:"metering"`
+	WOPIUsers              types.Int64 `tfsdk:"wopi_users"`
+	HA                     types.List  `tfsdk:"ha"`
+	FIPS                   types.Int64 `tfsdk:"fips"`
+	IsolatedRoles          types.Int64 `tfsdk:"isolated_roles"`
+}
+
+func (f *licenseFeatures) fromSFTPGo(ctx context.Context, features client.LicenseFeatures) diag.Diagnostics {
+	f.MaxConcurrentTransfers = types.Int64Value(int64(features.MaxConcurrentTransfers))
+	f.Plugins = types.Int64Value(int64(features.Plugins))
+	f.Metering = types.Int64Value(int64(features.Metering))
+	f.WOPIUsers = types.Int64Value(int64(features.WOPIUsers))
+	f.FIPS = types.Int64Value(int64(features.FIPS))
+	f.IsolatedRoles = types.Int64Value(int64(features.IsolatedRoles))
+
+	for _, list := range []struct {
+		in  []int
+		out *types.List
+	}{
+		{in: features.FSProviders, out: &f.FSProviders},
+		{in: features.EventActions, out: &f.EventActions},
+		{in: features.FSActions, out: &f.FSActions},
+		{in: features.HA, out: &f.HA},
+	} {
+		value, diags := types.ListValueFrom(ctx, types.Int64Type, list.in)
+		if diags.HasError() {
+			return diags
+		}
+		*list.out = value
+	}
+	return nil
 }
 
 func (r *licenseResourceModel) toSFTPGo(_ context.Context) (*client.License, diag.Diagnostics) {
@@ -3683,12 +4184,19 @@ func (r *licenseResourceModel) toSFTPGo(_ context.Context) (*client.License, dia
 	return license, nil
 }
 
-func (r *licenseResourceModel) fromSFTPGo(_ context.Context, license *client.License) diag.Diagnostics {
+func (r *licenseResourceModel) fromSFTPGo(ctx context.Context, license *client.License) diag.Diagnostics {
 	r.Key = types.StringValue(license.Key)
 	r.ID = types.StringValue(licensePlaceholderID)
 	r.Type = types.Int64Value(int64(license.Type))
 	r.ValidFrom = types.Int64Value(license.ValidFrom)
 	r.ValidTo = types.Int64Value(license.ValidTo)
+
+	var features licenseFeatures
+	diags := features.fromSFTPGo(ctx, license.Features)
+	if diags.HasError() {
+		return diags
+	}
+	r.Features = &features
 	return nil
 }
 

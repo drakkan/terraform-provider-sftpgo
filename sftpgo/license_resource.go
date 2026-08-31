@@ -88,6 +88,7 @@ func (r *licenseResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Computed:    true,
 				Description: "Validity end time in Unix timestamp (milliseconds).",
 			},
+			"features": getSchemaForLicenseFeatures(),
 		},
 	}
 }

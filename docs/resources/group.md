@@ -22,6 +22,7 @@ Group
 ### Optional
 
 - `description` (String) Optional description.
+- `role` (String) Role name. With resource isolation enabled on the role, the resource is visible to the admins carrying the same role and its storage is measured against the allowlist of the role. An admin carrying a role can use only its own role, which the server applies to the resources it creates: name it in the configuration. Reference the role by attribute, for example `sftpgo_role.tenant.name`, so that Terraform orders the operations: the server refuses to remove a role a group or a folder still names. Available in the Enterprise edition.
 - `user_settings` (Attributes) Settings to apply to users. Omit this block entirely to create a group with no default settings. When present, the nested `filesystem` block must be set explicitly (e.g. `filesystem = { provider = 0 }` for local). Defaults are no longer auto-populated from the server because this block contains write-only attributes. (see [below for nested schema](#nestedatt--user_settings))
 - `virtual_folders` (Attributes List) (see [below for nested schema](#nestedatt--virtual_folders))
 

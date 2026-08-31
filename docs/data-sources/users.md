@@ -51,7 +51,7 @@ Read-Only:
 - `public_keys` (List of String) List of public keys.
 - `quota_files` (Number) Maximum number of files allowed. Not set means no limit.
 - `quota_size` (Number) Maximum size allowed as bytes. Not set means no limit.
-- `role` (String) Role name.
+- `role` (String) Role name. With resource isolation enabled on the role, the account reaches the groups and folders carrying it and its storage is measured against the allowlist of the role.
 - `status` (Number) 1 enabled, 0 disabled (login is not allowed).
 - `total_data_transfer` (Number) Maximum total data transfer as MB. Not set means unlimited. You can set a total data transfer instead of the individual values for uploads and downloads.
 - `uid` (Number) If SFTPGo runs as root system user then the created files and directories will be assigned to this system UID.

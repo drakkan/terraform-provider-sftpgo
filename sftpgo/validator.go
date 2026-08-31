@@ -62,3 +62,38 @@ func invalidAttributeSFTPEndPointDiagnostic(path path.Path, description string, 
 		fmt.Sprintf("Attribute %s %s, got: %s", path, description, value),
 	)
 }
+
+// nonEmptyObjectValidator requires a declared block to set at least one
+// attribute: the API reads an empty object as an absent one and the provider
+// maps it back to null
+type nonEmptyObjectValidator struct{}
+
+// Description describes the validation in plain text formatting.
+func (nonEmptyObjectValidator) Description(_ context.Context) string {
+	return "must set at least one attribute, omit the block to leave it unset"
+}
+
+// MarkdownDescription describes the validation in Markdown formatting.
+func (v nonEmptyObjectValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+// ValidateObject performs the validation.
+func (v nonEmptyObjectValidator) ValidateObject(ctx context.Context, request validator.ObjectRequest,
+	response *validator.ObjectResponse,
+) {
+	if request.ConfigValue.IsNull() || request.ConfigValue.IsUnknown() {
+		return
+	}
+
+	for _, value := range request.ConfigValue.Attributes() {
+		if !value.IsNull() {
+			return
+		}
+	}
+	response.Diagnostics.Append(diag.NewAttributeErrorDiagnostic(
+		request.Path,
+		"Invalid Empty Block",
+		fmt.Sprintf("Attribute %s %s", request.Path, v.Description(ctx)),
+	))
+}

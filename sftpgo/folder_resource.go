@@ -99,6 +99,10 @@ func (r *folderResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Computed:    true,
 				Description: "Last quota update as unix timestamp in milliseconds",
 			},
+			"role": schema.StringAttribute{
+				Optional:    true,
+				Description: roleReferenceDesc,
+			},
 			"filesystem": getSchemaForFilesystem(false),
 		},
 	}

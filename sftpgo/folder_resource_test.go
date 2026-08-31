@@ -15,12 +15,16 @@
 package sftpgo
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/require"
+
+	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 )
 
 func TestAccFolderResource(t *testing.T) {
@@ -421,6 +425,99 @@ func TestAccFolderResource_renameForcesReplace(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_folder.test", "id", "rename_test_renamed"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccEnterpriseFolderRole(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+	role := client.Role{
+		Name:              "folder tenant",
+		ResourceIsolation: 1,
+		Settings: client.RoleSettings{
+			StorageAllowlist: client.RoleStorageAllowlist{
+				AllowedProviders: []int{0},
+				Local: client.LocalRoleScope{
+					AllowedPaths: []string{os.TempDir()},
+				},
+			},
+		},
+	}
+	_, err = c.CreateRole(role)
+	require.NoError(t, err)
+
+	defer func() {
+		err = c.DeleteRole(role.Name)
+		require.NoError(t, err)
+	}()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(`
+					resource "sftpgo_folder" "test" {
+					  name = "test folder"
+					  mapped_path = %q
+					  role = %q
+					  filesystem = {
+						provider = 0
+					  }
+					}`, filepath.Join(os.TempDir(), "test_folder_role"), role.Name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "name", "test folder"),
+					resource.TestCheckResourceAttr("sftpgo_folder.test", "role", role.Name),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_folder.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Read the role from the data source
+			{
+				Config: fmt.Sprintf(`
+					resource "sftpgo_folder" "test" {
+					  name = "test folder"
+					  mapped_path = %q
+					  role = %q
+					  filesystem = {
+						provider = 0
+					  }
+					}
+
+					data "sftpgo_folders" "test" {
+					  depends_on = [sftpgo_folder.test]
+					}`, filepath.Join(os.TempDir(), "test_folder_role"), role.Name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.name", "test folder"),
+					resource.TestCheckResourceAttr("data.sftpgo_folders.test", "folders.0.role", role.Name),
+				),
+			},
+			// Remove the role
+			{
+				Config: fmt.Sprintf(`
+					resource "sftpgo_folder" "test" {
+					  name = "test folder"
+					  mapped_path = %q
+					  filesystem = {
+						provider = 0
+					  }
+					}`, filepath.Join(os.TempDir(), "test_folder_role")),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("sftpgo_folder.test", "role"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
 		},
 	})
 }

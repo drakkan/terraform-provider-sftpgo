@@ -17,12 +17,14 @@ package sftpgo
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
 )
@@ -92,6 +94,15 @@ func (r *roleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Computed:    true,
 				Description: "Last update time as unix timestamp in milliseconds.",
 			},
+			"resource_isolation": schema.Int64Attribute{
+				Optional:    true,
+				Computed:    true,
+				Description: resourceIsolationDesc,
+				Validators: []validator.Int64{
+					int64validator.Between(0, 1),
+				},
+			},
+			"settings": getSchemaForRoleSettings(),
 		},
 	}
 }

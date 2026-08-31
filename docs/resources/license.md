@@ -24,7 +24,24 @@ Note: This resource cannot be deleted. Running `terraform destroy` will remove i
 
 ### Read-Only
 
+- `features` (Attributes) The features the license grants. (see [below for nested schema](#nestedatt--features))
 - `id` (String) Required to use the test framework. Matches the license key.
 - `type` (Number) License type: 0 = Disabled, 1 = Subscription, 2 = Lifetime
 - `valid_from` (Number) Validity start time in Unix timestamp (milliseconds).
 - `valid_to` (Number) Validity end time in Unix timestamp (milliseconds).
+
+<a id="nestedatt--features"></a>
+### Nested Schema for `features`
+
+Read-Only:
+
+- `event_actions` (List of Number) The event action types the license grants, with the values the `type` attribute of an event action uses.
+- `fips` (Number) 1 grants the FIPS mode.
+- `fs_actions` (List of Number) The filesystem action types the license grants, with the values the `type` attribute of a filesystem action uses.
+- `fs_providers` (List of Number) The storage backends the license grants, with the values the `provider` attribute of a filesystem configuration uses.
+- `ha` (List of Number) High availability is granted when the list contains 1.
+- `isolated_roles` (Number) -1 unlimited, 0 disabled, > 0 number of roles that can enable resource isolation.
+- `max_concurrent_transfers` (Number) Maximum concurrent transfers. 0 means the configured limit applies.
+- `metering` (Number) 1 disables metering.
+- `plugins` (Number) -1 unlimited, 0 disabled, > 0 number of allowed plugins.
+- `wopi_users` (Number) -1 unlimited, 0 disabled, > 0 number of allowed users.

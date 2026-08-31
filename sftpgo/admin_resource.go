@@ -156,7 +156,7 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"role": schema.StringAttribute{
 				Optional:    true,
-				Description: "Role name. If set the admin can only administer users with the same role.",
+				Description: adminRoleDesc,
 			},
 			"filters": schema.SingleNestedAttribute{
 				Optional:    true,

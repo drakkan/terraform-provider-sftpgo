@@ -139,6 +139,8 @@ type HTTPFsConfig struct {
 type BaseVirtualFolder struct {
 	sdk.BaseVirtualFolder
 	FsConfig Filesystem `json:"filesystem"`
+	// Role name. Enterprise edition only
+	Role string `json:"role,omitempty"`
 }
 
 type VirtualFolder struct {
@@ -206,6 +208,8 @@ type Group struct {
 	sdk.BaseGroup
 	UserSettings   GroupUserSettings `json:"user_settings,omitempty"`
 	VirtualFolders []VirtualFolder   `json:"virtual_folders,omitempty"`
+	// Role name. Enterprise edition only
+	Role string `json:"role,omitempty"`
 }
 
 // PasswordPolicy defines static password validation rules

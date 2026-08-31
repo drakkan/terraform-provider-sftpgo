@@ -15,6 +15,7 @@
 package sftpgo
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -573,6 +574,87 @@ func TestAccGroupResource_renameForcesReplace(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "id", "rename_test_renamed"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccEnterpriseGroupRole(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+	role := client.Role{
+		Name:              "group tenant",
+		ResourceIsolation: 1,
+		Settings: client.RoleSettings{
+			StorageAllowlist: client.RoleStorageAllowlist{
+				AllowedProviders: []int{0},
+				Local: client.LocalRoleScope{
+					AllowedPaths: []string{os.TempDir()},
+				},
+			},
+		},
+	}
+	_, err = c.CreateRole(role)
+	require.NoError(t, err)
+
+	defer func() {
+		err = c.DeleteRole(role.Name)
+		require.NoError(t, err)
+	}()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: fmt.Sprintf(`
+					resource "sftpgo_group" "test" {
+					  name = "test group"
+					  role = %q
+					}`, role.Name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_group.test", "name", "test group"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "role", role.Name),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "sftpgo_group.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Read the role from the data source
+			{
+				Config: fmt.Sprintf(`
+					resource "sftpgo_group" "test" {
+					  name = "test group"
+					  role = %q
+					}
+
+					data "sftpgo_groups" "test" {
+					  depends_on = [sftpgo_group.test]
+					}`, role.Name),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.name", "test group"),
+					resource.TestCheckResourceAttr("data.sftpgo_groups.test", "groups.0.role", role.Name),
+				),
+			},
+			// Remove the role
+			{
+				Config: `
+					resource "sftpgo_group" "test" {
+					  name = "test group"
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("sftpgo_group.test", "role"),
+				),
+			},
+			// Delete testing automatically occurs in TestCase
 		},
 	})
 }

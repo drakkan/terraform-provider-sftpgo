@@ -114,7 +114,7 @@ func (d *adminsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 						},
 						"role": schema.StringAttribute{
 							Computed:    true,
-							Description: "Role name. If set the admin can only administer users with the same role.",
+							Description: adminRoleDesc,
 						},
 						"filters": schema.SingleNestedAttribute{
 							Computed:    true,
