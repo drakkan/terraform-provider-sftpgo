@@ -65,7 +65,7 @@ func (r *trustedListEntryResource) Schema(_ context.Context, _ resource.SchemaRe
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "Required to use the test framework. Matches the IP or network field.",
+				Description: "Identifier of the resource, it matches the `ipornet` attribute. `terraform import` takes the same value.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

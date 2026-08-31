@@ -28,7 +28,7 @@ Role
 ### Read-Only
 
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
-- `id` (String) Required to use the test framework. Matches the role name.
+- `id` (String) Identifier of the resource, it matches the `name` attribute. `terraform import` takes the same value.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
 
 <a id="nestedatt--settings"></a>
@@ -200,3 +200,14 @@ Optional:
 - `allowed_proxies` (List of String) The SOCKS proxies an SFTP configuration may name, as `host:port`, with or without the scheme. An empty list with `default_allow` enabled grants every proxy, since the endpoint is scoped on its own.
 - `default_allow` (Boolean) Decides the endpoints neither list matches. When both lists match an endpoint, the more specific entry wins and a tie goes to the denied one.
 - `denied_endpoints` (List of String) Endpoints refused to the role.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# A role can be imported by name
+terraform import sftpgo_role.example "role name"
+```

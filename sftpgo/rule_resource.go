@@ -71,7 +71,7 @@ func (r *ruleResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "Required to use the test framework. Matches the rule name.",
+				Description: "Identifier of the resource, it matches the `name` attribute. `terraform import` takes the same value.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

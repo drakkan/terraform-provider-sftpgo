@@ -66,7 +66,7 @@ func (r *licenseResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "Required to use the test framework. Matches the license key.",
+				Description: "Identifier of the resource, a fixed placeholder: a single license is stored. `terraform import` takes the license key.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

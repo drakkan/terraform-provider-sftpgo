@@ -17,7 +17,7 @@ Fetches License Information. Available in the Enterprise edition.
 
 ### Read-Only
 
-- `id` (String) Required to use the test framework. Just a placeholder.
+- `id` (String) Placeholder identifier: the data source has no identifier of its own.
 - `license` (Attributes) License details. (see [below for nested schema](#nestedatt--license))
 
 <a id="nestedatt--license"></a>

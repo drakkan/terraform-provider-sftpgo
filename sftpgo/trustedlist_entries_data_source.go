@@ -52,7 +52,7 @@ func (d *trustedListEntriesDataSource) Schema(_ context.Context, _ datasource.Sc
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "Required to use the test framework. Just a placeholder.",
+				Description: "Placeholder identifier: the data source returns a list and has no identifier of its own.",
 			},
 			"entries": schema.ListNestedAttribute{
 				Computed:    true,

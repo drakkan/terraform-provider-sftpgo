@@ -29,7 +29,7 @@ Group
 ### Read-Only
 
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
-- `id` (String) Required to use the test framework. Matches the group name.
+- `id` (String) Identifier of the resource, it matches the `name` attribute. `terraform import` takes the same value.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
 
 <a id="nestedatt--user_settings"></a>
@@ -548,3 +548,14 @@ Read-Only:
 - `socks_proxy` (String) The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. Available in the Enterprise edition.
 - `socks_username` (String) The optional SOCKS username. Available in the Enterprise edition.
 - `username` (String) Username for SFTP authentication.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# A group can be imported by name
+terraform import sftpgo_group.example "group name"
+```

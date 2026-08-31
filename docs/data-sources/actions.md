@@ -18,7 +18,7 @@ Fetches the list of event actions.
 ### Read-Only
 
 - `actions` (Attributes List) List of event actions. (see [below for nested schema](#nestedatt--actions))
-- `id` (String) Required to use the test framework. Just a placeholder.
+- `id` (String) Placeholder identifier: the data source returns a list and has no identifier of its own.
 
 <a id="nestedatt--actions"></a>
 ### Nested Schema for `actions`

@@ -73,7 +73,7 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "Required to use the test framework. Matches the action name.",
+				Description: "Identifier of the resource, it matches the `name` attribute. `terraform import` takes the same value.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

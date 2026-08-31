@@ -18,7 +18,7 @@ Fetches the list of defender entries.
 ### Read-Only
 
 - `entries` (Attributes List) List of entries. (see [below for nested schema](#nestedatt--entries))
-- `id` (String) Required to use the test framework. Just a placeholder.
+- `id` (String) Placeholder identifier: the data source returns a list and has no identifier of its own.
 
 <a id="nestedatt--entries"></a>
 ### Nested Schema for `entries`

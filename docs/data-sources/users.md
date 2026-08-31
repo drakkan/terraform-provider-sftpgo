@@ -17,7 +17,7 @@ Fetches the list of users.
 
 ### Read-Only
 
-- `id` (String) Required to use the test framework. Just a placeholder.
+- `id` (String) Placeholder identifier: the data source returns a list and has no identifier of its own.
 - `users` (Attributes List) List of users. (see [below for nested schema](#nestedatt--users))
 
 <a id="nestedatt--users"></a>

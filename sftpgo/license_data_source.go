@@ -52,7 +52,7 @@ func (d *licenseDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "Required to use the test framework. Just a placeholder.",
+				Description: "Placeholder identifier: the data source has no identifier of its own.",
 			},
 			"license": schema.SingleNestedAttribute{
 				Computed:    true,

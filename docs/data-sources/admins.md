@@ -18,7 +18,7 @@ Fetches the list of admins.
 ### Read-Only
 
 - `admins` (Attributes List) List of admins. (see [below for nested schema](#nestedatt--admins))
-- `id` (String) Required to use the test framework. Just a placeholder.
+- `id` (String) Placeholder identifier: the data source returns a list and has no identifier of its own.
 
 <a id="nestedatt--admins"></a>
 ### Nested Schema for `admins`

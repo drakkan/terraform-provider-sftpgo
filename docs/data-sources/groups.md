@@ -18,7 +18,7 @@ Fetches the list of groups.
 ### Read-Only
 
 - `groups` (Attributes List) List of groups. (see [below for nested schema](#nestedatt--groups))
-- `id` (String) Required to use the test framework. Just a placeholder.
+- `id` (String) Placeholder identifier: the data source returns a list and has no identifier of its own.
 
 <a id="nestedatt--groups"></a>
 ### Nested Schema for `groups`

@@ -28,5 +28,16 @@ Defender entry
 ### Read-Only
 
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
-- `id` (String) Required to use the test framework. Matches the IP or network field.
+- `id` (String) Identifier of the resource, it matches the `ipornet` attribute. `terraform import` takes the same value.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# A defender list entry can be imported by IP or network
+terraform import sftpgo_defender_entry.example 192.168.1.1/32
+```

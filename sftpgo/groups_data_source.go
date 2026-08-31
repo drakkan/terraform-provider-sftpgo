@@ -52,7 +52,7 @@ func (d *groupsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "Required to use the test framework. Just a placeholder.",
+				Description: "Placeholder identifier: the data source returns a list and has no identifier of its own.",
 			},
 			"groups": schema.ListNestedAttribute{
 				Computed:    true,

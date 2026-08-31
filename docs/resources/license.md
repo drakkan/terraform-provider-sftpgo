@@ -25,7 +25,7 @@ Note: This resource cannot be deleted. Running `terraform destroy` will remove i
 ### Read-Only
 
 - `features` (Attributes) The features the license grants. (see [below for nested schema](#nestedatt--features))
-- `id` (String) Required to use the test framework. Matches the license key.
+- `id` (String) Identifier of the resource, a fixed placeholder: a single license is stored. `terraform import` takes the license key.
 - `type` (Number) License type: 0 = Disabled, 1 = Subscription, 2 = Lifetime
 - `valid_from` (Number) Validity start time in Unix timestamp (milliseconds).
 - `valid_to` (Number) Validity end time in Unix timestamp (milliseconds).
@@ -45,3 +45,14 @@ Read-Only:
 - `metering` (Number) 1 disables metering.
 - `plugins` (Number) -1 unlimited, 0 disabled, > 0 number of allowed plugins.
 - `wopi_users` (Number) -1 unlimited, 0 disabled, > 0 number of allowed users.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# The license can be imported by key
+terraform import sftpgo_license.example "license key"
+```

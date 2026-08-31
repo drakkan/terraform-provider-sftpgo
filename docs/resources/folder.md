@@ -28,7 +28,7 @@ Virtual folder
 
 ### Read-Only
 
-- `id` (String) Required to use the test framework. Matches the folder name.
+- `id` (String) Identifier of the resource, it matches the `name` attribute. `terraform import` takes the same value.
 - `last_quota_update` (Number) Last quota update as unix timestamp in milliseconds
 - `used_quota_files` (Number) Used quota as number of files.
 - `used_quota_size` (Number) Used quota as bytes.
@@ -221,3 +221,14 @@ Optional:
 - `socks_password_wo_version` (String) Trigger attribute for `socks_password_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
 - `socks_proxy` (String) The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. Available in the Enterprise edition.
 - `socks_username` (String) The optional SOCKS username. Available in the Enterprise edition.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# A virtual folder can be imported by name
+terraform import sftpgo_folder.example "folder name"
+```

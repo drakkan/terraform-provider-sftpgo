@@ -30,7 +30,7 @@ Event rule
 ### Read-Only
 
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
-- `id` (String) Required to use the test framework. Matches the rule name.
+- `id` (String) Identifier of the resource, it matches the `name` attribute. `terraform import` takes the same value.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
 
 <a id="nestedatt--actions"></a>
@@ -137,3 +137,14 @@ Required:
 Optional:
 
 - `minute` (String) Available in the Enterprise edition
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# An event rule can be imported by name
+terraform import sftpgo_rule.example "rule name"
+```

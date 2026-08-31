@@ -47,7 +47,7 @@ Supported values:
 
 ### Read-Only
 
-- `id` (String) Required to use the test framework. Matches the action name.
+- `id` (String) Identifier of the resource, it matches the `name` attribute. `terraform import` takes the same value.
 
 <a id="nestedatt--options"></a>
 ### Nested Schema for `options`
@@ -474,3 +474,14 @@ Optional:
 
 - `delete_threshold` (Number) Inactivity in days, since the last login before deleting the account.
 - `disable_threshold` (Number) Inactivity in days, since the last login before disabling the account.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# An event action can be imported by name
+terraform import sftpgo_action.example "action name"
+```

@@ -17,7 +17,7 @@ Fetches the list of event rules.
 
 ### Read-Only
 
-- `id` (String) Required to use the test framework. Just a placeholder.
+- `id` (String) Placeholder identifier: the data source returns a list and has no identifier of its own.
 - `rules` (Attributes List) List of event rules. (see [below for nested schema](#nestedatt--rules))
 
 <a id="nestedatt--rules"></a>

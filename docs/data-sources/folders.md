@@ -18,7 +18,7 @@ Fetches the list of virtual folders.
 ### Read-Only
 
 - `folders` (Attributes List) List of virtual folders. (see [below for nested schema](#nestedatt--folders))
-- `id` (String) Required to use the test framework. Just a placeholder.
+- `id` (String) Placeholder identifier: the data source returns a list and has no identifier of its own.
 
 <a id="nestedatt--folders"></a>
 ### Nested Schema for `folders`

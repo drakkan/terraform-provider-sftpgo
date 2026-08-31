@@ -17,7 +17,7 @@ Fetches the list of roles.
 
 ### Read-Only
 
-- `id` (String) Required to use the test framework. Just a placeholder.
+- `id` (String) Placeholder identifier: the data source returns a list and has no identifier of its own.
 - `roles` (Attributes List) List of roles. (see [below for nested schema](#nestedatt--roles))
 
 <a id="nestedatt--roles"></a>

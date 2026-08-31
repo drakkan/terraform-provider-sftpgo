@@ -39,7 +39,7 @@ Admin
 ### Read-Only
 
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
-- `id` (String) Required to use the test framework. Matches the username.
+- `id` (String) Identifier of the resource, it matches the `username` attribute. `terraform import` takes the same value.
 - `last_login` (Number) Last login as unix timestamp in milliseconds.
 - `updated_at` (Number) Last update time as unix timestamp in milliseconds.
 
@@ -79,3 +79,14 @@ Optional:
 
 - `default_users_expiration` (Number) If set defines the default expiration for newly created users as number of days.
 - `hide_user_page_sections` (Number) If set allow to hide some sections from the user page in the WebAdmin. 1 = groups, 2 = filesystem, 4 = virtual folders, 8 = profile, 16 = ACL, 32 = Disk and bandwidth quota limits, 64 = Advanced. Settings can be combined.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# An administrator can be imported by username
+terraform import sftpgo_admin.example admin
+```

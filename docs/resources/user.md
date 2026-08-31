@@ -55,7 +55,7 @@ User
 - `created_at` (Number) Creation time as unix timestamp in milliseconds.
 - `first_download` (Number) First download time as unix timestamp in milliseconds.
 - `first_upload` (Number) First upload time as unix timestamp in milliseconds.
-- `id` (String) Required to use the test framework. Matches the username.
+- `id` (String) Identifier of the resource, it matches the `username` attribute. `terraform import` takes the same value.
 - `last_login` (Number) Last login as unix timestamp in milliseconds.
 - `last_password_change` (Number) Last password change as unix timestamp in milliseconds.
 - `last_quota_update` (Number) Last quota update as unix timestamp in milliseconds.
@@ -551,3 +551,14 @@ Read-Only:
 - `socks_proxy` (String) The address of the SOCKS proxy server, including schema, host, and port. Examples: socks5://127.0.0.1:1080, socks4://127.0.0.1:1080, socks4a://127.0.0.1:1080. Available in the Enterprise edition.
 - `socks_username` (String) The optional SOCKS username. Available in the Enterprise edition.
 - `username` (String) Username for SFTP authentication.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# A user can be imported by username
+terraform import sftpgo_user.example username
+```
