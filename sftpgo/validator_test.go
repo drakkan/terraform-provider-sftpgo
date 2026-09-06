@@ -73,19 +73,19 @@ func TestSFTPEndPointValidator(t *testing.T) {
 
 func TestNonEmptyObjectValidator(t *testing.T) {
 	attrTypes := map[string]attr.Type{
-		"default_allow":     types.BoolType,
 		"allowed_endpoints": types.ListType{ElemType: types.StringType},
+		"allowed_proxies":   types.ListType{ElemType: types.StringType},
 	}
 	empty, diags := types.ObjectValue(attrTypes, map[string]attr.Value{
-		"default_allow":     types.BoolNull(),
 		"allowed_endpoints": types.ListNull(types.StringType),
+		"allowed_proxies":   types.ListNull(types.StringType),
 	})
 	if diags.HasError() {
 		t.Fatalf("unable to build the empty object: %s", diags)
 	}
 	set, diags := types.ObjectValue(attrTypes, map[string]attr.Value{
-		"default_allow":     types.BoolValue(false),
-		"allowed_endpoints": types.ListNull(types.StringType),
+		"allowed_endpoints": types.ListValueMust(types.StringType, []attr.Value{types.StringValue("host:22")}),
+		"allowed_proxies":   types.ListNull(types.StringType),
 	})
 	if diags.HasError() {
 		t.Fatalf("unable to build the object: %s", diags)

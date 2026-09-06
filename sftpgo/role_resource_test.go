@@ -16,6 +16,7 @@ package sftpgo
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -154,7 +155,6 @@ func TestAccEnterpriseRoleResource(t *testing.T) {
 							users_base_dir = "/tmp/tenant1/homes"
 						  }
 						  s3 = {
-							default_allow = true
 							allowed_buckets = [
 							  {
 								bucket = "bucket1"
@@ -163,17 +163,13 @@ func TestAccEnterpriseRoleResource(t *testing.T) {
 							  },
 							  {
 								bucket = "bucket2"
-							  }
-							]
-							denied_buckets = [
+							  },
 							  {
-								bucket = "secret"
-								key_prefix = "private/"
+								endpoint = "https://minio.example.com:9000"
 							  }
 							]
 						  }
 						  azure = {
-							default_allow = true
 							allowed_containers = [
 							  {
 								account = "account1"
@@ -182,15 +178,8 @@ func TestAccEnterpriseRoleResource(t *testing.T) {
 								endpoint = "https://azure.example.com"
 							  }
 							]
-							denied_containers = [
-							  {
-								account = "account1"
-								container = "secret"
-							  }
-							]
 						  }
 						  gcs = {
-							default_allow = true
 							allowed_buckets = [
 							  {
 								bucket = "bucket1"
@@ -198,27 +187,16 @@ func TestAccEnterpriseRoleResource(t *testing.T) {
 								universe_domain = "googleapis.com"
 							  }
 							]
-							denied_buckets = [
-							  {
-								bucket = "bucket-secret"
-							  }
-							]
 						  }
 						  sftp = {
-							default_allow = true
 							allowed_endpoints = ["127.0.0.1:2022", "sftp.example.com:22"]
-							denied_endpoints = ["10.0.0.1:22"]
-							allowed_proxies = ["127.0.0.1:1080", "proxy.example.com:1080"]
+							allowed_proxies = ["socks5://127.0.0.1:1080", "socks5://proxy.example.com:1080"]
 						  }
 						  ftp = {
-							default_allow = true
 							allowed_endpoints = ["127.0.0.1:2121"]
-							denied_endpoints = ["10.0.0.1:21"]
 						  }
 						  http = {
-							default_allow = true
 							allowed_endpoints = ["https://127.0.0.1:9999/tenant1"]
-							denied_endpoints = ["https://10.0.0.1/private"]
 						  }
 						}
 					  }
@@ -235,44 +213,30 @@ func TestAccEnterpriseRoleResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.local.allowed_paths.0", "/tmp/tenant1"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.local.allowed_paths.1", "/srv/tenant1"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.local.users_base_dir", "/tmp/tenant1/homes"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.default_allow", "true"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.#", "3"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.0.bucket", "bucket1"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.0.key_prefix", "tenant1/"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.0.endpoint", "https://s3.example.com"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.1.bucket", "bucket2"),
 					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.1.key_prefix"),
 					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.1.endpoint"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.denied_buckets.#", "1"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.denied_buckets.0.bucket", "secret"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.denied_buckets.0.key_prefix", "private/"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.default_allow", "true"),
+					// an entry naming the endpoint alone grants every bucket it serves
+					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.2.bucket"),
+					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.2.endpoint", "https://minio.example.com:9000"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.allowed_containers.0.account", "account1"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.allowed_containers.0.container", "container1"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.allowed_containers.0.key_prefix", "tenant1/"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.allowed_containers.0.endpoint", "https://azure.example.com"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.denied_containers.0.account", "account1"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.denied_containers.0.container", "secret"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.denied_containers.0.key_prefix"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.gcs.default_allow", "true"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.gcs.allowed_buckets.0.bucket", "bucket1"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.gcs.allowed_buckets.0.key_prefix", "tenant1/"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.gcs.allowed_buckets.0.universe_domain", "googleapis.com"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.gcs.denied_buckets.0.bucket", "bucket-secret"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.gcs.denied_buckets.0.universe_domain"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.default_allow", "true"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.allowed_endpoints.#", "2"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.allowed_endpoints.0", "127.0.0.1:2022"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.allowed_endpoints.1", "sftp.example.com:22"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.denied_endpoints.0", "10.0.0.1:22"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.allowed_proxies.#", "2"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.allowed_proxies.1", "proxy.example.com:1080"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.ftp.default_allow", "true"),
+					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.allowed_proxies.1", "socks5://proxy.example.com:1080"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.ftp.allowed_endpoints.0", "127.0.0.1:2121"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.ftp.denied_endpoints.0", "10.0.0.1:21"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.http.default_allow", "true"),
 					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.http.allowed_endpoints.0", "https://127.0.0.1:9999/tenant1"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.http.denied_endpoints.0", "https://10.0.0.1/private"),
 				),
 			},
 			// ImportState testing
@@ -281,8 +245,50 @@ func TestAccEnterpriseRoleResource(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Update and Read testing: every scope keeps a different subset of
-			// its fields, the ones left out are cleared
+			// Update and Read testing: the scopes left out of the allowlist are
+			// cleared
+			{
+				Config: `
+					resource "sftpgo_role" "test" {
+					  name = "test isolated role"
+					  description = "desc"
+					  resource_isolation = 1
+					  settings = {
+						storage_allowlist = {
+						  allowed_providers = [0, 1]
+						  local = {
+							allowed_paths = ["/tmp/tenant1"]
+							users_base_dir = "/tmp/tenant1/homes"
+						  }
+						  s3 = {
+							allowed_buckets = [
+							  {
+								bucket = "bucket1"
+							  }
+							]
+						  }
+						  ftp = {
+							allowed_endpoints = ["127.0.0.1:2121"]
+						  }
+						}
+					  }
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.allowed_providers.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.local.allowed_paths.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.local.users_base_dir", "/tmp/tenant1/homes"),
+					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.#", "1"),
+					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.0.bucket", "bucket1"),
+					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.0.key_prefix"),
+					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure"),
+					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.gcs"),
+					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp"),
+					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.ftp.allowed_endpoints.0", "127.0.0.1:2121"),
+					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.http"),
+				),
+			},
+			// The base directory of the users is required while the role isolates
+			// its resources
 			{
 				Config: `
 					resource "sftpgo_role" "test" {
@@ -295,64 +301,12 @@ func TestAccEnterpriseRoleResource(t *testing.T) {
 						  local = {
 							allowed_paths = ["/tmp/tenant1"]
 						  }
-						  s3 = {
-							default_allow = false
-							allowed_buckets = [
-							  {
-								bucket = "bucket1"
-							  }
-							]
-						  }
-						  azure = {
-							denied_containers = [
-							  {
-								account = "account1"
-								container = "secret"
-							  }
-							]
-						  }
-						  gcs = {
-							default_allow = true
-						  }
-						  sftp = {
-							denied_endpoints = ["10.0.0.1:22"]
-						  }
-						  ftp = {
-							allowed_endpoints = ["127.0.0.1:2121"]
-						  }
-						  http = {
-							default_allow = true
-						  }
 						}
 					  }
 					}`,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.allowed_providers.#", "1"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.local.allowed_paths.#", "1"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.local.users_base_dir"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.0.bucket", "bucket1"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.allowed_buckets.0.key_prefix"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.default_allow", "false"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.s3.denied_buckets"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.denied_containers.0.container", "secret"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.allowed_containers"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.azure.default_allow", "false"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.gcs.default_allow", "true"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.gcs.allowed_buckets"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.gcs.denied_buckets"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.denied_endpoints.0", "10.0.0.1:22"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.allowed_endpoints"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.allowed_proxies"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.sftp.default_allow", "false"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.ftp.allowed_endpoints.0", "127.0.0.1:2121"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.ftp.denied_endpoints"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.ftp.default_allow", "false"),
-					resource.TestCheckResourceAttr("sftpgo_role.test", "settings.storage_allowlist.http.default_allow", "true"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.http.allowed_endpoints"),
-					resource.TestCheckNoResourceAttr("sftpgo_role.test", "settings.storage_allowlist.http.denied_endpoints"),
-				),
+				ExpectError: regexp.MustCompile("users base directory is required"),
 			},
-			// The scopes left out of the allowlist are cleared, isolation is turned off
+			// Isolation off, the allowlist is kept and enforces nothing
 			{
 				Config: `
 					resource "sftpgo_role" "test" {

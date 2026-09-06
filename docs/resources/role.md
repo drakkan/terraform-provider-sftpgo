@@ -22,7 +22,7 @@ Role
 ### Optional
 
 - `description` (String) Optional description.
-- `resource_isolation` (Number) Resource isolation level: 0 disabled, 1 enabled. With isolation enabled the groups and folders carrying the role are visible to the admins carrying the same role, an account reaches the groups and folders of its own role, and the storage allowlist is enforced on every save. Supported data providers: MySQL, MariaDB, PostgreSQL, CockroachDB, SQLite. The number of roles that can enable it is licensed. An isolated role with no `settings` block grants nothing, so it refuses every save of a resource carrying it. Available in the Enterprise edition.
+- `resource_isolation` (Number) Resource isolation level: 0 disabled, 1 enabled. With isolation enabled the groups and folders carrying the role are visible to the admins carrying the same role, an account reaches the groups and folders of its own role, and the storage allowlist is enforced on every save. Supported data providers: MySQL, MariaDB, PostgreSQL, CockroachDB, SQLite. The number of roles that can enable it is licensed. A role that isolates its resources requires `settings.storage_allowlist.local.users_base_dir` and grants the backends listed in `settings.storage_allowlist.allowed_providers`. Available in the Enterprise edition.
 - `settings` (Attributes) Settings of the role. It carries the storage allowlist. Omit the block when the role carries no settings. Available in the Enterprise edition. (see [below for nested schema](#nestedatt--settings))
 
 ### Read-Only
@@ -36,7 +36,7 @@ Role
 
 Optional:
 
-- `storage_allowlist` (Attributes) The storage the resources carrying the role may name. It is enforced when a user, a group or a folder carrying the role is saved, and only while `resource_isolation` is enabled. Omit the block to grant nothing: an allowlist starts from an explicit grant. Each scope resolves its lists by longest prefix match: the more specific entry wins, a tie goes to the denied one, and the default of the scope decides when neither list matches. A denied entry also matches a configuration that contains it. (see [below for nested schema](#nestedatt--settings--storage_allowlist))
+- `storage_allowlist` (Attributes) The storage the resources carrying the role may name. It is enforced when a user, a group or a folder carrying the role is saved, and only while `resource_isolation` is enabled. Omit the block to grant no backend: an allowlist starts from an explicit grant of the backends in `allowed_providers`. A granted backend with no entries admits every resource its credentials reach, and a cloud configuration with no credentials of its own on the default host of its cloud; with entries, a configuration is admitted when it matches one of them, the key prefix, the local paths and the HTTP path matching as prefixes on a segment boundary. Write the entries the way the resources of the role are configured: an entry is literal text and carries no placeholder. (see [below for nested schema](#nestedatt--settings--storage_allowlist))
 
 <a id="nestedatt--settings--storage_allowlist"></a>
 ### Nested Schema for `settings.storage_allowlist`
@@ -44,13 +44,13 @@ Optional:
 Optional:
 
 - `allowed_providers` (List of Number) Storage backends the resources carrying the role may name: 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP, 7 = FTP. A user or group whose `filesystem.provider` is -1 takes its storage from the primary group and needs no entry here.
-- `azure` (Attributes) The Azure Blob resources the resources carrying the role may name. (see [below for nested schema](#nestedatt--settings--storage_allowlist--azure))
-- `ftp` (Attributes) The FTP endpoints the resources carrying the role may name. Entries are `host:port`; an entry with no port matches every port on that host. (see [below for nested schema](#nestedatt--settings--storage_allowlist--ftp))
-- `gcs` (Attributes) The Google Cloud Storage resources the resources carrying the role may name. (see [below for nested schema](#nestedatt--settings--storage_allowlist--gcs))
-- `http` (Attributes) The HTTP endpoints the resources carrying the role may name. Entries are base URLs with a scheme and a host; the path of an entry matches the endpoints under it, so an entry with no path matches every path on that host. (see [below for nested schema](#nestedatt--settings--storage_allowlist--http))
-- `local` (Attributes) The local paths the resources carrying the role may name. It applies to every provider: the home directory of an account is a local path whatever its storage backend. (see [below for nested schema](#nestedatt--settings--storage_allowlist--local))
-- `s3` (Attributes) The S3 resources the resources carrying the role may name. (see [below for nested schema](#nestedatt--settings--storage_allowlist--s3))
-- `sftp` (Attributes) The SFTP endpoints the resources carrying the role may name. Entries are `host:port`; an entry with no port matches every port on that host. (see [below for nested schema](#nestedatt--settings--storage_allowlist--sftp))
+- `azure` (Attributes) The Azure Blob resources the resources carrying the role may name. An entry matches a configuration carrying the account and the container in its SAS URL as well. With no entries the granted backend admits every resource its credentials reach, and a configuration with no credentials of its own on the default host of its cloud. (see [below for nested schema](#nestedatt--settings--storage_allowlist--azure))
+- `ftp` (Attributes) The FTP endpoints the resources carrying the role may name. The entries bound the host the server connects to: with none the granted backend connects to every host a configuration names. Entries are `host:port`; an entry with no port takes the default port of the backend, 22 for SFTP and 21 for FTP. (see [below for nested schema](#nestedatt--settings--storage_allowlist--ftp))
+- `gcs` (Attributes) The Google Cloud Storage resources the resources carrying the role may name. With no entries the granted backend admits every resource its credentials reach, and a configuration with no credentials of its own on the default host of its cloud. (see [below for nested schema](#nestedatt--settings--storage_allowlist--gcs))
+- `http` (Attributes) The HTTP endpoints the resources carrying the role may name. The entries bound the host the server connects to: with none the granted backend connects to every host a configuration names. Entries are base URLs with a scheme and a host; the path of an entry matches the endpoints under it, so an entry with no path matches every path on that host, while the scheme, the authority and the query are compared as written. (see [below for nested schema](#nestedatt--settings--storage_allowlist--http))
+- `local` (Attributes) The local paths the resources carrying the role may name. It applies to every provider: the home directory of an account is a local path whatever its storage backend. An empty list admits no named path; the accounts saved without a home directory get one generated from `users_base_dir`. (see [below for nested schema](#nestedatt--settings--storage_allowlist--local))
+- `s3` (Attributes) The S3 resources the resources carrying the role may name. With no entries the granted backend admits every resource its credentials reach, and a configuration with no credentials of its own on the default host of its cloud. (see [below for nested schema](#nestedatt--settings--storage_allowlist--s3))
+- `sftp` (Attributes) The SFTP endpoints the resources carrying the role may name. The entries bound the host the server connects to: with none the granted backend connects to every host a configuration names. Entries are `host:port`; an entry with no port takes the default port of the backend, 22 for SFTP and 21 for FTP. (see [below for nested schema](#nestedatt--settings--storage_allowlist--sftp))
 
 <a id="nestedatt--settings--storage_allowlist--azure"></a>
 ### Nested Schema for `settings.storage_allowlist.azure`
@@ -58,8 +58,6 @@ Optional:
 Optional:
 
 - `allowed_containers` (Attributes List) Containers granted to the role. (see [below for nested schema](#nestedatt--settings--storage_allowlist--azure--allowed_containers))
-- `default_allow` (Boolean) Decides the containers neither list matches. When both lists match a container, the more specific entry wins and a tie goes to the denied one.
-- `denied_containers` (Attributes List) Containers refused to the role. (see [below for nested schema](#nestedatt--settings--storage_allowlist--azure--denied_containers))
 
 <a id="nestedatt--settings--storage_allowlist--azure--allowed_containers"></a>
 ### Nested Schema for `settings.storage_allowlist.azure.allowed_containers`
@@ -71,22 +69,8 @@ Required:
 
 Optional:
 
-- `endpoint` (String) An empty endpoint matches blob.core.windows.net.
-- `key_prefix` (String) An empty key prefix matches the whole container.
-
-
-<a id="nestedatt--settings--storage_allowlist--azure--denied_containers"></a>
-### Nested Schema for `settings.storage_allowlist.azure.denied_containers`
-
-Required:
-
-- `account` (String) Storage account name.
-- `container` (String) Container name.
-
-Optional:
-
-- `endpoint` (String) An empty endpoint matches blob.core.windows.net.
-- `key_prefix` (String) An empty key prefix matches the whole container.
+- `endpoint` (String) Matched as the account host the backend derives, so the letter case, the scheme and a trailing slash name one service. An empty endpoint means blob.core.windows.net.
+- `key_prefix` (String) An empty key prefix grants the whole container. The key prefix of a configuration is accepted when it sits under the one of the entry, on a `/` boundary.
 
 
 
@@ -96,8 +80,6 @@ Optional:
 Optional:
 
 - `allowed_endpoints` (List of String) Endpoints granted to the role.
-- `default_allow` (Boolean) Decides the endpoints neither list matches. When both lists match an endpoint, the more specific entry wins and a tie goes to the denied one.
-- `denied_endpoints` (List of String) Endpoints refused to the role.
 
 
 <a id="nestedatt--settings--storage_allowlist--gcs"></a>
@@ -106,8 +88,6 @@ Optional:
 Optional:
 
 - `allowed_buckets` (Attributes List) Buckets granted to the role. (see [below for nested schema](#nestedatt--settings--storage_allowlist--gcs--allowed_buckets))
-- `default_allow` (Boolean) Decides the buckets neither list matches. When both lists match a bucket, the more specific entry wins and a tie goes to the denied one.
-- `denied_buckets` (Attributes List) Buckets refused to the role. (see [below for nested schema](#nestedatt--settings--storage_allowlist--gcs--denied_buckets))
 
 <a id="nestedatt--settings--storage_allowlist--gcs--allowed_buckets"></a>
 ### Nested Schema for `settings.storage_allowlist.gcs.allowed_buckets`
@@ -118,21 +98,8 @@ Required:
 
 Optional:
 
-- `key_prefix` (String) An empty key prefix matches the whole bucket.
-- `universe_domain` (String) An empty universe domain matches googleapis.com.
-
-
-<a id="nestedatt--settings--storage_allowlist--gcs--denied_buckets"></a>
-### Nested Schema for `settings.storage_allowlist.gcs.denied_buckets`
-
-Required:
-
-- `bucket` (String) Bucket name.
-
-Optional:
-
-- `key_prefix` (String) An empty key prefix matches the whole bucket.
-- `universe_domain` (String) An empty universe domain matches googleapis.com.
+- `key_prefix` (String) An empty key prefix grants the whole bucket. The key prefix of a configuration is accepted when it sits under the one of the entry, on a `/` boundary.
+- `universe_domain` (String) Matched with the default filled in, so an empty value and googleapis.com are one service.
 
 
 
@@ -142,8 +109,6 @@ Optional:
 Optional:
 
 - `allowed_endpoints` (List of String) Endpoints granted to the role.
-- `default_allow` (Boolean) Decides the endpoints neither list matches. When both lists match an endpoint, the more specific entry wins and a tie goes to the denied one.
-- `denied_endpoints` (List of String) Endpoints refused to the role.
 
 
 <a id="nestedatt--settings--storage_allowlist--local"></a>
@@ -152,7 +117,7 @@ Optional:
 Optional:
 
 - `allowed_paths` (List of String) Absolute paths. A named path is accepted when it sits under one of them, matching on path separators. Write them in canonical form: the server stores the cleaned path, so `/tmp/a/../b` comes back as `/tmp/b`.
-- `users_base_dir` (String) Where the server generates the home directories it is not given a name for, for the accounts carrying the role: it overrides the global `users_base_dir` and is a grant of its own, not measured against `allowed_paths`. Absolute path in canonical form.
+- `users_base_dir` (String) Where the server generates the home directories it is not given a name for, for the accounts carrying the role: it replaces the global `users_base_dir` for them and is a grant of its own, not measured against `allowed_paths`; a `home_dir` written as `<users_base_dir>/<username>` is granted as well. Required while `resource_isolation` is enabled. Absolute path in canonical form.
 
 
 <a id="nestedatt--settings--storage_allowlist--s3"></a>
@@ -161,33 +126,15 @@ Optional:
 Optional:
 
 - `allowed_buckets` (Attributes List) Buckets granted to the role. (see [below for nested schema](#nestedatt--settings--storage_allowlist--s3--allowed_buckets))
-- `default_allow` (Boolean) Decides the buckets neither list matches. When both lists match a bucket, the more specific entry wins and a tie goes to the denied one.
-- `denied_buckets` (Attributes List) Buckets refused to the role. (see [below for nested schema](#nestedatt--settings--storage_allowlist--s3--denied_buckets))
 
 <a id="nestedatt--settings--storage_allowlist--s3--allowed_buckets"></a>
 ### Nested Schema for `settings.storage_allowlist.s3.allowed_buckets`
 
-Required:
-
-- `bucket` (String) Bucket name.
-
 Optional:
 
-- `endpoint` (String) An empty endpoint matches AWS S3.
-- `key_prefix` (String) An empty key prefix matches the whole bucket.
-
-
-<a id="nestedatt--settings--storage_allowlist--s3--denied_buckets"></a>
-### Nested Schema for `settings.storage_allowlist.s3.denied_buckets`
-
-Required:
-
-- `bucket` (String) Bucket name.
-
-Optional:
-
-- `endpoint` (String) An empty endpoint matches AWS S3.
-- `key_prefix` (String) An empty key prefix matches the whole bucket.
+- `bucket` (String) Bucket name. An empty bucket grants every bucket of the endpoint: an entry names a bucket, an endpoint, or both.
+- `endpoint` (String) Compared as written with the endpoint of the configuration. An empty endpoint means AWS S3.
+- `key_prefix` (String) An empty key prefix grants the whole bucket. The key prefix of a configuration is accepted when it sits under the one of the entry, on a `/` boundary.
 
 
 
@@ -197,9 +144,7 @@ Optional:
 Optional:
 
 - `allowed_endpoints` (List of String) Endpoints granted to the role.
-- `allowed_proxies` (List of String) The SOCKS proxies an SFTP configuration may name, as `host:port`, with or without the scheme. An empty list with `default_allow` enabled grants every proxy, since the endpoint is scoped on its own.
-- `default_allow` (Boolean) Decides the endpoints neither list matches. When both lists match an endpoint, the more specific entry wins and a tie goes to the denied one.
-- `denied_endpoints` (List of String) Endpoints refused to the role.
+- `allowed_proxies` (List of String) The SOCKS proxies an SFTP configuration may name, as SOCKS URLs such as `socks5://host:port`, compared as written. A listed proxy is required as soon as either SFTP list carries an entry, since the proxy resolves the endpoint in its own network.
 
 ## Import
 

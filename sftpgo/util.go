@@ -1867,28 +1867,28 @@ func contains[T comparable](elems []T, v T) bool {
 
 const (
 	roleSettingsDescription  = "Settings of the role. It carries the storage allowlist. Omit the block when the role carries no settings. " + enterpriseFeatureNote + "."
-	storageAllowlistDesc     = "The storage the resources carrying the role may name. It is enforced when a user, a group or a folder carrying the role is saved, and only while `resource_isolation` is enabled. Omit the block to grant nothing: an allowlist starts from an explicit grant. Each scope resolves its lists by longest prefix match: the more specific entry wins, a tie goes to the denied one, and the default of the scope decides when neither list matches. A denied entry also matches a configuration that contains it."
+	storageAllowlistDesc     = "The storage the resources carrying the role may name. It is enforced when a user, a group or a folder carrying the role is saved, and only while `resource_isolation` is enabled. Omit the block to grant no backend: an allowlist starts from an explicit grant of the backends in `allowed_providers`. A granted backend with no entries admits every resource its credentials reach, and a cloud configuration with no credentials of its own on the default host of its cloud; with entries, a configuration is admitted when it matches one of them, the key prefix, the local paths and the HTTP path matching as prefixes on a segment boundary. Write the entries the way the resources of the role are configured: an entry is literal text and carries no placeholder."
 	allowedProvidersDesc     = "Storage backends the resources carrying the role may name: 0 = local filesystem, 1 = S3 Compatible, 2 = Google Cloud, 3 = Azure Blob, 4 = Local encrypted, 5 = SFTP, 6 = HTTP, 7 = FTP. A user or group whose `filesystem.provider` is -1 takes its storage from the primary group and needs no entry here."
-	localScopeDesc           = "The local paths the resources carrying the role may name. It applies to every provider: the home directory of an account is a local path whatever its storage backend."
+	localScopeDesc           = "The local paths the resources carrying the role may name. It applies to every provider: the home directory of an account is a local path whatever its storage backend. An empty list admits no named path; the accounts saved without a home directory get one generated from `users_base_dir`."
 	allowedPathsDesc         = "Absolute paths. A named path is accepted when it sits under one of them, matching on path separators. Write them in canonical form: the server stores the cleaned path, so `/tmp/a/../b` comes back as `/tmp/b`."
-	usersBaseDirDesc         = "Where the server generates the home directories it is not given a name for, for the accounts carrying the role: it overrides the global `users_base_dir` and is a grant of its own, not measured against `allowed_paths`. Absolute path in canonical form."
-	s3ScopeDesc              = "The S3 resources the resources carrying the role may name."
-	azureScopeDesc           = "The Azure Blob resources the resources carrying the role may name."
-	gcsScopeDesc             = "The Google Cloud Storage resources the resources carrying the role may name."
-	sftpScopeDesc            = "The SFTP endpoints the resources carrying the role may name."
-	ftpScopeDesc             = "The FTP endpoints the resources carrying the role may name."
-	httpScopeDesc            = "The HTTP endpoints the resources carrying the role may name."
-	bucketDefaultAllowDesc   = "Decides the buckets neither list matches. When both lists match a bucket, the more specific entry wins and a tie goes to the denied one."
-	containerDefaultAllowDsc = "Decides the containers neither list matches. When both lists match a container, the more specific entry wins and a tie goes to the denied one."
-	endpointDefaultAllowDesc = "Decides the endpoints neither list matches. When both lists match an endpoint, the more specific entry wins and a tie goes to the denied one."
-	keyPrefixEntryDesc       = "An empty key prefix matches the whole bucket."
-	s3EndpointEntryDesc      = "An empty endpoint matches AWS S3."
-	azEndpointEntryDesc      = "An empty endpoint matches blob.core.windows.net."
-	azKeyPrefixEntryDesc     = "An empty key prefix matches the whole container."
-	universeDomainEntryDesc  = "An empty universe domain matches googleapis.com."
-	hostPortEntriesDesc      = "Entries are `host:port`; an entry with no port matches every port on that host."
-	urlEntriesDesc           = "Entries are base URLs with a scheme and a host; the path of an entry matches the endpoints under it, so an entry with no path matches every path on that host."
-	allowedProxiesDesc       = "The SOCKS proxies an SFTP configuration may name, as `host:port`, with or without the scheme. An empty list with `default_allow` enabled grants every proxy, since the endpoint is scoped on its own."
+	usersBaseDirDesc         = "Where the server generates the home directories it is not given a name for, for the accounts carrying the role: it replaces the global `users_base_dir` for them and is a grant of its own, not measured against `allowed_paths`; a `home_dir` written as `<users_base_dir>/<username>` is granted as well. Required while `resource_isolation` is enabled. Absolute path in canonical form."
+	s3ScopeDesc              = "The S3 resources the resources carrying the role may name. " + noEntriesDesc
+	azureScopeDesc           = "The Azure Blob resources the resources carrying the role may name. An entry matches a configuration carrying the account and the container in its SAS URL as well. " + noEntriesDesc
+	gcsScopeDesc             = "The Google Cloud Storage resources the resources carrying the role may name. " + noEntriesDesc
+	sftpScopeDesc            = "The SFTP endpoints the resources carrying the role may name. " + noEndpointsDesc
+	ftpScopeDesc             = "The FTP endpoints the resources carrying the role may name. " + noEndpointsDesc
+	httpScopeDesc            = "The HTTP endpoints the resources carrying the role may name. " + noEndpointsDesc
+	noEntriesDesc            = "With no entries the granted backend admits every resource its credentials reach, and a configuration with no credentials of its own on the default host of its cloud."
+	noEndpointsDesc          = "The entries bound the host the server connects to: with none the granted backend connects to every host a configuration names."
+	keyPrefixEntryDesc       = "An empty key prefix grants the whole bucket. The key prefix of a configuration is accepted when it sits under the one of the entry, on a `/` boundary."
+	s3BucketEntryDesc        = "Bucket name. An empty bucket grants every bucket of the endpoint: an entry names a bucket, an endpoint, or both."
+	s3EndpointEntryDesc      = "Compared as written with the endpoint of the configuration. An empty endpoint means AWS S3."
+	azEndpointEntryDesc      = "Matched as the account host the backend derives, so the letter case, the scheme and a trailing slash name one service. An empty endpoint means blob.core.windows.net."
+	azKeyPrefixEntryDesc     = "An empty key prefix grants the whole container. The key prefix of a configuration is accepted when it sits under the one of the entry, on a `/` boundary."
+	universeDomainEntryDesc  = "Matched with the default filled in, so an empty value and googleapis.com are one service."
+	hostPortEntriesDesc      = "Entries are `host:port`; an entry with no port takes the default port of the backend, 22 for SFTP and 21 for FTP."
+	urlEntriesDesc           = "Entries are base URLs with a scheme and a host; the path of an entry matches the endpoints under it, so an entry with no path matches every path on that host, while the scheme, the authority and the query are compared as written."
+	allowedProxiesDesc       = "The SOCKS proxies an SFTP configuration may name, as SOCKS URLs such as `socks5://host:port`, compared as written. A listed proxy is required as soon as either SFTP list carries an entry, since the proxy resolves the endpoint in its own network."
 	licenseFeaturesDesc      = "The features the license grants."
 	maxTransfersFeatureDesc  = "Maximum concurrent transfers. 0 means the configured limit applies."
 	fsProvidersFeatureDesc   = "The storage backends the license grants, with the values the `provider` attribute of a filesystem configuration uses."
@@ -1900,7 +1900,7 @@ const (
 	haFeatureDesc            = "High availability is granted when the list contains 1."
 	fipsFeatureDesc          = "1 grants the FIPS mode."
 	isolatedRolesFeatureDesc = "-1 unlimited, 0 disabled, > 0 number of roles that can enable resource isolation."
-	resourceIsolationDesc    = "Resource isolation level: 0 disabled, 1 enabled. With isolation enabled the groups and folders carrying the role are visible to the admins carrying the same role, an account reaches the groups and folders of its own role, and the storage allowlist is enforced on every save. Supported data providers: MySQL, MariaDB, PostgreSQL, CockroachDB, SQLite. The number of roles that can enable it is licensed. An isolated role with no `settings` block grants nothing, so it refuses every save of a resource carrying it. " + enterpriseFeatureNote + "."
+	resourceIsolationDesc    = "Resource isolation level: 0 disabled, 1 enabled. With isolation enabled the groups and folders carrying the role are visible to the admins carrying the same role, an account reaches the groups and folders of its own role, and the storage allowlist is enforced on every save. Supported data providers: MySQL, MariaDB, PostgreSQL, CockroachDB, SQLite. The number of roles that can enable it is licensed. A role that isolates its resources requires `settings.storage_allowlist.local.users_base_dir` and grants the backends listed in `settings.storage_allowlist.allowed_providers`. " + enterpriseFeatureNote + "."
 	adminRoleDesc            = "Role name. An admin carrying a role administers only the users carrying it. With resource isolation enabled on the role, the groups and folders carrying it are the only ones the admin reads, and the server applies the role to the resources the admin creates."
 	userRoleDesc             = "Role name. With resource isolation enabled on the role, the account reaches the groups and folders carrying it and its storage is measured against the allowlist of the role."
 	roleReferenceDesc        = "Role name. With resource isolation enabled on the role, the resource is visible to the admins carrying the same role and its storage is measured against the allowlist of the role. An admin carrying a role can use only its own role, which the server applies to the resources it creates: name it in the configuration. Reference the role by attribute, for example `sftpgo_role.tenant.name`, so that Terraform orders the operations: the server refuses to remove a role a group or a folder still names. " + enterpriseFeatureNote + "."
@@ -1958,13 +1958,7 @@ func getSchemaForRoleSettings() schema.SingleNestedAttribute {
 							nonEmptyObjectValidator{},
 						},
 						Attributes: map[string]schema.Attribute{
-							"default_allow": schema.BoolAttribute{
-								Optional:    true,
-								Computed:    true,
-								Description: bucketDefaultAllowDesc,
-							},
 							"allowed_buckets": getSchemaForS3BucketRefs("Buckets granted to the role."),
-							"denied_buckets":  getSchemaForS3BucketRefs("Buckets refused to the role."),
 						},
 					},
 					"azure": schema.SingleNestedAttribute{
@@ -1974,13 +1968,7 @@ func getSchemaForRoleSettings() schema.SingleNestedAttribute {
 							nonEmptyObjectValidator{},
 						},
 						Attributes: map[string]schema.Attribute{
-							"default_allow": schema.BoolAttribute{
-								Optional:    true,
-								Computed:    true,
-								Description: containerDefaultAllowDsc,
-							},
 							"allowed_containers": getSchemaForAzureContainerRefs("Containers granted to the role."),
-							"denied_containers":  getSchemaForAzureContainerRefs("Containers refused to the role."),
 						},
 					},
 					"gcs": schema.SingleNestedAttribute{
@@ -1990,13 +1978,7 @@ func getSchemaForRoleSettings() schema.SingleNestedAttribute {
 							nonEmptyObjectValidator{},
 						},
 						Attributes: map[string]schema.Attribute{
-							"default_allow": schema.BoolAttribute{
-								Optional:    true,
-								Computed:    true,
-								Description: bucketDefaultAllowDesc,
-							},
 							"allowed_buckets": getSchemaForGCSBucketRefs("Buckets granted to the role."),
-							"denied_buckets":  getSchemaForGCSBucketRefs("Buckets refused to the role."),
 						},
 					},
 					"sftp": schema.SingleNestedAttribute{
@@ -2006,23 +1988,10 @@ func getSchemaForRoleSettings() schema.SingleNestedAttribute {
 							nonEmptyObjectValidator{},
 						},
 						Attributes: map[string]schema.Attribute{
-							"default_allow": schema.BoolAttribute{
-								Optional:    true,
-								Computed:    true,
-								Description: endpointDefaultAllowDesc,
-							},
 							"allowed_endpoints": schema.ListAttribute{
 								ElementType: types.StringType,
 								Optional:    true,
 								Description: "Endpoints granted to the role.",
-								Validators: []validator.List{
-									listvalidator.SizeAtLeast(1),
-								},
-							},
-							"denied_endpoints": schema.ListAttribute{
-								ElementType: types.StringType,
-								Optional:    true,
-								Description: "Endpoints refused to the role.",
 								Validators: []validator.List{
 									listvalidator.SizeAtLeast(1),
 								},
@@ -2055,8 +2024,8 @@ func getSchemaForS3BucketRefs(description string) schema.ListNestedAttribute {
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"bucket": schema.StringAttribute{
-					Required:    true,
-					Description: "Bucket name.",
+					Optional:    true,
+					Description: s3BucketEntryDesc,
 				},
 				"key_prefix": schema.StringAttribute{
 					Optional:    true,
@@ -2135,23 +2104,10 @@ func getSchemaForEndpointRoleScope(description string) schema.SingleNestedAttrib
 			nonEmptyObjectValidator{},
 		},
 		Attributes: map[string]schema.Attribute{
-			"default_allow": schema.BoolAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: endpointDefaultAllowDesc,
-			},
 			"allowed_endpoints": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
 				Description: "Endpoints granted to the role.",
-				Validators: []validator.List{
-					listvalidator.SizeAtLeast(1),
-				},
-			},
-			"denied_endpoints": schema.ListAttribute{
-				ElementType: types.StringType,
-				Optional:    true,
-				Description: "Endpoints refused to the role.",
 				Validators: []validator.List{
 					listvalidator.SizeAtLeast(1),
 				},
@@ -2193,55 +2149,31 @@ func getComputedSchemaForRoleSettings() dsschema.SingleNestedAttribute {
 						Computed:    true,
 						Description: s3ScopeDesc,
 						Attributes: map[string]dsschema.Attribute{
-							"default_allow": dsschema.BoolAttribute{
-								Computed:    true,
-								Description: bucketDefaultAllowDesc,
-							},
 							"allowed_buckets": getComputedSchemaForS3BucketRefs("Buckets granted to the role."),
-							"denied_buckets":  getComputedSchemaForS3BucketRefs("Buckets refused to the role."),
 						},
 					},
 					"azure": dsschema.SingleNestedAttribute{
 						Computed:    true,
 						Description: azureScopeDesc,
 						Attributes: map[string]dsschema.Attribute{
-							"default_allow": dsschema.BoolAttribute{
-								Computed:    true,
-								Description: containerDefaultAllowDsc,
-							},
 							"allowed_containers": getComputedSchemaForAzureContainerRefs("Containers granted to the role."),
-							"denied_containers":  getComputedSchemaForAzureContainerRefs("Containers refused to the role."),
 						},
 					},
 					"gcs": dsschema.SingleNestedAttribute{
 						Computed:    true,
 						Description: gcsScopeDesc,
 						Attributes: map[string]dsschema.Attribute{
-							"default_allow": dsschema.BoolAttribute{
-								Computed:    true,
-								Description: bucketDefaultAllowDesc,
-							},
 							"allowed_buckets": getComputedSchemaForGCSBucketRefs("Buckets granted to the role."),
-							"denied_buckets":  getComputedSchemaForGCSBucketRefs("Buckets refused to the role."),
 						},
 					},
 					"sftp": dsschema.SingleNestedAttribute{
 						Computed:    true,
 						Description: sftpScopeDesc + " " + hostPortEntriesDesc,
 						Attributes: map[string]dsschema.Attribute{
-							"default_allow": dsschema.BoolAttribute{
-								Computed:    true,
-								Description: endpointDefaultAllowDesc,
-							},
 							"allowed_endpoints": dsschema.ListAttribute{
 								ElementType: types.StringType,
 								Computed:    true,
 								Description: "Endpoints granted to the role.",
-							},
-							"denied_endpoints": dsschema.ListAttribute{
-								ElementType: types.StringType,
-								Computed:    true,
-								Description: "Endpoints refused to the role.",
 							},
 							"allowed_proxies": dsschema.ListAttribute{
 								ElementType: types.StringType,
@@ -2336,19 +2268,10 @@ func getComputedSchemaForEndpointRoleScope(description string) dsschema.SingleNe
 		Computed:    true,
 		Description: description,
 		Attributes: map[string]dsschema.Attribute{
-			"default_allow": dsschema.BoolAttribute{
-				Computed:    true,
-				Description: endpointDefaultAllowDesc,
-			},
 			"allowed_endpoints": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "Endpoints granted to the role.",
-			},
-			"denied_endpoints": dsschema.ListAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-				Description: "Endpoints refused to the role.",
 			},
 		},
 	}

@@ -595,6 +595,7 @@ func TestAccEnterpriseGroupRole(t *testing.T) {
 				AllowedProviders: []int{0},
 				Local: client.LocalRoleScope{
 					AllowedPaths: []string{os.TempDir()},
+					UsersBaseDir: filepath.Join(os.TempDir(), "group_tenant_homes"),
 				},
 			},
 		},

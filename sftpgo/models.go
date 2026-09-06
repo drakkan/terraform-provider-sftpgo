@@ -1708,29 +1708,17 @@ type s3BucketRef struct {
 }
 
 type s3RoleScope struct {
-	DefaultAllow   types.Bool    `tfsdk:"default_allow"`
 	AllowedBuckets []s3BucketRef `tfsdk:"allowed_buckets"`
-	DeniedBuckets  []s3BucketRef `tfsdk:"denied_buckets"`
 }
 
 func (s *s3RoleScope) toSFTPGo() client.S3RoleScope {
-	scope := client.S3RoleScope{
-		DefaultAllow: s.DefaultAllow.ValueBool(),
-	}
-	for _, buckets := range []struct {
-		in  []s3BucketRef
-		out *[]client.S3BucketRef
-	}{
-		{in: s.AllowedBuckets, out: &scope.AllowedBuckets},
-		{in: s.DeniedBuckets, out: &scope.DeniedBuckets},
-	} {
-		for _, b := range buckets.in {
-			*buckets.out = append(*buckets.out, client.S3BucketRef{
-				Bucket:    b.Bucket.ValueString(),
-				KeyPrefix: b.KeyPrefix.ValueString(),
-				Endpoint:  b.Endpoint.ValueString(),
-			})
-		}
+	var scope client.S3RoleScope
+	for _, b := range s.AllowedBuckets {
+		scope.AllowedBuckets = append(scope.AllowedBuckets, client.S3BucketRef{
+			Bucket:    b.Bucket.ValueString(),
+			KeyPrefix: b.KeyPrefix.ValueString(),
+			Endpoint:  b.Endpoint.ValueString(),
+		})
 	}
 	return scope
 }
@@ -1739,23 +1727,13 @@ func newS3RoleScope(scope client.S3RoleScope) *s3RoleScope {
 	if scope.IsEmpty() {
 		return nil
 	}
-	result := &s3RoleScope{
-		DefaultAllow: types.BoolValue(scope.DefaultAllow),
-	}
-	for _, buckets := range []struct {
-		in  []client.S3BucketRef
-		out *[]s3BucketRef
-	}{
-		{in: scope.AllowedBuckets, out: &result.AllowedBuckets},
-		{in: scope.DeniedBuckets, out: &result.DeniedBuckets},
-	} {
-		for _, b := range buckets.in {
-			*buckets.out = append(*buckets.out, s3BucketRef{
-				Bucket:    types.StringValue(b.Bucket),
-				KeyPrefix: getOptionalString(b.KeyPrefix),
-				Endpoint:  getOptionalString(b.Endpoint),
-			})
-		}
+	result := &s3RoleScope{}
+	for _, b := range scope.AllowedBuckets {
+		result.AllowedBuckets = append(result.AllowedBuckets, s3BucketRef{
+			Bucket:    getOptionalString(b.Bucket),
+			KeyPrefix: getOptionalString(b.KeyPrefix),
+			Endpoint:  getOptionalString(b.Endpoint),
+		})
 	}
 	return result
 }
@@ -1768,30 +1746,18 @@ type azureContainerRef struct {
 }
 
 type azureRoleScope struct {
-	DefaultAllow      types.Bool          `tfsdk:"default_allow"`
 	AllowedContainers []azureContainerRef `tfsdk:"allowed_containers"`
-	DeniedContainers  []azureContainerRef `tfsdk:"denied_containers"`
 }
 
 func (s *azureRoleScope) toSFTPGo() client.AzureRoleScope {
-	scope := client.AzureRoleScope{
-		DefaultAllow: s.DefaultAllow.ValueBool(),
-	}
-	for _, containers := range []struct {
-		in  []azureContainerRef
-		out *[]client.AzureContainerRef
-	}{
-		{in: s.AllowedContainers, out: &scope.AllowedContainers},
-		{in: s.DeniedContainers, out: &scope.DeniedContainers},
-	} {
-		for _, c := range containers.in {
-			*containers.out = append(*containers.out, client.AzureContainerRef{
-				Account:   c.Account.ValueString(),
-				Container: c.Container.ValueString(),
-				KeyPrefix: c.KeyPrefix.ValueString(),
-				Endpoint:  c.Endpoint.ValueString(),
-			})
-		}
+	var scope client.AzureRoleScope
+	for _, c := range s.AllowedContainers {
+		scope.AllowedContainers = append(scope.AllowedContainers, client.AzureContainerRef{
+			Account:   c.Account.ValueString(),
+			Container: c.Container.ValueString(),
+			KeyPrefix: c.KeyPrefix.ValueString(),
+			Endpoint:  c.Endpoint.ValueString(),
+		})
 	}
 	return scope
 }
@@ -1800,24 +1766,14 @@ func newAzureRoleScope(scope client.AzureRoleScope) *azureRoleScope {
 	if scope.IsEmpty() {
 		return nil
 	}
-	result := &azureRoleScope{
-		DefaultAllow: types.BoolValue(scope.DefaultAllow),
-	}
-	for _, containers := range []struct {
-		in  []client.AzureContainerRef
-		out *[]azureContainerRef
-	}{
-		{in: scope.AllowedContainers, out: &result.AllowedContainers},
-		{in: scope.DeniedContainers, out: &result.DeniedContainers},
-	} {
-		for _, c := range containers.in {
-			*containers.out = append(*containers.out, azureContainerRef{
-				Account:   types.StringValue(c.Account),
-				Container: types.StringValue(c.Container),
-				KeyPrefix: getOptionalString(c.KeyPrefix),
-				Endpoint:  getOptionalString(c.Endpoint),
-			})
-		}
+	result := &azureRoleScope{}
+	for _, c := range scope.AllowedContainers {
+		result.AllowedContainers = append(result.AllowedContainers, azureContainerRef{
+			Account:   types.StringValue(c.Account),
+			Container: types.StringValue(c.Container),
+			KeyPrefix: getOptionalString(c.KeyPrefix),
+			Endpoint:  getOptionalString(c.Endpoint),
+		})
 	}
 	return result
 }
@@ -1829,29 +1785,17 @@ type gcsBucketRef struct {
 }
 
 type gcsRoleScope struct {
-	DefaultAllow   types.Bool     `tfsdk:"default_allow"`
 	AllowedBuckets []gcsBucketRef `tfsdk:"allowed_buckets"`
-	DeniedBuckets  []gcsBucketRef `tfsdk:"denied_buckets"`
 }
 
 func (s *gcsRoleScope) toSFTPGo() client.GCSRoleScope {
-	scope := client.GCSRoleScope{
-		DefaultAllow: s.DefaultAllow.ValueBool(),
-	}
-	for _, buckets := range []struct {
-		in  []gcsBucketRef
-		out *[]client.GCSBucketRef
-	}{
-		{in: s.AllowedBuckets, out: &scope.AllowedBuckets},
-		{in: s.DeniedBuckets, out: &scope.DeniedBuckets},
-	} {
-		for _, b := range buckets.in {
-			*buckets.out = append(*buckets.out, client.GCSBucketRef{
-				Bucket:         b.Bucket.ValueString(),
-				KeyPrefix:      b.KeyPrefix.ValueString(),
-				UniverseDomain: b.UniverseDomain.ValueString(),
-			})
-		}
+	var scope client.GCSRoleScope
+	for _, b := range s.AllowedBuckets {
+		scope.AllowedBuckets = append(scope.AllowedBuckets, client.GCSBucketRef{
+			Bucket:         b.Bucket.ValueString(),
+			KeyPrefix:      b.KeyPrefix.ValueString(),
+			UniverseDomain: b.UniverseDomain.ValueString(),
+		})
 	}
 	return scope
 }
@@ -1860,45 +1804,25 @@ func newGCSRoleScope(scope client.GCSRoleScope) *gcsRoleScope {
 	if scope.IsEmpty() {
 		return nil
 	}
-	result := &gcsRoleScope{
-		DefaultAllow: types.BoolValue(scope.DefaultAllow),
-	}
-	for _, buckets := range []struct {
-		in  []client.GCSBucketRef
-		out *[]gcsBucketRef
-	}{
-		{in: scope.AllowedBuckets, out: &result.AllowedBuckets},
-		{in: scope.DeniedBuckets, out: &result.DeniedBuckets},
-	} {
-		for _, b := range buckets.in {
-			*buckets.out = append(*buckets.out, gcsBucketRef{
-				Bucket:         types.StringValue(b.Bucket),
-				KeyPrefix:      getOptionalString(b.KeyPrefix),
-				UniverseDomain: getOptionalString(b.UniverseDomain),
-			})
-		}
+	result := &gcsRoleScope{}
+	for _, b := range scope.AllowedBuckets {
+		result.AllowedBuckets = append(result.AllowedBuckets, gcsBucketRef{
+			Bucket:         types.StringValue(b.Bucket),
+			KeyPrefix:      getOptionalString(b.KeyPrefix),
+			UniverseDomain: getOptionalString(b.UniverseDomain),
+		})
 	}
 	return result
 }
 
 type endpointRoleScope struct {
-	DefaultAllow     types.Bool `tfsdk:"default_allow"`
 	AllowedEndpoints types.List `tfsdk:"allowed_endpoints"`
-	DeniedEndpoints  types.List `tfsdk:"denied_endpoints"`
 }
 
 func (s *endpointRoleScope) toSFTPGo(ctx context.Context) (client.EndpointRoleScope, diag.Diagnostics) {
-	scope := client.EndpointRoleScope{
-		DefaultAllow: s.DefaultAllow.ValueBool(),
-	}
+	var scope client.EndpointRoleScope
 	if !s.AllowedEndpoints.IsNull() {
 		diags := s.AllowedEndpoints.ElementsAs(ctx, &scope.AllowedEndpoints, false)
-		if diags.HasError() {
-			return scope, diags
-		}
-	}
-	if !s.DeniedEndpoints.IsNull() {
-		diags := s.DeniedEndpoints.ElementsAs(ctx, &scope.DeniedEndpoints, false)
 		if diags.HasError() {
 			return scope, diags
 		}
@@ -1910,34 +1834,21 @@ func newEndpointRoleScope(ctx context.Context, scope client.EndpointRoleScope) (
 	if scope.IsEmpty() {
 		return nil, nil
 	}
-	result := &endpointRoleScope{
-		DefaultAllow: types.BoolValue(scope.DefaultAllow),
-	}
 	allowed, diags := types.ListValueFrom(ctx, types.StringType, scope.AllowedEndpoints)
 	if diags.HasError() {
 		return nil, diags
 	}
-	result.AllowedEndpoints = allowed
-	denied, diags := types.ListValueFrom(ctx, types.StringType, scope.DeniedEndpoints)
-	if diags.HasError() {
-		return nil, diags
-	}
-	result.DeniedEndpoints = denied
-	return result, nil
+	return &endpointRoleScope{AllowedEndpoints: allowed}, nil
 }
 
 type sftpRoleScope struct {
-	DefaultAllow     types.Bool `tfsdk:"default_allow"`
 	AllowedEndpoints types.List `tfsdk:"allowed_endpoints"`
-	DeniedEndpoints  types.List `tfsdk:"denied_endpoints"`
 	AllowedProxies   types.List `tfsdk:"allowed_proxies"`
 }
 
 func (s *sftpRoleScope) toSFTPGo(ctx context.Context) (client.SFTPRoleScope, diag.Diagnostics) {
 	endpoints := endpointRoleScope{
-		DefaultAllow:     s.DefaultAllow,
 		AllowedEndpoints: s.AllowedEndpoints,
-		DeniedEndpoints:  s.DeniedEndpoints,
 	}
 	base, diags := endpoints.toSFTPGo(ctx)
 	if diags.HasError() {
@@ -1959,19 +1870,12 @@ func newSFTPRoleScope(ctx context.Context, scope client.SFTPRoleScope) (*sftpRol
 	if scope.IsEmpty() {
 		return nil, nil
 	}
-	result := &sftpRoleScope{
-		DefaultAllow: types.BoolValue(scope.DefaultAllow),
-	}
+	result := &sftpRoleScope{}
 	allowed, diags := types.ListValueFrom(ctx, types.StringType, scope.AllowedEndpoints)
 	if diags.HasError() {
 		return nil, diags
 	}
 	result.AllowedEndpoints = allowed
-	denied, diags := types.ListValueFrom(ctx, types.StringType, scope.DeniedEndpoints)
-	if diags.HasError() {
-		return nil, diags
-	}
-	result.DeniedEndpoints = denied
 	proxies, diags := types.ListValueFrom(ctx, types.StringType, scope.AllowedProxies)
 	if diags.HasError() {
 		return nil, diags

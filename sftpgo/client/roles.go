@@ -68,23 +68,24 @@ func (s LocalRoleScope) IsEmpty() bool {
 	return len(s.AllowedPaths) == 0 && s.UsersBaseDir == ""
 }
 
-// S3BucketRef identifies an S3 resource.
+// S3BucketRef identifies an S3 resource. An empty bucket grants every bucket
+// of the endpoint.
 type S3BucketRef struct {
-	Bucket    string `json:"bucket"`
+	Bucket    string `json:"bucket,omitempty"`
 	KeyPrefix string `json:"key_prefix,omitempty"`
 	Endpoint  string `json:"endpoint,omitempty"`
 }
 
 // S3RoleScope defines the S3 resources the resources carrying the role may name.
+// With no entries the granted backend admits every resource its credentials
+// reach.
 type S3RoleScope struct {
-	DefaultAllow   bool          `json:"default_allow,omitempty"`
 	AllowedBuckets []S3BucketRef `json:"allowed_buckets,omitempty"`
-	DeniedBuckets  []S3BucketRef `json:"denied_buckets,omitempty"`
 }
 
-// IsEmpty returns true if the scope grants nothing.
+// IsEmpty returns true if the scope carries no entry.
 func (s S3RoleScope) IsEmpty() bool {
-	return !s.DefaultAllow && len(s.AllowedBuckets) == 0 && len(s.DeniedBuckets) == 0
+	return len(s.AllowedBuckets) == 0
 }
 
 // AzureContainerRef identifies an Azure Blob resource.
@@ -95,16 +96,16 @@ type AzureContainerRef struct {
 	Endpoint  string `json:"endpoint,omitempty"`
 }
 
-// AzureRoleScope defines the Azure Blob resources the resources carrying the role may name.
+// AzureRoleScope defines the Azure Blob resources the resources carrying the
+// role may name. With no entries the granted backend admits every resource its
+// credentials reach.
 type AzureRoleScope struct {
-	DefaultAllow      bool                `json:"default_allow,omitempty"`
 	AllowedContainers []AzureContainerRef `json:"allowed_containers,omitempty"`
-	DeniedContainers  []AzureContainerRef `json:"denied_containers,omitempty"`
 }
 
-// IsEmpty returns true if the scope grants nothing.
+// IsEmpty returns true if the scope carries no entry.
 func (s AzureRoleScope) IsEmpty() bool {
-	return !s.DefaultAllow && len(s.AllowedContainers) == 0 && len(s.DeniedContainers) == 0
+	return len(s.AllowedContainers) == 0
 }
 
 // GCSBucketRef identifies a GCS resource.
@@ -114,28 +115,29 @@ type GCSBucketRef struct {
 	UniverseDomain string `json:"universe_domain,omitempty"`
 }
 
-// GCSRoleScope defines the GCS resources the resources carrying the role may name.
+// GCSRoleScope defines the GCS resources the resources carrying the role may
+// name. With no entries the granted backend admits every resource its
+// credentials reach.
 type GCSRoleScope struct {
-	DefaultAllow   bool           `json:"default_allow,omitempty"`
 	AllowedBuckets []GCSBucketRef `json:"allowed_buckets,omitempty"`
-	DeniedBuckets  []GCSBucketRef `json:"denied_buckets,omitempty"`
 }
 
-// IsEmpty returns true if the scope grants nothing.
+// IsEmpty returns true if the scope carries no entry.
 func (s GCSRoleScope) IsEmpty() bool {
-	return !s.DefaultAllow && len(s.AllowedBuckets) == 0 && len(s.DeniedBuckets) == 0
+	return len(s.AllowedBuckets) == 0
 }
 
-// EndpointRoleScope defines the remote endpoints the resources carrying the role may name.
+// EndpointRoleScope defines the remote endpoints the resources carrying the
+// role may name. Entries are host:port for SFTP and FTP, base URLs for HTTP.
+// With no entries the granted backend admits every endpoint a configuration
+// names.
 type EndpointRoleScope struct {
-	DefaultAllow     bool     `json:"default_allow,omitempty"`
 	AllowedEndpoints []string `json:"allowed_endpoints,omitempty"`
-	DeniedEndpoints  []string `json:"denied_endpoints,omitempty"`
 }
 
-// IsEmpty returns true if the scope grants nothing.
+// IsEmpty returns true if the scope carries no entry.
 func (s EndpointRoleScope) IsEmpty() bool {
-	return !s.DefaultAllow && len(s.AllowedEndpoints) == 0 && len(s.DeniedEndpoints) == 0
+	return len(s.AllowedEndpoints) == 0
 }
 
 // SFTPRoleScope defines the SFTP endpoints and SOCKS proxies the resources
