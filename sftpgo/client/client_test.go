@@ -18,9 +18,39 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestGetAccessToken(t *testing.T) {
+	now := time.Now()
+	tests := []struct {
+		name      string
+		expiresAt time.Time
+		want      string
+	}{
+		{name: "missing expiry"},
+		{name: "expired long ago", expiresAt: now.Add(-3 * time.Minute)},
+		{name: "recently expired", expiresAt: now.Add(-time.Minute)},
+		{name: "expires now", expiresAt: now},
+		{name: "expires within refresh window", expiresAt: now.Add(time.Minute)},
+		{name: "at refresh boundary", expiresAt: now.Add(2 * time.Minute)},
+		{name: "valid beyond refresh window", expiresAt: now.Add(5 * time.Minute), want: "cached-token"},
+	}
+
+	t.Run("no cached response", func(t *testing.T) {
+		c := &Client{}
+		require.Empty(t, c.getAccessToken())
+	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Client{}
+			c.setAuthResponse(&AuthResponse{AccessToken: "cached-token", ExpiresAt: tt.expiresAt})
+			require.Equal(t, tt.want, c.getAccessToken())
+		})
+	}
+}
 
 func TestIsNotFound(t *testing.T) {
 	tests := []struct {
