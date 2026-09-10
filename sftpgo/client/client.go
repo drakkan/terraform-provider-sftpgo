@@ -76,7 +76,8 @@ func (c *Client) getAccessToken() string {
 		return ""
 	}
 
-	if c.authResponse.ExpiresAt.Before(time.Now().Add(-2 * time.Minute)) {
+	// Refresh before expiry so the token remains valid while a request is in flight.
+	if !c.authResponse.ExpiresAt.After(time.Now().Add(2 * time.Minute)) {
 		return ""
 	}
 
