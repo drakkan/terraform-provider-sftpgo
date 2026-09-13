@@ -238,7 +238,7 @@ Read-Only:
 - `bandwidth_limits` (Attributes List) Per-source bandwidth limits. (see [below for nested schema](#nestedatt--groups--user_settings--filters--bandwidth_limits))
 - `check_password_disabled` (Boolean) If set, check password hook will not be executed.
 - `default_shares_expiration` (Number) Default expiration for newly created shares as number of days. Not set means no default expiration.
-- `denied_ip` (List of String) Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.
+- `denied_ip` (List of String) Connections from these IP/Mask are not allowed. Denied rules will be evaluated before allowed ones.
 - `denied_login_methods` (List of String) Disabled login methods.
 - `denied_protocols` (List of String) Disabled protocols.
 - `denied_share_paths` (List of String) Virtual paths that cannot be shared. Shares for any listed path and its sub-paths are rejected. Available in the Enterprise edition.

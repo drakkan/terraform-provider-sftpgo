@@ -253,7 +253,7 @@ Read-Only:
 - `custom1` (String) An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. Deprecated: use custom_placeholders instead. Available in the Enterprise edition.
 - `custom_placeholders` (List of String) List of extra placeholders available for use in group configurations. Each placeholder can be referenced as %custom1%, %custom2%, and so on. Available in the Enterprise edition.
 - `default_shares_expiration` (Number) Default expiration for newly created shares as number of days. Not set means no default expiration.
-- `denied_ip` (List of String) Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.
+- `denied_ip` (List of String) Connections from these IP/Mask are not allowed. Denied rules will be evaluated before allowed ones.
 - `denied_login_methods` (List of String) Disabled login methods.
 - `denied_protocols` (List of String) Disabled protocols.
 - `denied_share_paths` (List of String) Virtual paths that cannot be shared. Shares for any listed path and its sub-paths are rejected. Available in the Enterprise edition.

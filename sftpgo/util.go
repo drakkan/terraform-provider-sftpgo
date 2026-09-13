@@ -1016,7 +1016,7 @@ func getComputedSchemaForUserFilters(isGroup bool) dsschema.SingleNestedAttribut
 			"denied_ip": dsschema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
-				Description: "Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.",
+				Description: "Connections from these IP/Mask are not allowed. Denied rules will be evaluated before allowed ones.",
 			},
 			"denied_login_methods": dsschema.ListAttribute{
 				ElementType: types.StringType,
@@ -1276,7 +1276,7 @@ func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 			"denied_ip": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-				Description: "Connections from these IP/Mask are allowed. Denied rules will be evaluated before allowed ones.",
+				Description: "Connections from these IP/Mask are not allowed. Denied rules will be evaluated before allowed ones.",
 			},
 			"denied_login_methods": schema.ListAttribute{
 				ElementType: types.StringType,
