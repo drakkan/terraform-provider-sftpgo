@@ -184,6 +184,10 @@ func (r *adminResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 						Optional:    true,
 						Description: "If set, password authentication is disabled. The administrator can authenticate using an API key or OpenID Connect, if either is enabled. " + enterpriseFeatureNote + ".",
 					},
+					"display_name": schema.StringAttribute{
+						Optional:    true,
+						Description: "Name shown in the WebAdmin in place of the username. It is not an identifier: it is not required to be unique and it cannot be used to log in. " + enterpriseFeatureNote + ".",
+					},
 				},
 			},
 			"preferences": schema.SingleNestedAttribute{

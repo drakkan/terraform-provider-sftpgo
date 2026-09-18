@@ -1251,6 +1251,10 @@ func getComputedSchemaForUserFilters(isGroup bool) dsschema.SingleNestedAttribut
 		Computed:    true,
 		Description: "Additional email addresses.",
 	}
+	result.Attributes["display_name"] = dsschema.StringAttribute{
+		Computed:    true,
+		Description: "Name shown in the WebClient in place of the username. It is not an identifier: it is not required to be unique and it cannot be used to log in. " + enterpriseFeatureNote + ".",
+	}
 	result.Attributes["custom1"] = dsschema.StringAttribute{
 		Computed:    true,
 		Description: `An extra placeholder value available for use in group configurations. It can be referenced as %custom1%. Deprecated: use custom_placeholders instead. ` + enterpriseFeatureNote + ".",
@@ -1565,6 +1569,10 @@ func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 		Validators: []validator.List{
 			listvalidator.UniqueValues(),
 		},
+	}
+	result.Attributes["display_name"] = schema.StringAttribute{
+		Optional:    true,
+		Description: "Name shown in the WebClient in place of the username. It is not an identifier: it is not required to be unique and it cannot be used to log in. " + enterpriseFeatureNote + ".",
 	}
 	result.Attributes["custom1"] = schema.StringAttribute{
 		Optional:    true,

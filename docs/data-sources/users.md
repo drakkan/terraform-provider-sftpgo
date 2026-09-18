@@ -259,6 +259,7 @@ Read-Only:
 - `denied_share_paths` (List of String) Virtual paths that cannot be shared. Shares for any listed path and its sub-paths are rejected. Available in the Enterprise edition.
 - `denied_share_scopes` (List of String) Share scopes that users are not allowed to use. Valid values: read, write, read_write. If all scopes are denied, sharing is completely disabled. Available in the Enterprise edition.
 - `disable_fs_checks` (Boolean) Disable checks for existence and automatic creation of home directory and virtual folders after user login.
+- `display_name` (String) Name shown in the WebClient in place of the username. It is not an identifier: it is not required to be unique and it cannot be used to log in. Available in the Enterprise edition.
 - `enforce_secure_algorithms` (Boolean) If enabled, only secure algorithms are allowed. This setting is currently enforced for SSH/SFTP. Available in the Enterprise edition.
 - `external_auth_cache_time` (Number) Defines the cache time, in seconds, for users authenticated using an external auth hook. Not set means no cache.
 - `external_auth_disabled` (Boolean) If set, external auth hook will not be executed.

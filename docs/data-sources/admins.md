@@ -51,6 +51,7 @@ Read-Only:
 - `allow_api_key_auth` (Boolean) If set, API Key authentication is allowed.
 - `allow_list` (List of String) Only connections from these IP/Mask are allowed. IP/Mask must be in CIDR notation as defined in RFC 4632 and RFC 4291 for example "192.0.2.0/24" or "2001:db8::/32"
 - `disable_password_auth` (Boolean) If set, password authentication is disabled. The administrator can authenticate using an API key or OpenID Connect, if either is enabled. Available in the Enterprise edition.
+- `display_name` (String) Name shown in the WebAdmin in place of the username. It is not an identifier: it is not required to be unique and it cannot be used to log in. Available in the Enterprise edition.
 - `require_password_change` (Boolean) If set, two factor authentication is required.
 - `require_two_factor` (Boolean) If set, API Key authentication is allowed.
 

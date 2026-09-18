@@ -332,6 +332,7 @@ type UserFilters struct {
 	BaseUserFilters
 	RequirePasswordChange bool               `json:"require_password_change,omitempty"`
 	AdditionalEmails      []string           `json:"additional_emails,omitempty"`
+	DisplayName           string             `json:"display_name,omitempty"`
 	TOTPConfig            sdk.TOTPConfig     `json:"totp_config,omitempty"`
 	RecoveryCodes         []sdk.RecoveryCode `json:"recovery_codes,omitempty"`
 	CustomPlaceholder1    string             `json:"custom1,omitempty"`

@@ -440,6 +440,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
       					web_client = ["shares-require-email-auth", "wopi-disabled", "rest-api-disabled","shares-policy-change-disabled"]
 						custom1 = "testvalue"
 						custom_placeholders = ["testvalue","testvalue1"]
+						display_name = "Test User"
 						allowed_share_paths = ["/projects", "/partners"]
 						denied_share_paths = ["/private", "/logs"]
 						denied_share_scopes = ["write"]
@@ -484,6 +485,7 @@ func TestAccEnterpriseUserResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.2", "rest-api-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.web_client.3", "shares-policy-change-disabled"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom1", "testvalue"),
+					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.display_name", "Test User"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom_placeholders.0", "testvalue"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.custom_placeholders.1", "testvalue1"),
 					resource.TestCheckResourceAttr("sftpgo_user.test", "filters.allowed_share_paths.#", "2"),

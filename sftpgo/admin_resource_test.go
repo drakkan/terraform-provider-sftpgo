@@ -215,6 +215,9 @@ func TestAccEnterpriseAdminResource(t *testing.T) {
 					  status      = 1
 					  password    = "pwd"
 					  permissions = ["view_users", "edit_users", "view_groups", "manage_groups", "del_groups", "view_folders", "manage_folders", "del_folders"]
+					  filters = {
+					    display_name = "Granular Admin"
+					  }
 					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("sftpgo_admin.granular", "username", "granular_admin"),
@@ -225,6 +228,7 @@ func TestAccEnterpriseAdminResource(t *testing.T) {
 					resource.TestCheckTypeSetElemAttr("sftpgo_admin.granular", "permissions.*", "view_folders"),
 					resource.TestCheckTypeSetElemAttr("sftpgo_admin.granular", "permissions.*", "manage_folders"),
 					resource.TestCheckTypeSetElemAttr("sftpgo_admin.granular", "permissions.*", "del_folders"),
+					resource.TestCheckResourceAttr("sftpgo_admin.granular", "filters.display_name", "Granular Admin"),
 				),
 			},
 		},
