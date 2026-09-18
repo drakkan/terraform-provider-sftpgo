@@ -3554,8 +3554,8 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 				Provider:     getOptionalInt64(int64(action.Options.IMAPConfig.OAuth2.Provider)),
 				Tenant:       getOptionalString(action.Options.IMAPConfig.OAuth2.Tenant),
 				ClientID:     types.StringValue(action.Options.IMAPConfig.OAuth2.ClientID),
-				ClientSecret: types.StringValue(getSecretFromSFTPGo(action.Options.HTTPConfig.Password)),
-				RefreshToken: types.StringValue(getSecretFromSFTPGo(action.Options.HTTPConfig.Password)),
+				ClientSecret: getOptionalString(getSecretFromSFTPGo(action.Options.IMAPConfig.OAuth2.ClientSecret)),
+				RefreshToken: getOptionalString(getSecretFromSFTPGo(action.Options.IMAPConfig.OAuth2.RefreshToken)),
 			}
 		}
 	case client.ActionTypeICAP:
