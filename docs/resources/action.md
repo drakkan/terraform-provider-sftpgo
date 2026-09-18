@@ -410,6 +410,11 @@ Optional:
 - `client_secret` (String, Sensitive, Deprecated) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>". Mutually exclusive with `client_secret_wo`.
 - `client_secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only variant of `client_secret`. Write-only variant of the matching attribute: the value is read from the configuration only and is never persisted to the Terraform plan or state. Requires Terraform 1.11 or later. Mutually exclusive with the non write-only attribute. Use the companion _wo_version attribute to trigger an update.
 - `client_secret_wo_version` (String) Trigger attribute for `client_secret_wo`. Trigger attribute for the matching write-only attribute. Because write-only values are not stored in state, Terraform cannot detect changes to them. Bump this value to force the provider to re-apply the write-only value on the next apply.
+- `grant_type` (Number) OAuth2 Grant type.
+
+Supported values:
+* `0`: Authorization code. Access tokens are obtained using the configured refresh token
+* `1`: Client credentials. Access tokens are obtained using the application credentials, supported with the Microsoft provider, a tenant identifier is required
 - `provider` (Number) OAuth2 Provider.
 
 Supported values:

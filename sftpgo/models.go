@@ -2596,6 +2596,7 @@ type eventActionHTTPConfig struct {
 
 type oauth2Config struct {
 	Provider              types.Int64  `tfsdk:"provider"`
+	GrantType             types.Int64  `tfsdk:"grant_type"`
 	Tenant                types.String `tfsdk:"tenant"`
 	ClientID              types.String `tfsdk:"client_id"`
 	ClientSecret          types.String `tfsdk:"client_secret"`
@@ -2609,6 +2610,7 @@ type oauth2Config struct {
 func (c *oauth2Config) getTFAttributes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"provider":                 types.Int64Type,
+		"grant_type":               types.Int64Type,
 		"tenant":                   types.StringType,
 		"client_id":                types.StringType,
 		"client_secret":            types.StringType,
@@ -3149,6 +3151,7 @@ func (o *eventActionOptions) toSFTPGo(ctx context.Context) (client.EventActionOp
 			AuthType: int(o.IMAPConfig.AuthType.ValueInt64()),
 			OAuth2: client.OAuth2Config{
 				Provider:     int(o.IMAPConfig.OAuth2.Provider.ValueInt64()),
+				GrantType:    int(o.IMAPConfig.OAuth2.GrantType.ValueInt64()),
 				Tenant:       o.IMAPConfig.OAuth2.Tenant.ValueString(),
 				ClientID:     o.IMAPConfig.OAuth2.ClientID.ValueString(),
 				ClientSecret: getSFTPGoSecret(resolveSecret(o.IMAPConfig.OAuth2.ClientSecret, o.IMAPConfig.OAuth2.ClientSecretWO)),
@@ -3560,6 +3563,7 @@ func (o *eventActionOptions) fromSFTPGo(ctx context.Context, action *client.Base
 		if action.Options.IMAPConfig.AuthType == 1 {
 			o.IMAPConfig.OAuth2 = &oauth2Config{
 				Provider:     getOptionalInt64(int64(action.Options.IMAPConfig.OAuth2.Provider)),
+				GrantType:    getOptionalInt64(int64(action.Options.IMAPConfig.OAuth2.GrantType)),
 				Tenant:       getOptionalString(action.Options.IMAPConfig.OAuth2.Tenant),
 				ClientID:     types.StringValue(action.Options.IMAPConfig.OAuth2.ClientID),
 				ClientSecret: getOptionalString(getSecretFromSFTPGo(action.Options.IMAPConfig.OAuth2.ClientSecret)),

@@ -611,6 +611,13 @@ func (d *actionsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 														"* `0`: Google\n" +
 														"* `1`: Microsoft",
 												},
+												"grant_type": schema.Int64Attribute{
+													Computed: true,
+													MarkdownDescription: "OAuth2 Grant type.\n\n" +
+														"Supported values:\n" +
+														"* `0`: Authorization code. Access tokens are obtained using the configured refresh token\n" +
+														"* `1`: Client credentials. Access tokens are obtained using the application credentials, supported with the Microsoft provider, a tenant identifier is required",
+												},
 												"tenant": schema.StringAttribute{
 													Computed:    true,
 													Description: "OAuth2 Tenant.",

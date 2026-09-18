@@ -350,6 +350,11 @@ Read-Only:
 - `client_secret` (String, Sensitive) SFTPGo secret formatted as string: "$<status>$<key>$<additional data length>$<additional data><payload>".
 - `client_secret_wo` (String) Write-only attribute placeholder. Always null in data source reads.
 - `client_secret_wo_version` (String) Write-only trigger attribute placeholder. Always null in data source reads.
+- `grant_type` (Number) OAuth2 Grant type.
+
+Supported values:
+* `0`: Authorization code. Access tokens are obtained using the configured refresh token
+* `1`: Client credentials. Access tokens are obtained using the application credentials, supported with the Microsoft provider, a tenant identifier is required
 - `provider` (Number) OAuth2 Provider.
 
 Supported values:

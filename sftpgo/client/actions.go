@@ -264,6 +264,7 @@ type EventActionIDPAccountCheck struct {
 
 type OAuth2Config struct {
 	Provider     int            `json:"provider,omitempty"`
+	GrantType    int            `json:"grant_type,omitempty"`
 	Tenant       string         `json:"tenant,omitempty"`
 	ClientID     string         `json:"client_id,omitempty"`
 	ClientSecret kms.BaseSecret `json:"client_secret,omitempty"`

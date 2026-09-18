@@ -707,6 +707,16 @@ func (r *actionResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 											int64validator.Between(0, 1),
 										},
 									},
+									"grant_type": schema.Int64Attribute{
+										Optional: true,
+										MarkdownDescription: "OAuth2 Grant type.\n\n" +
+											"Supported values:\n" +
+											"* `0`: Authorization code. Access tokens are obtained using the configured refresh token\n" +
+											"* `1`: Client credentials. Access tokens are obtained using the application credentials, supported with the Microsoft provider, a tenant identifier is required",
+										Validators: []validator.Int64{
+											int64validator.Between(0, 1),
+										},
+									},
 									"tenant": schema.StringAttribute{
 										Optional:    true,
 										Description: "OAuth2 Tenant.",

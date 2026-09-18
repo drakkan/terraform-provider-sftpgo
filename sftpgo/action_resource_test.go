@@ -1304,6 +1304,7 @@ EOF
 					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.imap_config.password"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.auth_type", "1"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.oauth2.provider", "1"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.test", "options.imap_config.oauth2.grant_type"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.oauth2.tenant", "test tenant"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.oauth2.client_id", "my client id"),
 					resource.TestCheckResourceAttr("sftpgo_action.test", "options.imap_config.oauth2.client_secret", "client secret"),
@@ -1605,6 +1606,101 @@ EOF
 				ImportStateVerify: true,
 			},
 			// Delete testing automatically occurs in TestCase
+		},
+	})
+}
+
+func TestAccEnterpriseActionIMAPOAuth2ClientCredentials(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+	c, err := getClient()
+	require.NoError(t, err)
+	if !c.IsEnterpriseEdition() {
+		t.Skip("This test is supported only with the Enterprise edition")
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// The client credentials grant requires the Microsoft provider and a
+			// tenant identifier, the refresh token is not used.
+			{
+				Config: `
+					resource "sftpgo_action" "imap_oauth2" {
+						name = "test action imap oauth2"
+						type = 16
+						options = {
+							imap_config = {
+								endpoint = "imaps://outlook.office365.com:993"
+								username = "user@example.com"
+								mailbox = "INBOX"
+								path = "/test"
+								auth_type = 1
+								oauth2 = {
+									provider = 1
+									grant_type = 1
+									tenant = "test tenant"
+									client_id = "my client id"
+									client_secret = "client secret"
+								}
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "name", "test action imap oauth2"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "id", "test action imap oauth2"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "type", "16"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.auth_type", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.provider", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.grant_type", "1"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.tenant", "test tenant"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.client_id", "my client id"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.client_secret", "client secret"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.refresh_token"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.imap_oauth2",
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
+			// Switch to the authorization code grant, the refresh token is required.
+			{
+				Config: `
+					resource "sftpgo_action" "imap_oauth2" {
+						name = "test action imap oauth2"
+						type = 16
+						options = {
+							imap_config = {
+								endpoint = "imaps://outlook.office365.com:993"
+								username = "user@example.com"
+								mailbox = "INBOX"
+								path = "/test"
+								auth_type = 1
+								oauth2 = {
+									provider = 1
+									tenant = "test tenant"
+									client_id = "my client id"
+									client_secret = "client secret"
+									refresh_token = "refresh token"
+								}
+							}
+						}
+				    }`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.provider", "1"),
+					resource.TestCheckNoResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.grant_type"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.client_id", "my client id"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.client_secret", "client secret"),
+					resource.TestCheckResourceAttr("sftpgo_action.imap_oauth2", "options.imap_config.oauth2.refresh_token", "refresh token"),
+				),
+			},
+			{
+				ResourceName:      "sftpgo_action.imap_oauth2",
+				ImportState:       true,
+				ImportStateVerify: false,
+			},
 		},
 	})
 }
