@@ -15,6 +15,7 @@
 package client
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -106,9 +107,17 @@ type backupData struct {
 }
 
 // NewClient return an SFTPGo API client
-func NewClient(host, username, password, apiKey string, headers []KeyValue, edition int64) (*Client, error) {
+func NewClient(host, username, password, apiKey string, headers []KeyValue, edition int64, tlsSkipVerify bool) (*Client, error) {
+	httpClient := &http.Client{Timeout: 20 * time.Second}
+
+	if tlsSkipVerify {
+		httpClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+	}
+
 	c := Client{
-		HTTPClient: &http.Client{Timeout: 20 * time.Second},
+		HTTPClient: httpClient,
 		// Default SFTPGo URL
 		HostURL: HostURL,
 		Headers: headers,
