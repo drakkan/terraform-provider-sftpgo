@@ -17,6 +17,7 @@ package sftpgo
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/drakkan/terraform-provider-sftpgo/sftpgo/client"
@@ -1218,6 +1219,11 @@ func getComputedSchemaForUserFilters(isGroup bool) dsschema.SingleNestedAttribut
 				Computed:    true,
 				Description: "Share scopes that users are not allowed to use. Valid values: read, write, read_write. If all scopes are denied, sharing is completely disabled. " + enterpriseFeatureNote + ".",
 			},
+			"allowed_share_email_domains": dsschema.ListAttribute{
+				ElementType: types.StringType,
+				Computed:    true,
+				Description: "Email domains allowed as share recipients, for example \"example.com\". If non-empty, shares must use email authentication and every recipient address must belong to one of these domains. Domains match exactly: list each subdomain explicitly. " + enterpriseFeatureNote + ".",
+			},
 		},
 	}
 	if isGroup {
@@ -1517,6 +1523,18 @@ func getSchemaForUserFilters(isGroup bool) schema.SingleNestedAttribute {
 				Validators: []validator.List{
 					listvalidator.UniqueValues(),
 					listvalidator.ValueStringsAre(stringvalidator.OneOf("read", "write", "read_write")),
+				},
+			},
+			"allowed_share_email_domains": schema.ListAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Description: "Email domains allowed as share recipients, for example \"example.com\". If non-empty, shares must use email authentication and every recipient address must belong to one of these domains. Domains match exactly, case-insensitively: list each subdomain explicitly. " + enterpriseFeatureNote + ".",
+				Validators: []validator.List{
+					listvalidator.UniqueValues(),
+					listvalidator.ValueStringsAre(stringvalidator.RegexMatches(
+						regexp.MustCompile(`^[^@\s]*[^@\s.]$`),
+						"must be a domain without a leading @ or a trailing dot",
+					)),
 				},
 			},
 		},

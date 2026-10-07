@@ -343,6 +343,7 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 							allowed_share_paths = ["/projects"]
 							denied_share_paths = ["/private"]
 							denied_share_scopes = ["write", "read_write"]
+							allowed_share_email_domains = ["example.com", "example.net"]
 						}
 						filesystem = {
 						  provider = 5
@@ -386,6 +387,9 @@ func TestAccEnterpriseGroupResource(t *testing.T) {
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.denied_share_scopes.#", "2"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.denied_share_scopes.0", "write"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.denied_share_scopes.1", "read_write"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.allowed_share_email_domains.#", "2"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.allowed_share_email_domains.0", "example.com"),
+					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filters.allowed_share_email_domains.1", "example.net"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.provider", "5"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.endpoint", "127.0.0.1:22"),
 					resource.TestCheckResourceAttr("sftpgo_group.test", "user_settings.filesystem.sftpconfig.username", "root"),

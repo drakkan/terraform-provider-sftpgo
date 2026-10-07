@@ -287,37 +287,38 @@ type passwordPolicy struct {
 }
 
 type baseUserFilters struct {
-	AllowedIP               types.List       `tfsdk:"allowed_ip"`
-	DeniedIP                types.List       `tfsdk:"denied_ip"`
-	DeniedLoginMethods      types.List       `tfsdk:"denied_login_methods"`
-	DeniedProtocols         types.List       `tfsdk:"denied_protocols"`
-	FilePatterns            []patternsFilter `tfsdk:"file_patterns"`
-	MaxUploadFileSize       types.Int64      `tfsdk:"max_upload_file_size"`
-	TLSUsername             types.String     `tfsdk:"tls_username"`
-	ExternalAuthDisabled    types.Bool       `tfsdk:"external_auth_disabled"`
-	PreLoginDisabled        types.Bool       `tfsdk:"pre_login_disabled"`
-	CheckPasswordDisabled   types.Bool       `tfsdk:"check_password_disabled"`
-	DisableFsChecks         types.Bool       `tfsdk:"disable_fs_checks"`
-	WebClient               types.List       `tfsdk:"web_client"`
-	AllowAPIKeyAuth         types.Bool       `tfsdk:"allow_api_key_auth"`
-	UserType                types.String     `tfsdk:"user_type"`
-	BandwidthLimits         []bandwidthLimit `tfsdk:"bandwidth_limits"`
-	ExternalAuthCacheTime   types.Int64      `tfsdk:"external_auth_cache_time"`
-	PreLoginCacheTime       types.Int64      `tfsdk:"pre_login_cache_time"`
-	StartDirectory          types.String     `tfsdk:"start_directory"`
-	TwoFactorAuthProtocols  types.List       `tfsdk:"two_factor_protocols"`
-	FTPSecurity             types.Int64      `tfsdk:"ftp_security"`
-	IsAnonymous             types.Bool       `tfsdk:"is_anonymous"`
-	DefaultSharesExpiration types.Int64      `tfsdk:"default_shares_expiration"`
-	MaxSharesExpiration     types.Int64      `tfsdk:"max_shares_expiration"`
-	PasswordExpiration      types.Int64      `tfsdk:"password_expiration"`
-	PasswordStrength        types.Int64      `tfsdk:"password_strength"`
-	PasswordPolicy          *passwordPolicy  `tfsdk:"password_policy"`
-	AccessTime              []timePeriod     `tfsdk:"access_time"`
-	EnforceSecureAlgorithms types.Bool       `tfsdk:"enforce_secure_algorithms"`
-	AllowedSharePaths       types.List       `tfsdk:"allowed_share_paths"`
-	DeniedSharePaths        types.List       `tfsdk:"denied_share_paths"`
-	DeniedShareScopes       types.List       `tfsdk:"denied_share_scopes"`
+	AllowedIP                types.List       `tfsdk:"allowed_ip"`
+	DeniedIP                 types.List       `tfsdk:"denied_ip"`
+	DeniedLoginMethods       types.List       `tfsdk:"denied_login_methods"`
+	DeniedProtocols          types.List       `tfsdk:"denied_protocols"`
+	FilePatterns             []patternsFilter `tfsdk:"file_patterns"`
+	MaxUploadFileSize        types.Int64      `tfsdk:"max_upload_file_size"`
+	TLSUsername              types.String     `tfsdk:"tls_username"`
+	ExternalAuthDisabled     types.Bool       `tfsdk:"external_auth_disabled"`
+	PreLoginDisabled         types.Bool       `tfsdk:"pre_login_disabled"`
+	CheckPasswordDisabled    types.Bool       `tfsdk:"check_password_disabled"`
+	DisableFsChecks          types.Bool       `tfsdk:"disable_fs_checks"`
+	WebClient                types.List       `tfsdk:"web_client"`
+	AllowAPIKeyAuth          types.Bool       `tfsdk:"allow_api_key_auth"`
+	UserType                 types.String     `tfsdk:"user_type"`
+	BandwidthLimits          []bandwidthLimit `tfsdk:"bandwidth_limits"`
+	ExternalAuthCacheTime    types.Int64      `tfsdk:"external_auth_cache_time"`
+	PreLoginCacheTime        types.Int64      `tfsdk:"pre_login_cache_time"`
+	StartDirectory           types.String     `tfsdk:"start_directory"`
+	TwoFactorAuthProtocols   types.List       `tfsdk:"two_factor_protocols"`
+	FTPSecurity              types.Int64      `tfsdk:"ftp_security"`
+	IsAnonymous              types.Bool       `tfsdk:"is_anonymous"`
+	DefaultSharesExpiration  types.Int64      `tfsdk:"default_shares_expiration"`
+	MaxSharesExpiration      types.Int64      `tfsdk:"max_shares_expiration"`
+	PasswordExpiration       types.Int64      `tfsdk:"password_expiration"`
+	PasswordStrength         types.Int64      `tfsdk:"password_strength"`
+	PasswordPolicy           *passwordPolicy  `tfsdk:"password_policy"`
+	AccessTime               []timePeriod     `tfsdk:"access_time"`
+	EnforceSecureAlgorithms  types.Bool       `tfsdk:"enforce_secure_algorithms"`
+	AllowedSharePaths        types.List       `tfsdk:"allowed_share_paths"`
+	DeniedSharePaths         types.List       `tfsdk:"denied_share_paths"`
+	DeniedShareScopes        types.List       `tfsdk:"denied_share_scopes"`
+	AllowedShareEmailDomains types.List       `tfsdk:"allowed_share_email_domains"`
 }
 
 func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
@@ -408,6 +409,9 @@ func (f *baseUserFilters) getTFAttributes() map[string]attr.Type {
 			ElemType: types.StringType,
 		},
 		"denied_share_scopes": types.ListType{
+			ElemType: types.StringType,
+		},
+		"allowed_share_email_domains": types.ListType{
 			ElemType: types.StringType,
 		},
 	}
@@ -540,6 +544,12 @@ func (f *baseUserFilters) toSFTPGo(ctx context.Context) (client.BaseUserFilters,
 			return filters, diags
 		}
 	}
+	if !f.AllowedShareEmailDomains.IsNull() {
+		diags := f.AllowedShareEmailDomains.ElementsAs(ctx, &filters.AllowedShareEmailDomains, false)
+		if diags.HasError() {
+			return filters, diags
+		}
+	}
 
 	return filters, nil
 }
@@ -634,6 +644,11 @@ func (f *baseUserFilters) fromSFTPGo(ctx context.Context, filters *client.BaseUs
 		return diags
 	}
 	f.DeniedShareScopes = deniedShareScopes
+	allowedShareEmailDomains, diags := types.ListValueFrom(ctx, types.StringType, filters.AllowedShareEmailDomains)
+	if diags.HasError() {
+		return diags
+	}
+	f.AllowedShareEmailDomains = allowedShareEmailDomains
 	f.ExternalAuthCacheTime = getOptionalInt64(filters.ExternalAuthCacheTime)
 	f.PreLoginCacheTime = getOptionalInt64(filters.PreLoginCacheTime)
 	f.StartDirectory = getOptionalString(filters.StartDirectory)

@@ -326,6 +326,9 @@ type BaseUserFilters struct {
 	// Share scopes that users are not allowed to use. Valid values: read, write, read_write.
 	// If all scopes are denied, sharing is completely disabled
 	DeniedShareScopes []string `json:"denied_share_scopes,omitempty"`
+	// Email domains allowed as share recipients. If non-empty, shares must use email
+	// authentication and every recipient must belong to one of these domains
+	AllowedShareEmailDomains []string `json:"allowed_share_email_domains,omitempty"`
 }
 
 type UserFilters struct {
